@@ -1,9 +1,9 @@
-import { StrictMode, useEffect } from 'react'
+import React, { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import 'katex/dist/katex.min.css'
-import App from './App.tsx'
-import ErrorBoundary from './components/ErrorBoundary.tsx'
+import App from './App'
+import ErrorBoundary from './components/ErrorBoundary'
 import { installCrashOverlay, recordBootMark, signalAppMounted } from './debug/CrashOverlay'
 
 // Global error logging during boot to catch silent failures
