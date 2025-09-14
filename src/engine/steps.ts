@@ -1,4 +1,4 @@
-import { findCellRefs } from "../notebook/parsing/cellRefs";
+// Cell references functionality moved to unified parser
 
 export type StepDoc = {
   equationLaTeX?: string;
@@ -13,7 +13,21 @@ export type StepDoc = {
 };
 
 export function build(expr: string, ctx: { getCellDisplay: (r: number, c: number) => string; resolveName?: (name: string) => string | undefined }): StepDoc {
-  const refs = findCellRefs(expr);
+  // Simple cell reference extraction using regex (replacing deleted findCellRefs)
+  const refs = (expr.match(/\b([A-Z]+)([1-9][0-9]*)\b/g) || []).map(ref => {
+    const match = ref.match(/^([A-Z]+)([1-9][0-9]*)$/);
+    if (match) {
+      const col = match[1];
+      const row = parseInt(match[2], 10) - 1;
+      let c = 0;
+      for (let i = 0; i < col.length; i++) {
+        c = c * 26 + (col.charCodeAt(i) - 64);
+      }
+      c -= 1;
+      return { label: ref, r: row, c };
+    }
+    return null;
+  }).filter(Boolean);
   const inputs = refs.map((r) => ({ name: r.label, display: ctx.getCellDisplay(r.r, r.c), source: r.label }));
 
   // Try to recognize a simple fraction pattern like X/C, A1/B2, or 1000/60

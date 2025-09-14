@@ -9,7 +9,7 @@ import { parseAddress } from "../../referencing/a1";
 import type { HistoryProxy } from "../../history/proxy";
 import { EditBoxCommand } from "../../history/commands/report/EditBoxCommand";
 import { normalizeForParser, collapseDuplicateUnits } from "../../lib/text/normalize";
-import { parse as parseUnified, formatQuantity, classifyInput } from "../../unified_parser";
+import { parse as parseUnified, evaluate as evaluateUnified, formatQuantity, classifyInput } from "../../unified_parser";
 import { plainToTeX } from "../../math/tex";
 
  function createId(): string { return `bx_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`; }
@@ -214,8 +214,15 @@ export default function ReportCanvas({ getCellDisplay, docId, onActiveEditChange
     return input.map((b) => {
       if (!b.renderAsMath || !b.src) return b;
       try {
-        const stmt = parseStatement(b.src);
-        const formatted = formatStatement(stmt);
+        const parsed = parseUnified(b.src);
+        const formatted = parsed.kind === 'expression' || parsed.kind === 'assignment' ? (() => {
+          try {
+            const result = evaluateUnified(b.src);
+            return formatQuantity(result);
+          } catch {
+            return b.src;
+          }
+        })() : b.src;
         const tex = plainToTeX(formatted);
         return { ...b, raw: tex };
       } catch { return b; }
@@ -276,14 +283,8 @@ export default function ReportCanvas({ getCellDisplay, docId, onActiveEditChange
   }, [docId]);
 
   useEffect(() => {
-    const unsub = subscribeUnitPrefs(() => {
-      // eslint-disable-next-line no-console
-      console.log('[BOOT] ReportCanvas: unit prefs changed -> recompute');
-      setBoxes((prev) => {
-        const r = recompute(prev);
-        return regenerateMathBoxes(r);
-      });
-    });
+    // Unit preferences functionality removed - using unified parser instead
+    const unsub = () => {}; // No-op unsubscriber
     return () => { unsub(); };
   }, []);
 
@@ -413,8 +414,8 @@ export default function ReportCanvas({ getCellDisplay, docId, onActiveEditChange
     if (!history.isReady()) return;
     history.push(new EditBoxCommand((prev) => {
       const old = prev.find(b => b.id === id);
-      const defParsed = tryParseDef(normalized);
-      const rhs = defParsed?.rhs ?? '';
+      const defParsed = parseUnified(normalized);
+      const rhs = defParsed.kind === 'assignment' ? normalized.substring(normalized.indexOf('=') + 1).trim() : '';
       const hasEq = /=/.test(normalized);
       const hasFunc = /(sqrt|sin|cos|tan|ln|log)\s*\(/i.test(normalized);
       const hasMulDivPow = /[*/^]/.test(normalized);
@@ -437,8 +438,15 @@ export default function ReportCanvas({ getCellDisplay, docId, onActiveEditChange
       const converted = isMath ? (() => {
         try {
           // Use the new robust parser that handles units correctly
-          const stmt = parseStatement(normalized);
-          const formatted = formatStatement(stmt);
+          const parsed = parseUnified(normalized);
+          const formatted = parsed.kind === 'expression' || parsed.kind === 'assignment' ? (() => {
+            try {
+              const result = evaluateUnified(normalized);
+              return formatQuantity(result);
+            } catch {
+              return normalized;
+            }
+          })() : normalized;
           // Convert to TeX format for math rendering
           const texFormatted = plainToTeX(formatted);
           // CRITICAL: Store the original normalized input for editing, not the expanded result

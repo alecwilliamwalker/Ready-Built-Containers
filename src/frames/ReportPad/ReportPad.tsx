@@ -70,8 +70,8 @@ export default function ReportPad({ getCellDisplay }: Props) {
       pEl.querySelectorAll("span.result-chip").forEach((el) => el.remove());
       // Compute base display text for the paragraph without chips
       const rawBase = extractRawTextFromParagraph(pEl);
-      const def = tryParseDef(rawBase);
-      const baseText = def ? `${def.name} = ${def.rhs}` : trimTrailingEquals(rawBase);
+      const parsed = parseUnified(rawBase);
+      const baseText = parsed.kind === 'assignment' ? rawBase : rawBase.replace(/\s*=\s*$/, '');
       if (pEl.textContent?.trim() !== baseText.trim()) {
         // Replace only textContent to avoid disrupting caret structure much
         pEl.textContent = baseText;
