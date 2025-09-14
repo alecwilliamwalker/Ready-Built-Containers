@@ -1,0 +1,360 @@
+Refactor Brief — Single-Source Parser & Repo-Wide Dedup
+
+Goal: Eliminate every duplicate or fragmented parsing/math path and any other code that exists in >1 place. Create one authoritative implementation and update all references.
+
+Scope (apply this policy repo-wide)
+
+Parsing, math/eval, units, constants, error types, logging, helpers, types/interfaces.
+
+If logic exists in two places, move it to one location and delete the rest.
+
+Target Layout (proposed)
+/src
+  /core
+    lexer.py
+    ast_nodes.py
+    parser.py
+    evaluator.py
+    units.py
+    errors.py
+    types.py        # shared dataclasses / TypedDicts
+    __init__.py
+  /shared
+    constants.py
+    utils.py        # generic helpers (no business logic)
+    __init__.py
+  /app
+    engine.py       # calls core.parser/evaluator only
+    notebook.py     # UI/adapter; no parsing or math
+    __init__.py
+tests/
+  test_parser.py
+  test_evaluator.py
+  test_units.py
+
+
+Rules
+
+Only /core may parse/evaluate. No parsing/eval anywhere else.
+
+No “shim/bridges.” Delete old code; do proper imports to the unified modules.
+
+Public API boundary: from src.core import parser, evaluator is the only entrypoint for expression work.
+
+Deliverables
+
+All legacy parsing/math in engine/, notebook/, parser/, parsing/ removed.
+
+src/core/{lexer,ast_nodes,parser,evaluator,units,errors,types}.py implemented.
+
+All imports updated to the new modules.
+
+Tests passing (add/expand tests where coverage is missing).
+
+Step-by-Step Plan (do these now)
+1) Inventory & Rip Out Duplicates
+# list parsing/eval hotspots
+rg -n "(token|parse|lexer|evaluate|AST|units?)" src -g "!venv" -S
+
+# list duplicate function names (rough)
+rg -n "def (tokenize|parse|evaluate|eval_expression|apply_units|to_si)\(" src -S
+
+# delete legacy parsing/math dirs (adjust to your tree)
+git rm -r src/engine/parsing src/engine/parser src/notebook/parsing || true
+
+2) Create Unified Core (drop these files in)
+src/core/types.py
+from dataclasses import dataclass
+from typing import Union, List, Dict, Any
+
+Number = Union[int, float]
+
+@dataclass(frozen=True)
+class Token:
+    kind: str
+    lexeme: str
+    pos: int
+
+@dataclass
+class ASTNode:
+    type: str
+    value: Any = None
+    children: List["ASTNode"] = None
+
+src/core/errors.py
+class ParseError(Exception): ...
+class EvalError(Exception): ...
+class UnitError(Exception): ...
+
+src/core/lexer.py
+import re
+from .types import Token
+
+TOKEN_SPEC = [
+    ("NUMBER",  r"\d+(\.\d+)?"),
+    ("ID",      r"[A-Za-z_][A-Za-z0-9_]*"),
+    ("OP",      r"[\+\-\*\/\^\(\),]"),
+    ("WS",      r"\s+"),
+]
+MASTER = re.compile("|".join(f"(?P<{k}>{p})" for k,p in TOKEN_SPEC))
+
+def tokenize(src: str):
+    pos = 0
+    for m in MASTER.finditer(src):
+        kind = m.lastgroup; lex = m.group()
+        if kind == "WS": 
+            continue
+        yield Token(kind, lex, m.start())
+        pos = m.end()
+    if pos != len(src):
+        raise ValueError(f"Unexpected char at {pos}")
+
+src/core/ast_nodes.py
+from .types import ASTNode
+
+def node(t, v=None, *kids):
+    return ASTNode(type=t, value=v, children=list(kids) if kids else [])
+
+src/core/parser.py
+from typing import Iterator
+from .types import Token, ASTNode
+from .ast_nodes import node
+from .errors import ParseError
+
+class Parser:
+    def __init__(self, tokens: Iterator[Token]):
+        self.tokens = list(tokens)
+        self.i = 0
+
+    def peek(self, k=0): 
+        return self.tokens[self.i+k] if self.i+k < len(self.tokens) else None
+    def match(self, *kinds):
+        t = self.peek()
+        if t and t.kind in kinds or (t and t.lexeme in kinds):
+            self.i += 1; return t
+        return None
+    def expect(self, *kinds):
+        t = self.match(*kinds)
+        if not t: 
+            raise ParseError(f"Expected {kinds} at {self.i}")
+        return t
+
+    # Grammar (minimal): expr -> term (('+'|'-') term)*
+    # term -> factor (('*'|'/') factor)*
+    # factor -> primary ('^' factor)?
+    # primary -> NUMBER | ID | ID '(' arglist? ')' | '(' expr ')'
+    def parse(self) -> ASTNode:
+        ast = self.expr()
+        if self.peek(): 
+            raise ParseError("Extra input after expression")
+        return ast
+
+    def expr(self):
+        n = self.term()
+        while self.match("OP") and self.tokens[self.i-1].lexeme in ["+","-"]:
+            op = self.tokens[self.i-1].lexeme
+            r = self.term()
+            n = node("binop", op, n, r)
+        return n
+
+    def term(self):
+        n = self.factor()
+        while self.match("OP") and self.tokens[self.i-1].lexeme in ["*","/"]:
+            op = self.tokens[self.i-1].lexeme
+            r = self.factor()
+            n = node("binop", op, n, r)
+        return n
+
+    def factor(self):
+        n = self.primary()
+        if self.match("OP") and self.tokens[self.i-1].lexeme == "^":
+            r = self.factor()
+            n = node("binop", "^", n, r)
+        return n
+
+    def primary(self):
+        t = self.peek()
+        if t and t.kind == "NUMBER":
+            self.i += 1; return node("num", float(t.lexeme))
+        if t and t.kind == "ID":
+            self.i += 1
+            id_tok = t.lexeme
+            if self.match("OP") and self.tokens[self.i-1].lexeme == "(":
+                args = []
+                if not (self.peek() and self.peek().lexeme == ")"):
+                    args.append(self.expr())
+                    while self.match("OP") and self.tokens[self.i-1].lexeme == ",":
+                        args.append(self.expr())
+                self.expect("OP");  # ')'
+                if self.tokens[self.i-1].lexeme != ")":
+                    raise ParseError("Expected ')'")
+                return node("call", id_tok, *args)
+            return node("id", id_tok)
+        if t and t.kind == "OP" and t.lexeme == "(":
+            self.i += 1
+            n = self.expr()
+            self.expect("OP")
+            if self.tokens[self.i-1].lexeme != ")":
+                raise ParseError("Expected ')'")
+            return n
+        raise ParseError(f"Unexpected token at {self.i}: {t}")
+
+def parse_expression(src: str) -> ASTNode:
+    from .lexer import tokenize
+    return Parser(tokenize(src)).parse()
+
+src/core/units.py
+from .errors import UnitError
+
+# minimal demo; extend with real tables
+UNIT_TABLE = {
+    "m": 1.0,
+    "cm": 0.01,
+    "mm": 0.001,
+}
+
+def to_si(value, unit: str):
+    try:
+        return value * UNIT_TABLE[unit]
+    except KeyError:
+        raise UnitError(f"Unknown unit: {unit}")
+
+src/core/evaluator.py
+import math
+from typing import Dict, Callable
+from .types import ASTNode
+from .errors import EvalError
+
+FN_TABLE: Dict[str, Callable] = {
+    "sin": math.sin, "cos": math.cos, "tan": math.tan,
+    "sqrt": math.sqrt, "log": math.log
+}
+
+def eval_ast(ast: ASTNode, env: Dict[str, float] | None = None) -> float:
+    env = env or {}
+    t = ast.type
+    if t == "num":
+        return ast.value
+    if t == "id":
+        if ast.value not in env:
+            raise EvalError(f"Unknown symbol: {ast.value}")
+        return env[ast.value]
+    if t == "binop":
+        a = eval_ast(ast.children[0], env)
+        b = eval_ast(ast.children[1], env)
+        op = ast.value
+        if op == "+": return a + b
+        if op == "-": return a - b
+        if op == "*": return a * b
+        if op == "/": return a / b
+        if op == "^": return a ** b
+        raise EvalError(f"Unknown operator {op}")
+    if t == "call":
+        fn = FN_TABLE.get(ast.value)
+        if not fn:
+            raise EvalError(f"Unknown function {ast.value}")
+        args = [eval_ast(c, env) for c in ast.children]
+        return fn(*args)
+    raise EvalError(f"Unknown AST node {t}")
+
+3) Update All Imports (codemod)
+
+Search/replace map (extend as needed):
+
+from engine.parser → from src.core import parser
+
+from notebook.parsing → from src.core import parser
+
+direct calls like old_parse(expr) → parser.parse_expression(expr)
+
+legacy eval → from src.core.evaluator import eval_ast
+
+Quick Python codemod (runs in repo root):
+
+# tools/codemod_imports.py
+import pathlib, re
+
+M = [
+    (r"from\s+engine\.parser\s+import\s+(\w+)", r"from src.core.parser import \1"),
+    (r"from\s+notebook\.parsing\s+import\s+(\w+)", r"from src.core.parser import \1"),
+    (r"from\s+parser\s+import\s+(\w+)", r"from src.core.parser import \1"),
+    (r"from\s+parsing\s+import\s+(\w+)", r"from src.core.parser import \1"),
+    (r"\bold_parse\s*\(", "parser.parse_expression("),
+]
+def fix(p: pathlib.Path):
+    s = p.read_text(encoding="utf-8")
+    orig = s
+    for a,b in M: s = re.sub(a,b,s)
+    if s != orig:
+        p.write_text(s, encoding="utf-8")
+        print("updated", p)
+
+for f in pathlib.Path("src").rglob("*.py"):
+    if "core" in f.parts: 
+        continue
+    fix(f)
+
+
+Run:
+
+python tools/codemod_imports.py
+
+4) Tests (fast confidence)
+tests/test_parser.py
+from src.core.parser import parse_expression
+def test_basic():
+    ast = parse_expression("1+2*3")
+    assert ast.type == "binop"
+
+tests/test_evaluator.py
+from src.core.parser import parse_expression
+from src.core.evaluator import eval_ast
+def test_eval():
+    ast = parse_expression("2*(3+4)")
+    assert eval_ast(ast) == 14
+
+tests/test_units.py
+from src.core.units import to_si
+def test_units():
+    assert to_si(100, "cm") == 1.0
+
+
+Run:
+
+pytest -q
+
+5) Final Deletions & Sanity
+
+Remove any remaining files that re-implement parsing/eval/units/errors/constants.
+
+rg -n "parse_expression|eval_ast|UNIT_TABLE" to ensure single definitions.
+
+Ensure engine.py/notebook.py call only the unified entrypoints.
+
+Repo-Wide Redundancy Pass (beyond parser)
+
+Apply the single-source rule to these common offenders:
+
+constants → src/shared/constants.py
+
+errors → src/core/errors.py (only one set of exception types)
+
+utils → src/shared/utils.py (pure helpers only; no parsing/math)
+
+types/interfaces → src/core/types.py
+
+logging/tracing → one helper in src/shared/utils.py (or a logging_config.py)
+
+feature flags → a single src/shared/constants.py section
+
+Acceptance Checklist
+
+ No parsing/eval code exists outside src/core/.
+
+ rg shows a single definition for each public function.
+
+ All imports updated; no references to deleted modules.
+
+ Tests pass; add cases to cover your special operators/units.
+
+ Engine/Notebook remain thin adapters; no logic drift.

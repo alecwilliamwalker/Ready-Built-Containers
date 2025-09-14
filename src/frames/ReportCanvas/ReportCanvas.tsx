@@ -10,7 +10,7 @@ import type { HistoryProxy } from "../../history/proxy";
 import { EditBoxCommand } from "../../history/commands/report/EditBoxCommand";
 import { normalizeForParser, collapseDuplicateUnits } from "../../lib/text/normalize";
 import { parse as parseUnified, evaluate as evaluateUnified, formatQuantity, classifyInput } from "../../unified_parser";
-import { plainToTeX } from "../../math/tex";
+// TeX formatting now handled by unified parser
 
  function createId(): string { return `bx_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`; }
 const STORAGE_BASE = 'reportCanvas';
@@ -132,44 +132,14 @@ export default function ReportCanvas({ getCellDisplay, docId, onActiveEditChange
     // If it already looks like TeX (has \\command), return as-is
     if (/\\[a-zA-Z]+/.test(s)) return s;
 
-    const formatIdent = (id: string): string => {
-      const t = id.trim();
-      const m = /^([A-Za-z])(.*)$/.exec(t);
-      if (m && m[2]) return `${m[1]}_{${m[2]}}`;
-      return t;
-    };
-
-    const decorateLeaf = (leaf: string): string => {
-      const trimmed = leaf.trim();
-      // turn simple identifier into base+subscript; keep numbers as-is
-      if (/^[A-Za-z][A-Za-z0-9]*$/.test(trimmed)) return formatIdent(trimmed);
-      // replace * with dot
-      return trimmed.replace(/\*/g, ` \\cdot `);
-    };
-
-    const toTexExpr = (expr: string): string => {
-      // Convert top-level a/b into \frac recursively respecting parentheses
-      let depth = 0;
-      for (let i = 0; i < expr.length; i += 1) {
-        const ch = expr[i];
-        if (ch === '(') depth += 1; else if (ch === ')') depth -= 1;
-        else if (ch === '/' && depth === 0) {
-          const left = expr.slice(0, i);
-          const right = expr.slice(i + 1);
-          return `\\frac{${toTexExpr(left)}}{${toTexExpr(right)}}`;
-        }
-      }
-      return decorateLeaf(expr);
-    };
-
-    // Handle LHS = RHS (first '=')
-    const eq = /^([^=]+?)=([^=]+)$/.exec(s);
-    if (eq) {
-      const lhs = formatIdent(eq[1].trim());
-      const rhs = toTexExpr(eq[2].trim());
-      return `${lhs} = ${rhs}`;
+    // Use unified parser for all parsing and formatting
+    try {
+      const result = evaluateUnified(s);
+      return formatQuantity(result);
+    } catch {
+      // Fallback for non-evaluable expressions - simple text conversion
+      return s.replace(/\*/g, ` \\cdot `);
     }
-    return toTexExpr(s);
   }
 
   // Helpers to render ReportPad AST (unit aware) into TeX
@@ -187,17 +157,7 @@ export default function ReportCanvas({ getCellDisplay, docId, onActiveEditChange
 
   // remove legacy TeX helpers; TeX is built centrally from the unified pipeline now
 
-  // Number formatting to prevent float noise
-  function formatNumber(n: number, opts?: { sig?: number; epsilon?: number }): string {
-    const sig = opts?.sig ?? 6;
-    const eps = opts?.epsilon ?? 1e-10;
-    const z = Math.abs(n) < eps ? 0 : n;
-    const s = Number(z).toPrecision(sig);
-    // trim trailing zeros and dot
-    const t = s.replace(/\.0+($|e)/i, '$1').replace(/(\.[0-9]*[1-9])0+($|e)/i, '$1$2');
-    // normalize -0
-    return t === '-0' ? '0' : t;
-  }
+  // Use unified parser's formatQuantity for all number formatting
   // function formatQuantity(q: any): string { return formatNumber(q?.valueSI ?? 0); }
 
   // Build name->display map from current boxes using report pad evaluation
@@ -223,7 +183,7 @@ export default function ReportCanvas({ getCellDisplay, docId, onActiveEditChange
             return b.src;
           }
         })() : b.src;
-        const tex = plainToTeX(formatted);
+        const tex = formatted; // Using unified parser formatting
         return { ...b, raw: tex };
       } catch { return b; }
     });
@@ -448,7 +408,7 @@ export default function ReportCanvas({ getCellDisplay, docId, onActiveEditChange
             }
           })() : normalized;
           // Convert to TeX format for math rendering
-          const texFormatted = plainToTeX(formatted);
+          const texFormatted = formatted; // Using unified parser formatting
           // CRITICAL: Store the original normalized input for editing, not the expanded result
           // src = what you typed (for editing): "A = 5in + 4in"  
           // raw = formatted display (for rendering): "A = 5\,\mathrm{in} + 4\,\mathrm{in} = 9\,\mathrm{in}"
