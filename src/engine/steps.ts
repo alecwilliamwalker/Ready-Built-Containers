@@ -1,4 +1,5 @@
 import { parse as parseUnified, evaluate as evaluateUnified, formatQuantity } from '../unified_parser';
+import { parseAddress } from '../referencing/a1';
 
 export type StepDoc = {
   equationLaTeX?: string;
@@ -16,22 +17,28 @@ export function build(expr: string, ctx: { getCellDisplay: (r: number, c: number
   // Use unified parser exclusively - no more duplicate parsing logic
   const parsed = parseUnified(expr);
   
-  // Extract cell references from expression using unified parser approach
-  const cellMatches = expr.match(/\b([A-Z]+)([1-9][0-9]*)\b/g) || [];
+  // Extract cell references from the unified AST instead of regex parsing
   const refs: Array<{ label: string; r: number; c: number }> = [];
   
-  for (const cellRef of cellMatches) {
-    const match = cellRef.match(/^([A-Z]+)([1-9][0-9]*)$/);
-    if (match) {
-      const col = match[1];
-      const row = parseInt(match[2], 10) - 1;
-      let c = 0;
-      for (let i = 0; i < col.length; i++) {
-        c = c * 26 + (col.charCodeAt(i) - 64);
+  function collectCellRefs(node: any): void {
+    if (!node) return;
+    if (node.kind === 'cell') {
+      const address = parseAddress(node.ref);
+      if (address) {
+        refs.push({ label: node.ref, r: address.r, c: address.c });
       }
-      c -= 1;
-      refs.push({ label: cellRef, r: row, c });
     }
+    // Recursively traverse AST
+    if (node.left) collectCellRefs(node.left);
+    if (node.right) collectCellRefs(node.right);
+    if (node.expr) collectCellRefs(node.expr);
+    if (node.args) node.args.forEach(collectCellRefs);
+  }
+  
+  if (parsed.kind === 'expression') {
+    collectCellRefs(parsed.expr);
+  } else if (parsed.kind === 'assignment') {
+    collectCellRefs(parsed.expr);
   }
   
   const inputs = refs.map((r) => ({ name: r.label, display: ctx.getCellDisplay(r.r, r.c), source: r.label }));
@@ -40,16 +47,10 @@ export function build(expr: string, ctx: { getCellDisplay: (r: number, c: number
   try {
     const context = {
       getCell: (ref: string) => {
-        const cellMatch = ref.match(/^([A-Z]+)([1-9][0-9]*)$/);
-        if (cellMatch) {
-          const col = cellMatch[1];
-          const row = parseInt(cellMatch[2], 10) - 1;
-          let c = 0;
-          for (let i = 0; i < col.length; i++) {
-            c = c * 26 + (col.charCodeAt(i) - 64);
-          }
-          c -= 1;
-          return ctx.getCellDisplay(row, c);
+        // Use centralized A1 parsing - no more duplicate logic!
+        const address = parseAddress(ref);
+        if (address) {
+          return ctx.getCellDisplay(address.r, address.c);
         }
         return "0";
       },
@@ -65,15 +66,53 @@ export function build(expr: string, ctx: { getCellDisplay: (r: number, c: number
     const result = evaluateUnified(expr, context);
     const resultDisplay = formatQuantity(result);
     
-    // Check if this looks like a simple fraction for LaTeX rendering
-    const fractionMatch = expr.match(/^\s*([A-Za-z][A-Za-z0-9_]*|[A-Z]+[1-9][0-9]*|\d+(?:\.\d+)?)\s*\/\s*([A-Za-z][A-Za-z0-9_]*|[A-Z]+[1-9][0-9]*|\d+(?:\.\d+)?)\s*$/);
-    if (fractionMatch) {
-      const left = fractionMatch[1];
-      const right = fractionMatch[2];
+    // Check if this is a simple fraction using unified AST instead of regex
+    let isFraction = false;
+    let left = '';
+    let right = '';
+    let leftDisplay = '';
+    let rightDisplay = '';
+    
+    if (parsed.kind === 'expression' && parsed.expr.kind === 'binary' && parsed.expr.op === '/') {
+      const leftNode = parsed.expr.left;
+      const rightNode = parsed.expr.right;
       
-      // Get substituted values for display
-      const leftDisplay = refs.find(r => r.label === left) ? ctx.getCellDisplay(refs.find(r => r.label === left)!.r, refs.find(r => r.label === left)!.c) : left;
-      const rightDisplay = refs.find(r => r.label === right) ? ctx.getCellDisplay(refs.find(r => r.label === right)!.r, refs.find(r => r.label === right)!.c) : right;
+      // Check if operands are simple (number, variable, or cell)
+      const isSimple = (node: any) => 
+        node.kind === 'number' || node.kind === 'variable' || node.kind === 'cell';
+      
+      if (isSimple(leftNode) && isSimple(rightNode)) {
+        isFraction = true;
+        
+        // Extract left operand
+        if (leftNode.kind === 'number') {
+          left = leftNode.value.toString();
+          leftDisplay = left;
+        } else if (leftNode.kind === 'variable') {
+          left = leftNode.name;
+          leftDisplay = left;
+        } else if (leftNode.kind === 'cell') {
+          left = leftNode.ref;
+          const addr = parseAddress(leftNode.ref);
+          leftDisplay = addr ? ctx.getCellDisplay(addr.r, addr.c) : left;
+        }
+        
+        // Extract right operand  
+        if (rightNode.kind === 'number') {
+          right = rightNode.value.toString();
+          rightDisplay = right;
+        } else if (rightNode.kind === 'variable') {
+          right = rightNode.name;
+          rightDisplay = right;
+        } else if (rightNode.kind === 'cell') {
+          right = rightNode.ref;
+          const addr = parseAddress(rightNode.ref);
+          rightDisplay = addr ? ctx.getCellDisplay(addr.r, addr.c) : right;
+        }
+      }
+    }
+    
+    if (isFraction) {
       
       return {
         equationLaTeX: `\\frac{${left}}{${right}}`,
