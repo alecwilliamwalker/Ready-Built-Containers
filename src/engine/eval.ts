@@ -1,4 +1,5 @@
-import { defineName, resolveName, defineVariable, resolveVariable, hasVariable } from '../referencing/names';
+import { defineName, resolveName, defineVariable, resolveVariable, hasVariable, defineVariableInCell, getVariableDefiningCell, clearVariablesInCell } from '../referencing/names';
+import { indexToCol } from '../referencing/a1';
 
 export type Grid = string[][];
 
@@ -22,7 +23,7 @@ function getCellValue(grid: Grid, ref: string, visiting: Set<string>): number {
   visiting.add(key);
   try {
     const raw = grid[rc.r]?.[rc.c] ?? "";
-    return evaluateWithVisited(grid, raw, visiting);
+    return evaluateWithVisited(grid, raw, visiting, key);
   } finally {
     visiting.delete(key);
   }
@@ -51,13 +52,26 @@ function isUnit(token: string): boolean {
 }
 
 function getVariableValue(name: string, grid: Grid, visiting: Set<string>): number {
-  // Check for cycle in variable resolution
-  const varKey = `var:${name}`;
-  if (visiting.has(varKey)) {
-    throw new Error('#CYCLE!');
+  // Check if there's a cell that defines this variable
+  const definingCellKey = getVariableDefiningCell(name);
+  if (definingCellKey) {
+    // Parse cell key back to row/col and get fresh value from that cell
+    const [rStr, cStr] = definingCellKey.split(':');
+    const r = parseInt(rStr, 10);
+    const c = parseInt(cStr, 10);
+    const raw = grid[r]?.[c] ?? "";
+    
+    // Evaluate the defining cell to get the current variable value - this will trigger re-evaluation
+    const cellKey = `${r}:${c}`;
+    if (visiting.has(cellKey)) {
+      throw new Error('#CYCLE!');
+    }
+    
+    // Don't add cellKey to visiting here - let getCellValue handle it
+    return getCellValue(grid, `${indexToCol(c)}${r + 1}`, visiting);
   }
   
-  // First check if it's a stored variable
+  // Fallback: check if it's a stored variable (for backwards compatibility)  
   const value = resolveVariable(name);
   if (value !== undefined) {
     return value;
@@ -113,7 +127,7 @@ function evalRpn(grid: Grid, rpn: string[], visiting: Set<string>): number {
   return st[0];
 }
 
-function evaluateWithVisited(grid: Grid, raw: string, visiting: Set<string>): number {
+function evaluateWithVisited(grid: Grid, raw: string, visiting: Set<string>, currentCellKey?: string): number {
   const s = raw.trim();
   
   // Handle formulas (start with =)
@@ -149,8 +163,13 @@ function evaluateWithVisited(grid: Grid, raw: string, visiting: Set<string>): nu
         exprValue = evalRpn(grid, toRpn(tokens), visiting);
       }
       
-      // Store the variable value directly
-      defineVariable(varName, exprValue);
+      // Store the variable value with cell tracking
+      if (currentCellKey) {
+        defineVariableInCell(varName, exprValue, currentCellKey);
+      } else {
+        // Fallback for cases without cell context
+        defineVariable(varName, exprValue);
+      }
       
       return exprValue;
     } catch (error) {
@@ -167,6 +186,14 @@ function evaluateWithVisited(grid: Grid, raw: string, visiting: Set<string>): nu
   throw new Error("Not a formula/number/assignment");
 }
 
+// Enhanced evaluate that can track which cell is being evaluated
+export function evaluateCell(grid: Grid, raw: string, row: number, col: number): number {
+  const cellKey = `${row}:${col}`;
+  const result = evaluateWithVisited(grid, raw, new Set(), cellKey);
+  return result;
+}
+
+// Legacy function for backwards compatibility
 export function evaluate(grid: Grid, raw: string): number {
   return evaluateWithVisited(grid, raw, new Set());
 }

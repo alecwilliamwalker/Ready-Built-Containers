@@ -1,6 +1,7 @@
 import React, { useRef, useState, type KeyboardEvent as KBEvent, useEffect, useMemo } from "react";
 import "./App.css";
-import { evaluate } from "./engine/eval";
+import { evaluate, evaluateCell } from "./engine/eval";
+import { clearVariablesInCell } from "./referencing/names";
 import TopBar from "./components/TopBar";
 import * as InsertBridge from "./referencing/insertTarget";
 import { parseAddress as parseA1Address, indexToCol as a1IndexToCol } from "./referencing/a1";
@@ -71,6 +72,10 @@ export default function App() {
   const gridAccessor = useMemo(() => ({
     get: (r: number, c: number) => ({ value: data[r]?.[c] ?? "" }),
     set: (r: number, c: number, value: string) => {
+      // Clear variables defined by this cell before changing its value
+      const cellKey = `${r}:${c}`;
+      clearVariablesInCell(cellKey);
+      
       setData(prev => { const copy = prev.map(row => [...row]); if (!copy[r]) return prev; copy[r][c] = value; return copy; });
     }
   }), [data]);
@@ -283,7 +288,7 @@ export default function App() {
     const isActive = el != null && document.activeElement === el;
     if (isActive) return raw;
     if (raw.trim() === "") return "";
-    try { const val = evaluate(data as string[][], raw); return String(val); }
+    try { const val = evaluateCell(data as string[][], raw, r, c); return String(val); }
     catch { return raw; }
   };
 
@@ -296,7 +301,7 @@ export default function App() {
   const getCellDisplay = (r: number, c: number): string => {
     const raw = data[r]?.[c] ?? "";
     if (raw.trim() === "") return "";
-    try { const val = evaluate(data as string[][], raw); return String(val); }
+    try { const val = evaluateCell(data as string[][], raw, r, c); return String(val); }
     catch { return raw; }
   };
 
