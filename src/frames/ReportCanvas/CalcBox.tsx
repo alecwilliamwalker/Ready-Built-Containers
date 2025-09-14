@@ -22,12 +22,20 @@ type Props = {
 
 function CalcBox({ box, selected, onSelect, onCommit, onCancel, onEnterEdit, onMove, onDragEnd, bringToFront, onResize, onDragDelta }: Props) {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [draft, setDraft] = useState(box.raw);
+  // Use src for editing (clean), raw for display (LaTeX)
+  const [draft, setDraft] = useState(box.mode === 'edit' ? (box.src || box.raw) : box.raw);
   const draftRef = useRef(draft);
   useEffect(() => { draftRef.current = draft; }, [draft]);
   const committedRef = useRef(false);
 
-  useEffect(() => { setDraft(box.raw); }, [box.raw]);
+  // Critical fix: Use src (clean) for editing, raw (LaTeX) for display
+  useEffect(() => { 
+    if (box.mode === 'edit') {
+      setDraft(box.src || box.raw);  // Clean source for editing
+    } else {
+      setDraft(box.raw);  // LaTeX version for display
+    }
+  }, [box.raw, box.src, box.mode]);
   // If we re-enter edit mode and a headless sticky target exists for this box, hydrate from it
   useEffect(() => {
     if (box.mode === 'edit') {
