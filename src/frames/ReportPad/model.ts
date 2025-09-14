@@ -1,4 +1,6 @@
 import { classifyBasic, trimTrailingEquals, tryParseDef } from "../../parsing/classify";
+import { evaluateExpression } from "../../engine/unified-integration";
+import { normalizeForParser } from "../../lib/text/normalize";
 
 export type LineKind = "def" | "expr" | "text";
 
@@ -94,7 +96,7 @@ const reRange = /^[A-Z]+[1-9][0-9]*:[A-Z]+[1-9][0-9]*/;
 export function lex(input: string): Token[] {
   const out: Token[] = [];
   let i = 0;
-  const s = input.trim();
+  const s = normalizeForParser(input);
   while (i < s.length) {
     const ch = s[i];
     if (ch === " " ) { i += 1; continue; }

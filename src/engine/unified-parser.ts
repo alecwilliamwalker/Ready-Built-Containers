@@ -10,6 +10,9 @@ export type Expr =
   | { kind: "binary"; op: "+" | "-" | "*" | "/"; left: Expr; right: Expr }
   | { kind: "assign"; name: string; value: Expr };
 
+// Export for backward compatibility
+export { Expr as UnifiedExpr };
+
 export type ParseResult = 
   | { kind: "assignment"; name: string; expr: Expr }
   | { kind: "expression"; expr: Expr };

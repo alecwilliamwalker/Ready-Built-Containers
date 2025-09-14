@@ -1,7 +1,7 @@
 // Unified evaluator that works for both spreadsheet and report canvas
 // Handles variables, cell references, units, and all operations in one place
 
-import { parseExpression, Expr, ParseResult } from './unified-parser';
+import { parseExpression, type Expr, type ParseResult } from './unified-parser';
 import { defineVariable, resolveVariable, clearVariables } from '../referencing/names';
 
 // Unit system - consolidated from multiple scattered implementations

@@ -19,8 +19,14 @@ export function normalizeForParser(raw: string): string {
   // Ensure there's a space between number and unit
   s = s.replace(NUM_UNIT, '$1 $2$3');
 
-  // Convert LaTeX cdot back to asterisk for parsing
-  s = s.replace(/\\cdot/g, '*');
+  // Convert all multiplication symbols to *
+  s = s.replace(/\\cdot|\\times|·|×/g, '*');
+  
+  // Convert all division symbols to /
+  s = s.replace(/\\div|÷/g, '/');
+  
+  // Convert Unicode minus to regular minus
+  s = s.replace(/−/g, '-');
   
   // Optional tidy around equals
   s = s.replace(/\s*=\s*/g, ' = ');
