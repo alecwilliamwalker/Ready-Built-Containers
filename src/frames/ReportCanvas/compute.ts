@@ -1,8 +1,11 @@
 import type { CalcBoxModel } from './types';
 import { classifyLine, recompute as recomputePad } from '../ReportPad/model';
 import { parseAddress } from '../../referencing/a1';
-import { autoDisplay, formatText } from '../../engine/formatUnits';
-import { trimTrailingEquals } from '../../parsing/classify';
+import { formatQuantity, classifyInput } from '../../unified_parser';
+// Utility function to trim trailing equals
+function trimTrailingEquals(text: string): string {
+  return text.replace(/\s*=\s*$/, '');
+}
 
 export function computeBoxes(
   nextBoxes: CalcBoxModel[],
@@ -15,14 +18,14 @@ export function computeBoxes(
     const m = /^([^=]+?)=(.+)$/.exec(trimmed);
     const evalText = m ? m[2].trim() : trimmed;
     const looksMathy = /[=+\-*/^()]/.test(evalText) || /(sqrt|sin|cos|tan|ln|log)\s*\(/i.test(evalText) || /\b[A-Z]+[1-9][0-9]*\b/.test(evalText);
-    const kind = (!((b as any).renderAsMath) && !looksMathy) ? 'text' : classifyLine(evalText);
+    const kind = (!((b as any).renderAsMath) && !looksMathy) ? 'text' : classifyInput(evalText);
     return { id: b.id, text: evalText, kind } as any;
   }) } as any;
   const computed = recomputePad(doc, getCellDisplay, (a1) => parseAddress(a1));
   const idToRes = new Map(computed.lines.map((l: any) => [l.id, l] as const));
   return nextBoxes.map((b) => {
     const line = idToRes.get(b.id);
-    const resultText = line?.result ? formatText(autoDisplay({ valueSI: line.result.valueSI, dims: line.result.dims })) : undefined;
+    const resultText = line?.result ? formatQuantity({ value: line.result.valueSI, valueSI: line.result.valueSI, dims: line.result.dims }) : undefined;
     // Do not mutate raw here; keep raw/src as the user's editable/source text
     return { ...b, resultText, error: line?.error ?? null } as CalcBoxModel;
   });

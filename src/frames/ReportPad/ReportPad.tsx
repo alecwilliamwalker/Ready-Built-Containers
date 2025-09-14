@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import type { Doc, Line } from "./model";
 import { recompute, convertDisplay } from "./model";
 import { parseAddress } from "../../referencing/a1";
-import { tryParseDef, trimTrailingEquals } from "../../parsing/classify";
+import { parse as parseUnified, classifyInput } from "../../unified_parser";
 
 type Props = {
   getCellDisplay: (r: number, c: number) => string;

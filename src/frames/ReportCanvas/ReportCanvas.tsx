@@ -5,15 +5,11 @@ import type { CalcBoxModel } from "./types";
 import { classifyLine, recompute as recomputePad } from "../ReportPad/model";
 import { computeBoxes } from "./compute";
 import { parseAddress } from "../../referencing/a1";
-import { autoDisplay, formatText } from "../../engine/formatUnits";
-import { trimTrailingEquals, tryParseDef } from "../../parsing/classify";
-import { subscribeUnitPrefs } from "../../engine/unitPrefs";
 // import katex from 'katex';
 import type { HistoryProxy } from "../../history/proxy";
 import { EditBoxCommand } from "../../history/commands/report/EditBoxCommand";
 import { normalizeForParser, collapseDuplicateUnits } from "../../lib/text/normalize";
-import { parseStatement } from "../../parser/parser";
-import { formatStatement } from "../../parser/evalFormat";
+import { parse as parseUnified, formatQuantity, classifyInput } from "../../unified_parser";
 import { plainToTeX } from "../../math/tex";
 
  function createId(): string { return `bx_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`; }

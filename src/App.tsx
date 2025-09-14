@@ -1,6 +1,6 @@
 import React, { useRef, useState, type KeyboardEvent as KBEvent, useEffect, useMemo } from "react";
 import "./App.css";
-import { evaluate, evaluateCell } from "./engine/eval";
+import { evaluateWithGrid } from "./unified_parser";
 import { clearVariablesInCell } from "./referencing/names";
 import TopBar from "./components/TopBar";
 import * as InsertBridge from "./referencing/insertTarget";
@@ -288,7 +288,7 @@ export default function App() {
     const isActive = el != null && document.activeElement === el;
     if (isActive) return raw;
     if (raw.trim() === "") return "";
-    try { const val = evaluateCell(data as string[][], raw, r, c); return String(val); }
+    try { const val = evaluateWithGrid(data as string[][], raw, `${r}:${c}`); return String(val); }
     catch { return raw; }
   };
 
@@ -301,7 +301,7 @@ export default function App() {
   const getCellDisplay = (r: number, c: number): string => {
     const raw = data[r]?.[c] ?? "";
     if (raw.trim() === "") return "";
-    try { const val = evaluateCell(data as string[][], raw, r, c); return String(val); }
+    try { const val = evaluateWithGrid(data as string[][], raw, `${r}:${c}`); return String(val); }
     catch { return raw; }
   };
 
@@ -895,7 +895,7 @@ export default function App() {
         <div style={{ textAlign: "center", marginTop: 12, opacity: 0.9 }}>
           <small>
             Selected: {addr} • Value:{" "}
-            {(() => { const raw = data[sel.r][sel.c]; try { const val = evaluate(data as string[][], raw); return String(val); } catch { return "—"; } })()}
+            {(() => { const raw = data[sel.r][sel.c]; try { const val = evaluateWithGrid(data as string[][], raw); return String(val); } catch { return "—"; } })()}
           </small>
         </div>
       </div>

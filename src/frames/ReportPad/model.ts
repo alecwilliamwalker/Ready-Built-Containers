@@ -1,5 +1,4 @@
-import { classifyBasic, trimTrailingEquals, tryParseDef } from "../../parsing/classify";
-import { evaluateExpression } from "../../engine/unified-integration";
+import { parse as parseUnified, evaluate as evaluateUnified, classifyInput } from "../../unified_parser";
 import { normalizeForParser } from "../../lib/text/normalize";
 
 export type LineKind = "def" | "expr" | "text";
