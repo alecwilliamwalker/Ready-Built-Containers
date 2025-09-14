@@ -1,3 +1,5 @@
+import { defineName, resolveName, defineVariable, resolveVariable, hasVariable } from '../referencing/names';
+
 export type Grid = string[][];
 
 const colToIndex = (col: string) =>
@@ -28,10 +30,50 @@ function getCellValue(grid: Grid, ref: string, visiting: Set<string>): number {
 
 function tokenize(expr: string): string[] {
   const tokens: string[] = [];
-  const re = /\s*([A-Za-z]+\d+|\d+(?:\.\d+)?|\+|\-|\*|\/|\(|\))\s*/g;
+  const re = /\s*([A-Za-z]+\d+|[A-Za-z]+|\d+(?:\.\d+)?(?:\s*[A-Za-z]+)?|\+|\-|\*|\/|\(|\)|=)\s*/g;
   let m: RegExpExecArray | null;
-  while ((m = re.exec(expr)) !== null) tokens.push(m[1]);
+  while ((m = re.exec(expr)) !== null) {
+    const token = m[1].trim();
+    if (token) tokens.push(token);
+  }
   return tokens;
+}
+
+function isNamedVariable(token: string): boolean {
+  // Check if it's a named variable (not A1 reference, not number, not operator)
+  return /^[A-Za-z]+$/.test(token) && !isUnit(token);
+}
+
+function isUnit(token: string): boolean {
+  // Common engineering units
+  const units = ['ft', 'in', 'mm', 'm', 'cm', 'lb', 'lbs', 'kg', 'N', 'kN', 'psi', 'ksi', 'Pa', 'kPa', 'MPa', 's', 'sec'];
+  return units.includes(token.toLowerCase());
+}
+
+function getVariableValue(name: string, grid: Grid, visiting: Set<string>): number {
+  // Check for cycle in variable resolution
+  const varKey = `var:${name}`;
+  if (visiting.has(varKey)) {
+    throw new Error('#CYCLE!');
+  }
+  
+  // First check if it's a stored variable
+  const value = resolveVariable(name);
+  if (value !== undefined) {
+    return value;
+  }
+  
+  // Check if it's a named cell/block reference
+  const target = resolveName(name);
+  if (target) {
+    if (target.kind === "cell") {
+      return getCellValue(grid, target.ref, visiting);
+    }
+    // For now, return 0 for block references - could be enhanced later
+    return 0;
+  }
+  
+  throw new Error(`Undefined variable: ${name}`);
 }
 
 function toRpn(tokens: string[]): string[] {
@@ -39,7 +81,9 @@ function toRpn(tokens: string[]): string[] {
   const op: string[] = [];
   const prec: Record<string, number> = { "+": 1, "-": 1, "*": 2, "/": 2 };
   for (const t of tokens) {
-    if (/^\d/.test(t) || /^[A-Za-z]+\d+$/.test(t)) out.push(t);
+    if (/^\d/.test(t) || /^[A-Za-z]+\d+$/.test(t) || isNamedVariable(t)) {
+      out.push(t);
+    }
     else if (t in prec) {
       while (op.length && prec[op[op.length - 1]] >= prec[t]) out.push(op.pop()!);
       op.push(t);
@@ -58,6 +102,7 @@ function evalRpn(grid: Grid, rpn: string[], visiting: Set<string>): number {
   for (const t of rpn) {
     if (/^\d/.test(t)) st.push(parseFloat(t));
     else if (/^[A-Za-z]+\d+$/.test(t)) st.push(getCellValue(grid, t, visiting));
+    else if (isNamedVariable(t)) st.push(getVariableValue(t, grid, visiting));
     else {
       const b = st.pop(); const a = st.pop();
       if (a === undefined || b === undefined) throw new Error("Malformed expression");
@@ -70,13 +115,56 @@ function evalRpn(grid: Grid, rpn: string[], visiting: Set<string>): number {
 
 function evaluateWithVisited(grid: Grid, raw: string, visiting: Set<string>): number {
   const s = raw.trim();
-  if (!s.startsWith("=")) {
-    const n = Number(s);
-    if (Number.isFinite(n)) return n;
-    throw new Error("Not a formula/number");
+  
+  // Handle formulas (start with =)
+  if (s.startsWith("=")) {
+    const tokens = tokenize(s.slice(1));
+    return evalRpn(grid, toRpn(tokens), visiting);
   }
-  const tokens = tokenize(s.slice(1));
-  return evalRpn(grid, toRpn(tokens), visiting);
+  
+  // Handle variable assignments (e.g., "L = 5 ft", "Area = L * W")
+  const assignMatch = s.match(/^([A-Za-z]+)\s*=\s*(.+)$/);
+  if (assignMatch) {
+    const varName = assignMatch[1];
+    const valueStr = assignMatch[2].trim();
+    
+    // Add cycle detection for variable assignments
+    const varKey = `var:${varName}`;
+    if (visiting.has(varKey)) {
+      throw new Error('#CYCLE!');
+    }
+    visiting.add(varKey);
+    
+    try {
+      let exprValue: number;
+      
+      // Parse the value (could be number with units or expression)
+      const numMatch = valueStr.match(/^([\d.]+)(?:\s*([A-Za-z]+))?$/);
+      if (numMatch) {
+        exprValue = parseFloat(numMatch[1]);
+      } else {
+        // The value is an expression - evaluate it as an expression (not as a formula)
+        // This handles cases like "Area = L * W" without requiring "Area = =L * W"
+        const tokens = tokenize(valueStr);
+        exprValue = evalRpn(grid, toRpn(tokens), visiting);
+      }
+      
+      // Store the variable value directly
+      defineVariable(varName, exprValue);
+      
+      return exprValue;
+    } catch (error) {
+      throw new Error(`Invalid assignment value for ${varName}: ${valueStr} - ${error.message}`);
+    } finally {
+      visiting.delete(varKey);
+    }
+  }
+  
+  // Handle plain numbers
+  const n = Number(s);
+  if (Number.isFinite(n)) return n;
+  
+  throw new Error("Not a formula/number/assignment");
 }
 
 export function evaluate(grid: Grid, raw: string): number {
@@ -93,9 +181,19 @@ export function evaluateExpr(expr: string, getCell: (ref: string) => string): nu
   const rpn = toRpn(tokens);
   const st: number[] = [];
   for (const t of rpn) {
-    if (/^\d/.test(t)) st.push(parseFloat(t));
-    else if (/^[A-Za-z]+\d+$/.test(t)) st.push(getCellValueFromCb(t));
-    else {
+    if (/^\d/.test(t)) {
+      st.push(parseFloat(t));
+    } else if (/^[A-Za-z]+\d+$/.test(t)) {
+      st.push(getCellValueFromCb(t));
+    } else if (isNamedVariable(t)) {
+      // Handle variables in gridless context
+      const value = resolveVariable(t);
+      if (value !== undefined) {
+        st.push(value);
+      } else {
+        throw new Error(`Undefined variable: ${t}`);
+      }
+    } else {
       const b = st.pop(); const a = st.pop();
       if (a === undefined || b === undefined) throw new Error("Malformed expression");
       st.push(t === "+" ? a + b : t === "-" ? a - b : t === "*" ? a * b : a / b);
@@ -107,26 +205,62 @@ export function evaluateExpr(expr: string, getCell: (ref: string) => string): nu
 
 function evaluateGridless(raw: string, getCell: (ref: string) => string): number {
   const s = raw.trim();
-  if (!s.startsWith("=")) {
-    const n = Number(s);
-    if (Number.isFinite(n)) return n;
-    throw new Error("Not a formula/number");
-  }
-  const tokens = tokenize(s.slice(1));
-  // Reuse toRpn and eval with getCell via temporary gridless path
-  const rpn = toRpn(tokens);
-  const st: number[] = [];
-  for (const t of rpn) {
-    if (/^\d/.test(t)) st.push(parseFloat(t));
-    else if (/^[A-Za-z]+\d+$/.test(t)) {
-      const rawRef = getCell(t) ?? "";
-      st.push(evaluateGridless(rawRef, getCell));
-    } else {
-      const b = st.pop(); const a = st.pop();
-      if (a === undefined || b === undefined) throw new Error("Malformed expression");
-      st.push(t === "+" ? a + b : t === "-" ? a - b : t === "*" ? a * b : a / b);
+  
+  // Handle formulas (start with =)
+  if (s.startsWith("=")) {
+    const tokens = tokenize(s.slice(1));
+    const rpn = toRpn(tokens);
+    const st: number[] = [];
+    for (const t of rpn) {
+      if (/^\d/.test(t)) {
+        st.push(parseFloat(t));
+      } else if (/^[A-Za-z]+\d+$/.test(t)) {
+        const rawRef = getCell(t) ?? "";
+        st.push(evaluateGridless(rawRef, getCell));
+      } else if (isNamedVariable(t)) {
+        // Handle variables in gridless context
+        const value = resolveVariable(t);
+        if (value !== undefined) {
+          st.push(value);
+        } else {
+          throw new Error(`Undefined variable: ${t}`);
+        }
+      } else {
+        const b = st.pop(); const a = st.pop();
+        if (a === undefined || b === undefined) throw new Error("Malformed expression");
+        st.push(t === "+" ? a + b : t === "-" ? a - b : t === "*" ? a * b : a / b);
+      }
     }
+    if (st.length !== 1) throw new Error("Malformed expression");
+    return st[0];
   }
-  if (st.length !== 1) throw new Error("Malformed expression");
-  return st[0];
+  
+  // Handle variable assignments (e.g., "L = 5 ft", "Area = L * W") in gridless context
+  const assignMatch = s.match(/^([A-Za-z]+)\s*=\s*(.+)$/);
+  if (assignMatch) {
+    const varName = assignMatch[1];
+    const valueStr = assignMatch[2].trim();
+    
+    let exprValue: number;
+    
+    // Parse the value (could be number with units or expression)
+    const numMatch = valueStr.match(/^([\d.]+)(?:\s*([A-Za-z]+))?$/);
+    if (numMatch) {
+      exprValue = parseFloat(numMatch[1]);
+    } else {
+      // The value is an expression - use evaluateExpr to handle it
+      exprValue = evaluateExpr(valueStr, getCell);
+    }
+    
+    // Store the variable value directly
+    defineVariable(varName, exprValue);
+    
+    return exprValue;
+  }
+  
+  // Handle plain numbers
+  const n = Number(s);
+  if (Number.isFinite(n)) return n;
+  
+  throw new Error("Not a formula/number/assignment");
 }
