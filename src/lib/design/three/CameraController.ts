@@ -253,7 +253,7 @@ export class CameraController {
     this.pointerLockControls.removeEventListener("unlock", this.boundPointerUnlock);
     
     if (this.transformControls) {
-      this.transformControls.removeEventListener("dragging-changed", this.boundTransformDragging as any);
+      this.transformControls.removeEventListener("dragging-changed" as any, this.boundTransformDragging as any);
       this.scene.remove(this.transformControls);
       this.transformControls.dispose();
     }
@@ -282,7 +282,7 @@ export class CameraController {
 
     // Transform controls events
     if (this.transformControls) {
-      this.transformControls.addEventListener("dragging-changed", this.boundTransformDragging as any);
+      this.transformControls.addEventListener("dragging-changed" as any, this.boundTransformDragging as any);
     }
   }
 
