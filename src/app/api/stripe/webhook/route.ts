@@ -5,8 +5,6 @@ import { Prisma } from "@prisma/client";
 import prisma from "@/lib/db";
 import { getStripeClient, getStripeWebhookSecret } from "@/lib/stripe";
 
-const stripe = getStripeClient();
-
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   if (!session.id) {
     return;
@@ -42,6 +40,7 @@ async function handleCheckoutCanceled(session: Stripe.Checkout.Session) {
 }
 
 export async function POST(request: Request) {
+  const stripe = getStripeClient();
   const headersList = await headers();
   const signature = headersList.get("stripe-signature");
   if (!signature) {
