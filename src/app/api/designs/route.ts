@@ -52,9 +52,9 @@ export async function POST(request: Request) {
         name,
         shellLengthFt: shellLength,
         configJson: configData ?? {},
-        bomSelectionsJson: bomSelectionsJson ?? null,
+        bomSelectionsJson: bomSelectionsJson ?? undefined,
         priceCents: priceCents ?? 0,
-        previewImageUrl: previewImageUrl ?? null,
+        previewImageUrl: previewImageUrl ?? undefined,
       },
     });
 
