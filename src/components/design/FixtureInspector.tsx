@@ -198,7 +198,7 @@ export function FixtureInspector({
                 key={deg}
                 type="button"
                 size="sm"
-                variant={fixture.rotationDeg === deg ? "default" : "outline"}
+                variant={fixture.rotationDeg === deg ? "primary" : "outline"}
                 onClick={() => handleRotationChange(deg)}
                 className="flex-1"
               >
