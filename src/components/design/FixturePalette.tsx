@@ -49,7 +49,7 @@ export function FixturePalette({ catalog, onAddFixture }: FixturePaletteProps) {
   }, [catalog, categorized, activeCategory, search]);
 
   const handleDragStart = (
-    event: React.DragEvent<HTMLDivElement>,
+    event: React.DragEvent<HTMLElement>,
     item: ModuleCatalogItem
   ) => {
     event.dataTransfer.effectAllowed = "copy";
