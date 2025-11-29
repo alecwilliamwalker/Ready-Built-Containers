@@ -47,7 +47,7 @@ export async function POST(request: Request, { params }: RouteParams) {
         label: module.name,
         category: module.category as FixtureCategory,
         footprintFt: (module.schemaJson as { footprintFt?: { width: number; length: number } })?.footprintFt ?? { width: 2, length: 2 },
-        priceRule: (module.priceRuleJson as { baseCents?: number; perLinearFtCents?: number }) ?? { baseCents: 0 },
+        priceRule: { baseCents: 0, ...(module.priceRuleJson as { baseCents?: number; perLinearFtCents?: number }) },
       };
     }
 
