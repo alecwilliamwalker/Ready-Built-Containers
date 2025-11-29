@@ -42,11 +42,18 @@ export async function POST(request: Request, { params }: RouteParams) {
     const moduleCatalog = await prisma.moduleCatalog.findMany();
     const catalog: Record<string, ModuleCatalogItem> = {};
     for (const module of moduleCatalog) {
+      const schema = module.schemaJson as { 
+        footprintFt?: { width: number; length: number };
+        footprintAnchor?: "center" | "front-left" | "back-left";
+        mount?: "wall" | "floor";
+      };
       catalog[module.key] = {
         key: module.key,
         label: module.name,
         category: module.category as FixtureCategory,
-        footprintFt: (module.schemaJson as { footprintFt?: { width: number; length: number } })?.footprintFt ?? { width: 2, length: 2 },
+        footprintFt: schema?.footprintFt ?? { width: 2, length: 2 },
+        footprintAnchor: schema?.footprintAnchor ?? "center",
+        mount: schema?.mount ?? "floor",
         priceRule: { baseCents: 0, ...(module.priceRuleJson as { baseCents?: number; perLinearFtCents?: number }) },
       };
     }
