@@ -1,9 +1,9 @@
 import { defineConfig } from "@prisma/config";
-import { config as loadEnv } from "dotenv";
-import { resolve } from "path";
-
-loadEnv({ path: resolve(process.cwd(), ".env") });
+import path from "path";
 
 export default defineConfig({
-  schema: "./prisma/schema.prisma",
+  schema: path.join(__dirname, "prisma", "schema.prisma"),
+  seed: {
+    command: "npx ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts",
+  },
 });
