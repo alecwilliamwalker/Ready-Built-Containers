@@ -1,3 +1,4 @@
+import type { JSX } from "react";
 import type { FixtureCategory } from "@/types/design";
 
 export type FixtureIconProps = {
