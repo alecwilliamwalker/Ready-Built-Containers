@@ -9,8 +9,25 @@
 
 import type { ZoneTemplateConfig } from "./templates";
 
+type ExportedFixture = {
+  id: string;
+  catalogKey: string;
+  xFt: number;
+  yFt: number;
+  rotationDeg: number;
+};
+
 // PASTE YOUR EXPORTED DESIGN JSON HERE
-const exportedData = {
+const exportedData: {
+  shell: { id: string; lengthFt: number; widthFt: number; heightFt: number };
+  zones: Array<{
+    id: string;
+    name: string;
+    lengthFt: number;
+    widthFt: number;
+    fixtures: ExportedFixture[];
+  }>;
+} = {
     "shell": {
         "id": "shell-40",
         "lengthFt": 40,

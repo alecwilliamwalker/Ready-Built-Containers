@@ -51,9 +51,9 @@ export async function POST(request: Request) {
         userId: session.sub,
         name,
         shellLengthFt: shellLength,
-        configJson: configData,
+        configJson: configData ?? {},
         bomSelectionsJson: bomSelectionsJson ?? null,
-        priceCents,
+        priceCents: priceCents ?? 0,
         previewImageUrl: previewImageUrl ?? null,
       },
     });

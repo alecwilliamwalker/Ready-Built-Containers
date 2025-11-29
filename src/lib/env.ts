@@ -56,7 +56,7 @@ const DEV_DEFAULTS = {
   USER_JWT_SECRET: "dev-user-secret-please-change-me-654321",
 } as const;
 
-const rawEnv = {
+const rawEnv: Record<string, string | undefined> = {
   ...process.env,
   NODE_ENV: nodeEnv,
   DATABASE_URL:

@@ -232,7 +232,7 @@ export class CameraController {
    * Check if TransformControls is currently dragging
    */
   isTransformDragging(): boolean {
-    return this.transformControls?.dragging ?? false;
+    return (this.transformControls as unknown as { dragging?: boolean })?.dragging ?? false;
   }
 
   /**

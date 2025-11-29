@@ -645,8 +645,9 @@ export function createGenericBoxGeometry(
   widthFt: number,
   lengthFt: number,
   heightFt: number,
-  color: number = FIXTURE_MATERIALS.WOOD_CABINET
+  properties?: Record<string, unknown>
 ): THREE.Group {
+  const color = typeof properties?.color === "number" ? properties.color : FIXTURE_MATERIALS.WOOD_CABINET;
   const group = new THREE.Group();
 
   const w = ftToUnits(widthFt);

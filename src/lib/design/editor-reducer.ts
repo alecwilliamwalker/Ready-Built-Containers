@@ -653,8 +653,8 @@ export function designEditorReducer(
       const centerY = (startPoint.yFt + snappedEnd.yFt) / 2;
       
       // Determine which axis the wall is primarily along for length calculation
-      // Note: rotationDeg=0 now means wall is horizontal (after our 90° offset fix)
-      const isHorizontal = rotationDeg === 0 || rotationDeg === 180;
+      // Note: rotationDeg=0 means wall is horizontal, 90 means vertical
+      const isHorizontal = rotationDeg === 0;
       const effectiveLength = isHorizontal ? Math.abs(deltaY) : Math.abs(deltaX);
       
       const newFixture: FixtureConfig = {
