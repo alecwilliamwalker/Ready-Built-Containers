@@ -386,7 +386,7 @@ export class ContainerWallsRenderer {
    * Set which side is open (for camera viewing)
    */
   setOpenSide(side: WallSide): void {
-    if (side !== this.openSide) {
+    if (!this.openSides.has(side)) {
       // Would need to re-render walls
       // For now, this requires calling render() again
     }
