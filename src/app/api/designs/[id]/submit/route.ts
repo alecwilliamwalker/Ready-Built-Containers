@@ -6,7 +6,8 @@ import { formatCurrencyCents } from "@/lib/format";
 import { calculateBOM } from "@/lib/design/bom-calculator";
 import { generatePDFBuffer } from "@/lib/design/pdf-export-server";
 import { generateExcelBuffer } from "@/lib/design/excel-export-server";
-import type { DesignConfig, ModuleCatalogItem, FixtureCategory } from "@/types/design";
+import type { DesignConfig } from "@/types/design";
+import { entriesToCatalogMap } from "@/lib/design/catalog-utils";
 import type { BOMSelections } from "@/types/bom";
 import { DEFAULT_BOM_SELECTIONS } from "@/types/bom";
 
@@ -40,23 +41,17 @@ export async function POST(request: Request, { params }: RouteParams) {
 
     // Load module catalog for BOM calculation
     const moduleCatalog = await prisma.moduleCatalog.findMany();
-    const catalog: Record<string, ModuleCatalogItem> = {};
-    for (const module of moduleCatalog) {
-      const schema = module.schemaJson as { 
-        footprintFt?: { width: number; length: number };
-        footprintAnchor?: "center" | "front-left" | "back-left";
-        mount?: "wall" | "floor";
-      };
-      catalog[module.key] = {
-        key: module.key,
-        label: module.name,
-        category: module.category as FixtureCategory,
-        footprintFt: schema?.footprintFt ?? { width: 2, length: 2 },
-        footprintAnchor: schema?.footprintAnchor ?? "center",
-        mount: schema?.mount ?? "floor",
-        priceRule: { baseCents: 0, ...(module.priceRuleJson as { baseCents?: number; perLinearFtCents?: number }) },
-      };
-    }
+    const catalog = entriesToCatalogMap(
+      moduleCatalog.map((m) => ({
+        id: m.id,
+        key: m.key,
+        name: m.name,
+        category: m.category,
+        schemaJson: m.schemaJson as Record<string, unknown>,
+        priceRuleJson: m.priceRuleJson as Record<string, unknown>,
+        createdAt: m.createdAt.toISOString(),
+      }))
+    );
 
     // Get BOM selections from design or use defaults
     const bomSelections: BOMSelections = (design.bomSelectionsJson as BOMSelections) ?? DEFAULT_BOM_SELECTIONS;
