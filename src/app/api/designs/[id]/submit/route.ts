@@ -6,7 +6,7 @@ import { formatCurrencyCents } from "@/lib/format";
 import { calculateBOM } from "@/lib/design/bom-calculator";
 import { generatePDFBuffer } from "@/lib/design/pdf-export-server";
 import { generateExcelBuffer } from "@/lib/design/excel-export-server";
-import type { DesignConfig, ModuleCatalogItem } from "@/types/design";
+import type { DesignConfig, ModuleCatalogItem, FixtureCategory } from "@/types/design";
 import type { BOMSelections } from "@/types/bom";
 import { DEFAULT_BOM_SELECTIONS } from "@/types/bom";
 
@@ -45,7 +45,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       catalog[module.key] = {
         key: module.key,
         label: module.name,
-        category: module.category,
+        category: module.category as FixtureCategory,
         footprintFt: (module.schemaJson as { footprintFt?: { width: number; length: number } })?.footprintFt ?? { width: 2, length: 2 },
         priceRule: (module.priceRuleJson as { baseCents?: number; perLinearFtCents?: number }) ?? { baseCents: 0 },
       };
