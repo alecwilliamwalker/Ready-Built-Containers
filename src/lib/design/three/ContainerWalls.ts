@@ -5,7 +5,13 @@
 
 import * as THREE from "three";
 import { ENVIRONMENT_COLORS, ftToUnits } from "./constants";
-import type { ShellConfig, FixtureConfig, ModuleCatalogItem } from "@/types/design";
+import type { FixtureConfig, ModuleCatalogItem } from "@/types/design";
+
+type ShellDimensions = {
+  lengthFt: number;
+  widthFt: number;
+  heightFt: number;
+};
 
 export type WallSide = "front" | "back" | "left" | "right";
 
@@ -39,7 +45,7 @@ export class ContainerWallsRenderer {
    *                    Default is ["front", "right"] for good camera visibility
    */
   render(
-    shell: ShellConfig,
+    shell: ShellDimensions,
     fixtures: FixtureConfig[],
     catalog: Record<string, ModuleCatalogItem>,
     openSides: WallSide | WallSide[] = ["front", "right"]
@@ -133,7 +139,7 @@ export class ContainerWallsRenderer {
   private findWindowOpenings(
     _fixtures: FixtureConfig[],
     _catalog: Record<string, ModuleCatalogItem>,
-    _shell: ShellConfig
+    _shell: ShellDimensions
   ): Array<WindowOpening & { side: WallSide }> {
     // Windows are now floating fixtures - they no longer auto-attach to walls
     // This function now returns empty array since windows render their own geometry

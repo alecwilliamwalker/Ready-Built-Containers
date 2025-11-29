@@ -7,7 +7,7 @@
  */
 
 import * as THREE from "three";
-import type { ZoneConfig, ShellConfig } from "@/types/design";
+import type { ZoneConfig } from "@/types/design";
 import { ftToUnits, ZONE_WALL_SETTINGS } from "./constants";
 
 type WallSegment = {
@@ -44,7 +44,7 @@ export class ZoneWallRenderer {
    * DEPRECATED - No longer renders any walls.
    * Interior walls are now managed as placeable fixtures.
    */
-  render(_zones: ZoneConfig[], _shell: ShellConfig): void {
+  render(_zones: ZoneConfig[], _shell: { lengthFt: number; widthFt: number; heightFt: number }): void {
     // Clear any existing walls and do nothing else
     // Interior walls are now added as fixtures through the UI
     this.clear();
@@ -198,7 +198,7 @@ export class ZoneWallRenderer {
   /**
    * Create a wall segment mesh with door gap
    */
-  private createWallSegment(segment: WallSegment, shell: ShellConfig): void {
+  private createWallSegment(segment: WallSegment, shell: { lengthFt: number; widthFt: number; heightFt: number }): void {
     const wallHeight = ftToUnits(ZONE_WALL_SETTINGS.HEIGHT_FT);
     const shellLength = ftToUnits(shell.lengthFt);
     const shellWidth = ftToUnits(shell.widthFt);
