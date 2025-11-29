@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Placeholder Image Preview - Ready Built Containers</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f8fafc;
+      padding: 2rem;
+      color: #1e293b;
+    }
+    
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      color: #0f172a;
+    }
+    
+    .subtitle {
+      color: #64748b;
+      margin-bottom: 3rem;
+      font-size: 1rem;
+    }
+    
+    .model-section {
+      background: white;
+      border-radius: 1rem;
+      padding: 2rem;
+      margin-bottom: 3rem;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+    
+    .model-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      color: #314c3a;
+      border-bottom: 2px solid #10b981;
+      padding-bottom: 0.5rem;
+    }
+    
+    .image-grid {
+      display: grid;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    .image-card {
+      background: #f8fafc;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .image-card h3 {
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      margin-bottom: 0.75rem;
+    }
+    
+    .image-card img {
+      width: 100%;
+      height: auto;
+      border-radius: 0.5rem;
+      border: 1px solid #cbd5e1;
+    }
+    
+    .image-card .meta {
+      margin-top: 0.75rem;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      font-family: 'Courier New', monospace;
+    }
+    
+    @media (min-width: 768px) {
+      .image-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .image-grid.single {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .stats {
+      display: flex;
+      gap: 2rem;
+      padding: 1.5rem;
+      background: #ecfdf5;
+      border-radius: 0.5rem;
+      border: 1px solid #10b981;
+      margin-bottom: 3rem;
+    }
+    
+    .stat {
+      flex: 1;
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #314c3a;
+    }
+    
+    .stat-label {
+      font-size: 0.875rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+  <h1>🏗️ Placeholder Image Preview</h1>
+  <p class="subtitle">Generated SVG placeholders for Ready Built Containers cabin models</p>
+  
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-value">3</div>
+      <div class="stat-label">Models</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">11</div>
+      <div class="stat-label">Images</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">SVG</div>
+      <div class="stat-label">Format</div>
+    </div>
+  </div>
+  
+  <!-- Basecamp 20 -->
+  <div class="model-section">
+    <h2>Basecamp 20</h2>
+    <div class="image-grid">
+      <div class="image-card">
+        <h3>Exterior View</h3>
+        <img src="/images/models/basecamp-20-exterior.svg" alt="Basecamp 20 Exterior">
+        <div class="meta">/images/models/basecamp-20-exterior.svg</div>
+      </div>
+      <div class="image-card">
+        <h3>Floor Plan</h3>
+        <img src="/images/floorplans/basecamp-20-plan.svg" alt="Basecamp 20 Floor Plan">
+        <div class="meta">/images/floorplans/basecamp-20-plan.svg</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Basecamp 40 -->
+  <div class="model-section">
+    <h2>Basecamp 40</h2>
+    <div class="image-grid">
+      <div class="image-card">
+        <h3>Exterior View</h3>
+        <img src="/images/models/basecamp-40-exterior.svg" alt="Basecamp 40 Exterior">
+        <div class="meta">/images/models/basecamp-40-exterior.svg</div>
+      </div>
+      <div class="image-card">
+        <h3>Interior View</h3>
+        <img src="/images/models/basecamp-40-interior.svg" alt="Basecamp 40 Interior">
+        <div class="meta">/images/models/basecamp-40-interior.svg</div>
+      </div>
+    </div>
+    <div class="image-grid single">
+      <div class="image-card">
+        <h3>Floor Plan</h3>
+        <img src="/images/floorplans/basecamp-40-plan.svg" alt="Basecamp 40 Floor Plan">
+        <div class="meta">/images/floorplans/basecamp-40-plan.svg</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Outfitter 40 Plus -->
+  <div class="model-section">
+    <h2>Outfitter 40 Plus</h2>
+    <div class="image-grid">
+      <div class="image-card">
+        <h3>Exterior View</h3>
+        <img src="/images/models/outfitter-40-plus-exterior.svg" alt="Outfitter 40 Plus Exterior">
+        <div class="meta">/images/models/outfitter-40-plus-exterior.svg</div>
+      </div>
+      <div class="image-card">
+        <h3>Floor Plan</h3>
+        <img src="/images/floorplans/outfitter-40-plus-plan.svg" alt="Outfitter 40 Plus Floor Plan">
+        <div class="meta">/images/floorplans/outfitter-40-plus-plan.svg</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Process Page Images -->
+  <div class="model-section">
+    <h2>Process Page Images</h2>
+    <div class="image-grid">
+      <div class="image-card">
+        <h3>Step 1: Choose Your Model</h3>
+        <img src="/images/process-1-models.svg" alt="Model selection with floor plans">
+        <div class="meta">/images/process-1-models.svg</div>
+      </div>
+      <div class="image-card">
+        <h3>Step 2: Site & Permits</h3>
+        <img src="/images/process-2-permits.svg" alt="Permit documentation and site plan">
+        <div class="meta">/images/process-2-permits.svg</div>
+      </div>
+      <div class="image-card">
+        <h3>Step 3: Build & Spec</h3>
+        <img src="/images/process-3-shop.svg" alt="Shop fabrication">
+        <div class="meta">/images/process-3-shop.svg</div>
+      </div>
+      <div class="image-card">
+        <h3>Step 4: Delivery & Set</h3>
+        <img src="/images/process-4-delivery.svg" alt="Delivery truck with cabin">
+        <div class="meta">/images/process-4-delivery.svg</div>
+      </div>
+    </div>
+  </div>
+  
+  <div style="margin-top: 4rem; padding: 2rem; background: #fff; border-radius: 0.75rem; border: 1px solid #e2e8f0;">
+    <h3 style="margin-bottom: 1rem; color: #314c3a;">📋 Next Steps</h3>
+    <ul style="color: #64748b; line-height: 1.8; padding-left: 1.5rem;">
+      <li>Review placeholder images in your application</li>
+      <li>Test responsive behavior on mobile/tablet</li>
+      <li>Replace with professional photography when available</li>
+      <li>Run <code style="background: #f1f5f9; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-family: monospace;">node scripts/generate-placeholder-images.js</code> to regenerate model images</li>
+      <li>Run <code style="background: #f1f5f9; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-family: monospace;">node scripts/generate-process-images.js</code> to regenerate process images</li>
+    </ul>
+  </div>
+</body>
+</html>
+

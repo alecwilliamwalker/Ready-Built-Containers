@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  --background: #f4f1ea;
+  --foreground: #12171d;
+  --surface: #ffffff;
+  --surface-muted: #e4dfd7;
+  --muted: #242b32;
+  --accent: #c3662d;
+  --accent-strong: #9a4d1f;
+  --forest: #314c3a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-forest: var(--forest);
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.25rem;
+  --shadow-card: 0 20px 45px -25px rgba(17, 23, 29, 0.55);
+  --font-sans: var(--font-display);
+  --font-heading: var(--font-heading);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  min-height: 100vh;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@keyframes forest-pan {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-6%);
+  }
+}
+
+.hero-forest-pan {
+  animation: forest-pan 45s linear infinite alternate;
+}

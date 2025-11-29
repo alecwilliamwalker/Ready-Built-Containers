@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1200" viewBox="0 0 2400 1200" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="dusk" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#040910" />
+      <stop offset="40%" stop-color="#0a1726" />
+      <stop offset="100%" stop-color="#02060c" />
+    </linearGradient>
+    <linearGradient id="yardMist" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#0b1c2f" stop-opacity="0.85" />
+      <stop offset="1" stop-color="#0b1c2f" stop-opacity="0.35" />
+    </linearGradient>
+  </defs>
+
+  <rect width="2400" height="1200" fill="url(#dusk)" />
+
+  <g fill="#0b1a2c">
+    <path d="M0 620 L120 520 L220 600 L320 480 L420 620 L520 520 L640 660 L760 480 L880 640 L1000 520 L1120 700 L1240 500 L1360 620 L1480 520 L1600 640 L1720 500 L1840 700 L1960 520 L2080 660 L2200 520 L2320 720 V1200 H0Z" />
+    <path d="M0 780 L140 640 L260 720 L380 620 L520 760 L660 620 L780 760 L900 620 L1040 780 L1180 640 L1320 800 L1460 640 L1600 790 L1740 620 L1880 800 L2020 640 L2160 780 L2300 640 L2400 820 V1200 H0Z" opacity="0.75" />
+  </g>
+
+  <rect y="760" width="2400" height="440" fill="url(#yardMist)" />
+
+  <g>
+    <rect x="320" y="680" width="980" height="180" rx="24" fill="#132538" stroke="#1f3d5a" stroke-width="6" />
+    <rect x="360" y="700" width="420" height="140" fill="#1f3957" />
+    <rect x="800" y="700" width="360" height="140" fill="#102133" opacity="0.7" />
+    <rect x="1180" y="720" width="80" height="120" fill="#091524" opacity="0.65" />
+    <rect x="360" y="670" width="860" height="24" fill="#f08f42" opacity="0.85" />
+    <rect x="360" y="856" width="860" height="24" fill="#f08f42" opacity="0.65" />
+  </g>
+
+  <g fill="#0f1f33" opacity="0.85">
+    <path d="M2000 740 L2060 620 L2120 680 L2200 560 L2280 660 L2360 520 L2400 590 V1200 H2000Z" />
+  </g>
+
+  <circle cx="480" cy="880" r="38" fill="#091524" stroke="#1f3957" stroke-width="8" />
+  <circle cx="1080" cy="880" r="38" fill="#091524" stroke="#1f3957" stroke-width="8" />
+
+</svg>
+

@@ -1,0 +1,166 @@
+{
+  "App.css": [],
+  "App.tsx": [
+    "App.css",
+    "components/Tabs.tsx",
+    "components/TopBar.tsx",
+    "frames/ReportCanvas/ReportCanvas.tsx",
+    "history/History.ts",
+    "history/commands/sheet/PasteCommand.ts",
+    "history/commands/sheet/SetCellValueCommand.ts",
+    "history/ctx.ts",
+    "history/proxy.ts",
+    "input/hotkeys.ts",
+    "referencing/a1.ts",
+    "referencing/insertTarget.ts",
+    "referencing/names.ts",
+    "unified_parser.ts"
+  ],
+  "components/ErrorBoundary.tsx": [],
+  "components/FormulaBar.tsx": [],
+  "components/NameBox.tsx": [],
+  "components/Tabs.tsx": [],
+  "components/TopBar.tsx": [
+    "components/FormulaBar.tsx",
+    "components/NameBox.tsx"
+  ],
+  "debug/CrashOverlay.ts": [],
+  "engine/eval.test.ts": [],
+  "engine/graph.ts": [],
+  "engine/notes.ts": [
+    "referencing/a1.ts",
+    "unified_parser.ts"
+  ],
+  "engine/steps.ts": [
+    "referencing/a1.ts",
+    "unified_parser.ts"
+  ],
+  "engine/variable-integration.test.ts": [
+    "referencing/names.ts"
+  ],
+  "frames/ReportCanvas/CalcBox.tsx": [
+    "frames/ReportCanvas/drag.ts",
+    "frames/ReportCanvas/types.ts",
+    "lib/text/normalize.ts",
+    "referencing/insertTarget.ts"
+  ],
+  "frames/ReportCanvas/ReportCanvas.tsx": [
+    "frames/ReportCanvas/CalcBox.tsx",
+    "frames/ReportCanvas/compute.ts",
+    "frames/ReportCanvas/types.ts",
+    "frames/ReportPad/model.ts",
+    "history/commands/report/EditBoxCommand.ts",
+    "history/proxy.ts",
+    "lib/text/normalize.ts",
+    "referencing/a1.ts",
+    "referencing/insertTarget.ts",
+    "unified_parser.ts"
+  ],
+  "frames/ReportCanvas/ReportTabs.tsx": [
+    "frames/ReportCanvas/ReportCanvas.tsx"
+  ],
+  "frames/ReportCanvas/__tests__/report-undo.equation.spec.tsx": [
+    "frames/ReportCanvas/compute.ts"
+  ],
+  "frames/ReportCanvas/compute.ts": [
+    "frames/ReportCanvas/types.ts",
+    "frames/ReportPad/model.ts",
+    "referencing/a1.ts",
+    "unified_parser.ts"
+  ],
+  "frames/ReportCanvas/drag.ts": [],
+  "frames/ReportCanvas/types.ts": [],
+  "frames/ReportPad/CalcLine.tsx": [
+    "frames/ReportPad/model.ts"
+  ],
+  "frames/ReportPad/ReportPad.tsx": [
+    "frames/ReportPad/model.ts",
+    "referencing/a1.ts",
+    "unified_parser.ts"
+  ],
+  "frames/ReportPad/model.test.ts": [
+    "frames/ReportPad/model.ts"
+  ],
+  "frames/ReportPad/model.ts": [
+    "lib/text/normalize.ts",
+    "unified_parser.ts"
+  ],
+  "history/Command.ts": [],
+  "history/History.ts": [
+    "history/Command.ts"
+  ],
+  "history/commands/report/EditBoxCommand.ts": [
+    "history/Command.ts"
+  ],
+  "history/commands/sheet/PasteCommand.ts": [
+    "history/Command.ts"
+  ],
+  "history/commands/sheet/SetCellValueCommand.ts": [
+    "history/Command.ts"
+  ],
+  "history/ctx.ts": [
+    "history/Command.ts"
+  ],
+  "history/debug/MockCtx.ts": [
+    "history/Command.ts"
+  ],
+  "history/debug/SimpleHistoryRef.ts": [
+    "history/Command.ts"
+  ],
+  "history/debug/commands/EditBoxCommand.ts": [
+    "history/Command.ts"
+  ],
+  "history/debug/historyHarness.test.ts": [
+    "history/History.ts",
+    "history/commands/report/EditBoxCommand.ts",
+    "history/debug/MockCtx.ts",
+    "history/debug/SimpleHistoryRef.ts",
+    "history/debug/commands/EditBoxCommand.ts"
+  ],
+  "history/history.state.test.ts": [
+    "history/History.ts",
+    "history/commands/sheet/SetCellValueCommand.ts",
+    "history/ctx.ts"
+  ],
+  "history/proxy.ts": [
+    "history/History.ts"
+  ],
+  "index.css": [],
+  "index.tsx": [
+    "App.tsx"
+  ],
+  "input/hotkeys.test.tsx": [
+    "input/hotkeys.ts"
+  ],
+  "input/hotkeys.ts": [],
+  "lib/text/normalize.test.ts": [
+    "lib/text/normalize.ts"
+  ],
+  "lib/text/normalize.ts": [],
+  "main.tsx": [
+    "App.tsx",
+    "components/ErrorBoundary.tsx",
+    "debug/CrashOverlay.ts",
+    "index.css"
+  ],
+  "notebook/BlockEditor.tsx": [],
+  "notebook/BlockRenderer.tsx": [],
+  "notebook/NotebookView.tsx": [
+    "notebook/BlockEditor.tsx",
+    "notebook/BlockRenderer.tsx",
+    "notebook/notebookTypes.ts"
+  ],
+  "notebook/notebookTypes.ts": [],
+  "referencing/a1.test.ts": [
+    "referencing/a1.ts"
+  ],
+  "referencing/a1.ts": [],
+  "referencing/insertTarget.ts": [],
+  "referencing/names.ts": [],
+  "ui/Toolbar.tsx": [],
+  "unified_parser.ts": [
+    "lib/text/normalize.ts",
+    "referencing/names.ts"
+  ],
+  "vite-env.d.ts": []
+}

@@ -1,93 +1,62 @@
-# Engineering Notebook (React + TypeScript + Vite)
+# Ready Built Containers
 
-This app provides a minimal spreadsheet (Sheet) and a unit-aware report canvas (Report) with shared undo/redo.
+Production-ready marketing, lead generation, and light sales site for Ready Built Containers' shipping container hunting cabins. Built with Next.js (App Router), Tailwind CSS, Prisma, React Hook Form, Zod, Stripe, and Resend.
 
-## Quick start
+## Prerequisites
+
+- Node.js 20+
+- npm (or pnpm/yarn if you prefer)
+
+## Setup
+
+1. Install dependencies
+   ```bash
+   npm install
+   ```
+2. Copy the example environment file and adjust values as needed
+   ```bash
+   cp .env.example .env
+   ```
+   - `DATABASE_URL` defaults to SQLite for local development (`file:./prisma/dev.db`).
+   - Set Stripe and email keys before enabling reservation checkout or live notifications.
+3. Apply Prisma migrations and seed demo content
+   ```bash
+   npx prisma migrate dev
+   ```
+   This migrates the database and seeds default cabin models, floorplans, and an admin user.
+4. Start the development server
+   ```bash
+   npm run dev
+   ```
+   Visit http://localhost:3000.
+
+## Prisma & Database
+
+- Generated client lives at `@/lib/db`.
+- Seed script creates three standard models (`basecamp-20`, `basecamp-40`, `outfitter-40-plus`) along with floorplans and an admin login (`admin@readybuiltcontainers.com` / `readybuilt2025`, configurable via environment).
+- To swap to PostgreSQL in production, update `DATABASE_URL` and adjust `provider` in `prisma/schema.prisma` before running migrations.
+
+## Helpful Commands
 
 ```bash
-npm i
-npm run dev
-npm run lint
-npm run build
-npx vitest run
+npm run lint          # lint the codebase
+npx prisma studio     # inspect database data
+npx prisma migrate dev --name <migration-name>
 ```
 
-## Contributing notes
+## Environment Variables
 
-- A1 helpers are centralized in `src/referencing/a1.ts`. Use `indexToCol` and `parseAddress` from there.
-- Grid evaluator is canonical at `src/engine/eval.ts`. Other modules import from it.
-- Cycle detection: circular references throw `#CYCLE!` to avoid infinite recursion. Tests cover this behavior.
-- Parser fallback: the parser in `src/parser/*` supports +/− only. STAR/SLASH intentionally throw `__MULT_DIV_FALLBACK__` to signal higher-level fallback.
+See `.env.example` for the full list, including optional Calendly embed, Stripe configuration, email provider keys, and admin session secret. Key values:
 
-## Tests
+- `DATABASE_URL` – SQLite by default (`file:./prisma/dev.db`), swap to Postgres-compatible for production.
+- `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID_DEPOSIT`, `STRIPE_WEBHOOK_SECRET` – required for reservation checkout.
+- `EMAIL_API_KEY`, `EMAIL_FROM_ADDRESS`, `INTERNAL_NOTIFICATIONS_EMAIL` – used for Resend transactional email.
+- `ADMIN_JWT_SECRET` – 32+ character secret for admin auth cookies.
+- `NEXT_PUBLIC_CALENDLY_URL` – optional embedded scheduler.
+- `NEXT_PUBLIC_SITE_URL` – base URL used for Stripe redirects.
 
-- Unit tests rely on Vitest. Run all tests: `npx vitest run`.
-- Coverage includes history parity, evaluator (including cycles), A1 helpers, parser formatting/fallback, and report model (defs/units/VLOOKUP basics).
+## Adding Models & Media
 
-## ESLint configuration
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- Update `prisma/seed.ts` with new model specs, images, and floorplans. Use `npx prisma db seed` (or rerun `npx prisma migrate dev`) to repopulate local data.
+- Place hero and gallery assets under `public/images/models/` and plan diagrams under `public/images/floorplans/`. Reference them in Prisma seed and components with `/images/...` paths.
+- For ad-hoc admin additions, log into `/admin` (default credentials `admin@readybuiltcontainers.com` / `readybuilt2025`) and review new inquiries immediately after seeding.

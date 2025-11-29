@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#020817" />
+      <stop offset="45%" stop-color="#0b1222" />
+      <stop offset="100%" stop-color="#020817" />
+    </linearGradient>
+    <linearGradient id="fog" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#0b1629" stop-opacity="0.8" />
+      <stop offset="1" stop-color="#0b1629" stop-opacity="0.25" />
+    </linearGradient>
+    <linearGradient id="container" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#0e172a" />
+      <stop offset="1" stop-color="#152338" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1440" height="900" fill="url(#bg)" />
+
+  <g fill="#0f1f33" opacity="0.7">
+    <path d="M0 520 L80 420 L140 470 L200 380 L280 460 L320 410 L380 480 L440 390 L520 470 L560 430 L640 500 L720 380 L780 450 L860 360 L920 420 L1000 360 L1080 470 L1140 410 L1220 460 L1300 400 L1380 500 V900 H0Z" />
+    <path d="M0 560 L60 470 L120 510 L200 440 L260 520 L320 450 L380 520 L460 450 L520 520 L600 470 L660 540 L740 470 L820 520 L880 460 L960 540 L1020 500 L1100 560 L1180 500 L1260 560 L1340 500 L1440 580 V900 H0Z" opacity="0.7" />
+  </g>
+
+  <rect x="240" y="520" width="640" height="140" rx="14" fill="url(#container)" opacity="0.92" />
+  <rect x="240" y="520" width="640" height="140" fill="#1d2c3f" opacity="0.18" />
+  <rect x="260" y="540" width="110" height="100" fill="#152b3f" />
+  <rect x="390" y="540" width="170" height="100" fill="#1f3b55" />
+  <rect x="580" y="540" width="120" height="100" fill="#204a63" />
+  <rect x="720" y="540" width="140" height="100" fill="#27526d" />
+  <rect x="860" y="540" width="20" height="100" fill="#132131" />
+  <rect x="900" y="520" width="120" height="140" rx="12" fill="#0f1d2e" opacity="0.85" />
+  <rect x="918" y="560" width="84" height="68" fill="#13283f" />
+
+  <g opacity="0.25" fill="#88f7c5">
+    <circle cx="180" cy="180" r="2" />
+    <circle cx="360" cy="90" r="1.6" />
+    <circle cx="540" cy="150" r="1.4" />
+    <circle cx="720" cy="40" r="1.8" />
+    <circle cx="920" cy="120" r="2.1" />
+    <circle cx="1120" cy="80" r="1.7" />
+    <circle cx="1320" cy="200" r="1.5" />
+  </g>
+
+  <rect y="600" width="1440" height="300" fill="url(#fog)" />
+</svg>
+

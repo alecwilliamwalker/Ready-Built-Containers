@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1400" height="700" viewBox="0 0 1400 700" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="wall-outfitter-40-plus" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8fafc;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f1f5f9;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="floor-outfitter-40-plus" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#475569;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#334155;stop-opacity:1" />
+    </linearGradient>
+    <pattern id="wood-floor" x="0" y="0" width="120" height="20" patternUnits="userSpaceOnUse">
+      <rect width="120" height="20" fill="#334155"/>
+      <line x1="0" y1="0" x2="120" y2="0" stroke="#0f172a" stroke-width="1"/>
+      <line x1="60" y1="0" x2="60" y2="20" stroke="#0f172a" stroke-width="1" opacity="0.3"/>
+    </pattern>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1400" height="700" fill="#1e293b"/>
+  
+  <!-- Title -->
+  <text x="700" y="50" font-family="system-ui, -apple-system, sans-serif" 
+        font-size="32" font-weight="700" fill="white" text-anchor="middle">
+    Outfitter 40 Plus Interior Layout
+  </text>
+  <text x="700" y="80" font-family="system-ui, -apple-system, sans-serif" 
+        font-size="14" font-weight="500" fill="#10b981" text-anchor="middle" letter-spacing="2">
+    CUTAWAY VIEW • 40' × 8'
+  </text>
+  
+  <!-- Container shell outline -->
+  <rect x="50" y="120" width="1300" height="480" 
+        fill="none" stroke="#475569" stroke-width="4" rx="6"/>
+  
+  <!-- Floor -->
+  <rect x="50" y="500" width="1300" height="100" fill="url(#wood-floor)"/>
+  
+  <!-- Back wall -->
+  <rect x="50" y="120" width="1300" height="380" fill="url(#wall-outfitter-40-plus)"/>
+  
+  <!-- Zones -->
+  
+    <g>
+      <!-- Zone divider -->
+      
+      
+      <!-- Zone color overlay -->
+      <rect x="50" y="500" width="130" height="100" fill="#1e293b" opacity="0.3"/>
+      
+      <!-- Zone furniture/fixtures -->
+      
+        <rect x="66.25" y="400" width="60" height="100" 
+              fill="#334155" stroke="#0f172a" stroke-width="2" rx="4"/>
+        
+        <text x="96.25" y="455" 
+              font-family="system-ui" font-size="11" font-weight="600" 
+              fill="#f1f5f9" text-anchor="middle">
+          Gear Wall
+        </text>
+        
+        
+        <rect x="131.25" y="420" width="40" height="80" 
+              fill="#475569" stroke="#0f172a" stroke-width="2" rx="4"/>
+        
+        <text x="151.25" y="465" 
+              font-family="system-ui" font-size="11" font-weight="600" 
+              fill="#f1f5f9" text-anchor="middle">
+          Boots
+        </text>
+        
+        
+      
+      <!-- Zone label -->
+      <text x="115" y="640" font-family="system-ui" 
+            font-size="14" font-weight="600" fill="white" text-anchor="middle">
+        Gear Vestibule
+      </text>
+      <text x="115" y="660" font-family="system-ui" 
+            font-size="12" fill="#94a3b8" text-anchor="middle">
+        4'
+      </text>
+    </g>
+    
+    <g>
+      <!-- Zone divider -->
+      <line x1="180" y1="120" x2="180" y2="600" stroke="#94a3b8" stroke-width="2" stroke-dasharray="8 4"/>
+      
+      <!-- Zone color overlay -->
+      <rect x="180" y="500" width="520" height="100" fill="#314c3a" opacity="0.3"/>
+      
+      <!-- Zone furniture/fixtures -->
+      
+        <rect x="212.5" y="415" width="200" height="85" 
+              fill="#314c3a" stroke="#0f172a" stroke-width="2" rx="4"/>
+        
+        <text x="312.5" y="462.5" 
+              font-family="system-ui" font-size="11" font-weight="600" 
+              fill="#f1f5f9" text-anchor="middle">
+          Extended Counter
+        </text>
+        
+        
+        <rect x="440" y="425" width="140" height="75" 
+              fill="#334155" stroke="#0f172a" stroke-width="2" rx="4"/>
+        
+        <text x="510" y="467.5" 
+              font-family="system-ui" font-size="11" font-weight="600" 
+              fill="#f1f5f9" text-anchor="middle">
+          Dining Table
+        </text>
+        
+        
+        <rect x="602.5" y="430" width="70" height="70" 
+              fill="#475569" stroke="#0f172a" stroke-width="2" rx="4"/>
+        
+        <text x="637.5" y="470" 
+              font-family="system-ui" font-size="11" font-weight="600" 
+              fill="#f1f5f9" text-anchor="middle">
+          Seating
+        </text>
+        
+        
+      
+      <!-- Zone label -->
+      <text x="440" y="640" font-family="system-ui" 
+            font-size="14" font-weight="600" fill="white" text-anchor="middle">
+        Extended Galley
+      </text>
+      <text x="440" y="660" font-family="system-ui" 
+            font-size="12" fill="#94a3b8" text-anchor="middle">
+        16'
+      </text>
+    </g>
+    
+    <g>
+      <!-- Zone divider -->
+      <line x1="700" y1="120" x2="700" y2="600" stroke="#94a3b8" stroke-width="2" stroke-dasharray="8 4"/>
+      
+      <!-- Zone color overlay -->
+      <rect x="700" y="500" width="195" height="100" fill="#06b6d4" opacity="0.3"/>
+      
+      <!-- Zone furniture/fixtures -->
+      
+        <rect x="716.25" y="425" width="70" height="75" 
+              fill="#f1f5f9" stroke="#0f172a" stroke-width="2" rx="4"/>
+        
+        <text x="751.25" y="467.5" 
+              font-family="system-ui" font-size="11" font-weight="600" 
+              fill="#f1f5f9" text-anchor="middle">
+          Vanity
+        </text>
+        
+        
+        <rect x="797.5" y="440" width="60" height="60" 
+              fill="#f1f5f9" stroke="#0f172a" stroke-width="2" rx="4"/>
+        
+        <text x="827.5" y="475" 
+              font-family="system-ui" font-size="11" font-weight="600" 
+              fill="#f1f5f9" text-anchor="middle">
+          WC
+        </text>
+        
+        
+        <rect x="846.25" y="415" width="50" height="85" 
+              fill="#f1f5f9" stroke="#0f172a" stroke-width="2" rx="4"/>
+        
+        <text x="871.25" y="462.5" 
+              font-family="system-ui" font-size="11" font-weight="600" 
+              fill="#f1f5f9" text-anchor="middle">
+          Shower
+        </text>
+        
+        
+      
+      <!-- Zone label -->
+      <text x="797.5" y="640" font-family="system-ui" 
+            font-size="14" font-weight="600" fill="white" text-anchor="middle">
+        Full Bath
+      </text>
+      <text x="797.5" y="660" font-family="system-ui" 
+            font-size="12" fill="#94a3b8" text-anchor="middle">
+        6'
+      </text>
+    </g>
+    
+    <g>
+      <!-- Zone divider -->
+      <line x1="895" y1="120" x2="895" y2="600" stroke="#94a3b8" stroke-width="2" stroke-dasharray="8 4"/>
+      
+      <!-- Zone color overlay -->
+      <rect x="895" y="500" width="454.99999999999994" height="100" fill="#0ea5e9" opacity="0.3"/>
+      
+      <!-- Zone furniture/fixtures -->
+      
+        <rect x="927.5" y="455" width="75" height="45" 
+              fill="#1e293b" stroke="#0f172a" stroke-width="2" rx="4"/>
+        
+        <text x="965" y="482.5" 
+              font-family="system-ui" font-size="11" font-weight="600" 
+              fill="#f1f5f9" text-anchor="middle">
+          Bunk 1
+        </text>
+        
+        
+        <rect x="927.5" y="455" width="75" height="45" 
+              fill="#1e293b" stroke="#0f172a" stroke-width="2" rx="4"/>
+        
+        <text x="965" y="482.5" 
+              font-family="system-ui" font-size="11" font-weight="600" 
+              fill="#f1f5f9" text-anchor="middle">
+          Bunk 2
+        </text>
+        
+        
+        <rect x="1057.5" y="455" width="75" height="45" 
+              fill="#1e293b" stroke="#0f172a" stroke-width="2" rx="4"/>
+        
+        <text x="1095" y="482.5" 
+              font-family="system-ui" font-size="11" font-weight="600" 
+              fill="#f1f5f9" text-anchor="middle">
+          Bunk 3
+        </text>
+        
+        
+        <rect x="1057.5" y="455" width="75" height="45" 
+              fill="#1e293b" stroke="#0f172a" stroke-width="2" rx="4"/>
+        
+        <text x="1095" y="482.5" 
+              font-family="system-ui" font-size="11" font-weight="600" 
+              fill="#f1f5f9" text-anchor="middle">
+          Bunk 4
+        </text>
+        
+        
+        <rect x="1187.5" y="455" width="75" height="45" 
+              fill="#1e293b" stroke="#0f172a" stroke-width="2" rx="4"/>
+        
+        <text x="1225" y="482.5" 
+              font-family="system-ui" font-size="11" font-weight="600" 
+              fill="#f1f5f9" text-anchor="middle">
+          Bunk 5
+        </text>
+        
+        
+        <rect x="1187.5" y="455" width="75" height="45" 
+              fill="#1e293b" stroke="#0f172a" stroke-width="2" rx="4"/>
+        
+        <text x="1225" y="482.5" 
+              font-family="system-ui" font-size="11" font-weight="600" 
+              fill="#f1f5f9" text-anchor="middle">
+          Bunk 6
+        </text>
+        
+        
+        <rect x="1285" y="390" width="50" height="110" 
+              fill="#334155" stroke="#0f172a" stroke-width="2" rx="4"/>
+        
+        <text x="1310" y="450" 
+              font-family="system-ui" font-size="11" font-weight="600" 
+              fill="#f1f5f9" text-anchor="middle">
+          Firearms
+        </text>
+        
+        
+      
+      <!-- Zone label -->
+      <text x="1122.5" y="640" font-family="system-ui" 
+            font-size="14" font-weight="600" fill="white" text-anchor="middle">
+        6-Bunk Bay
+      </text>
+      <text x="1122.5" y="660" font-family="system-ui" 
+            font-size="12" fill="#94a3b8" text-anchor="middle">
+        14'
+      </text>
+    </g>
+    
+  
+  <!-- Windows on back wall -->
+  <rect x="250" y="180" width="140" height="180" fill="#0ea5e9" opacity="0.3" stroke="#334155" stroke-width="3" rx="4"/>
+  <line x1="320" y1="180" x2="320" y2="360" stroke="#334155" stroke-width="2"/>
+  <line x1="250" y1="270" x2="390" y2="270" stroke="#334155" stroke-width="2"/>
+  
+  
+  <rect x="900" y="180" width="140" height="180" fill="#0ea5e9" opacity="0.3" stroke="#334155" stroke-width="3" rx="4"/>
+  <line x1="970" y1="180" x2="970" y2="360" stroke="#334155" stroke-width="2"/>
+  <line x1="900" y1="270" x2="1040" y2="270" stroke="#334155" stroke-width="2"/>
+  
+</svg>

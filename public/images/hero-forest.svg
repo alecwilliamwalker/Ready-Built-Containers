@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3600" height="2000" viewBox="0 0 3600 2000" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#030712" />
+      <stop offset="40%" stop-color="#071323" />
+      <stop offset="100%" stop-color="#02060f" />
+    </linearGradient>
+    <linearGradient id="mist" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#071427" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#0a182c" stop-opacity="0.35" />
+    </linearGradient>
+    <linearGradient id="treeShade" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#0f1f33" />
+      <stop offset="100%" stop-color="#07121f" />
+    </linearGradient>
+  </defs>
+
+  <rect width="3600" height="2000" fill="url(#sky)" />
+
+  <g fill="#0b1a2c" opacity="0.8">
+    <path d="M0 1100 L120 940 L200 1040 L320 900 L460 1080 L520 980 L640 1120 L780 880 L920 1080 L1080 940 L1240 1160 L1400 860 L1560 1020 L1720 900 L1880 1040 L2040 900 L2200 1140 L2360 960 L2540 1100 L2700 920 L2860 1180 L3040 1000 L3200 1120 L3360 940 L3520 1220 V2000 H0Z" />
+    <path d="M0 1280 L100 1100 L200 1180 L340 1040 L460 1200 L600 1060 L720 1220 L880 1020 L1040 1260 L1180 1100 L1340 1320 L1500 1080 L1680 1240 L1840 1080 L2020 1280 L2180 1140 L2360 1340 L2540 1120 L2720 1320 L2880 1140 L3060 1380 L3240 1180 L3400 1340 L3560 1200 V2000 H0Z" opacity="0.75" />
+  </g>
+
+  <rect y="1320" width="3600" height="680" fill="url(#mist)" />
+
+  <g fill="url(#treeShade)" opacity="0.9">
+    <path d="M-120 1500 L40 1200 L100 1320 L160 1200 L240 1400 L320 1180 L400 1400 L460 1280 L520 1420 L600 1240 L680 1460 L760 1200 L820 1380 L900 1240 L980 1420 L1040 1280 L1120 1480 L1180 1280 L1260 1480 L1340 1300 L1400 1520 L1500 1300 L1580 1480 L1660 1320 L1740 1500 L1820 1320 L1900 1520 L1980 1300 L2060 1500 L2140 1340 L2220 1480 L2300 1320 L2380 1500 L2460 1320 L2540 1500 L2620 1340 L2700 1520 L2780 1320 L2860 1500 L2940 1340 L3020 1500 L3100 1340 L3180 1500 L3260 1340 L3340 1520 L3420 1340 L3500 1520 L3580 1340 L3660 1540 V2000 H-120Z" />
+  </g>
+
+  <rect y="1500" width="3600" height="500" fill="#050b16" opacity="0.75" />
+</svg>
+
