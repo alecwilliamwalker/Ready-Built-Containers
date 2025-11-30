@@ -27,13 +27,13 @@ async function seedModels() {
       basePrice: 5100000,
       images: [
         {
-          url: "/images/models/standard/exterior-front-deck.jpg",
-          alt: "Standard front exterior deck and entry",
+          url: "/images/models/standard/exterior-full-length.jpg",
+          alt: "Standard full length exterior side view",
           sortOrder: 0,
         },
         {
-          url: "/images/models/standard/exterior-full-length.jpg",
-          alt: "Standard full length exterior side view",
+          url: "/images/models/standard/exterior-front-deck.jpg",
+          alt: "Standard front exterior deck and entry",
           sortOrder: 1,
         },
         {
