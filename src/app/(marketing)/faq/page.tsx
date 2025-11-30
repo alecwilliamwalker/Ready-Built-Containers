@@ -12,7 +12,7 @@ const faqs: FAQItem[] = [
   {
     question: "How much does a cabin really cost?",
     answer:
-      "Basecamp 40 starts at $118k delivered within 300 miles of Audubon, IA. Most turn-key packages (finishes, off-grid kit, extended delivery) run $145k-$185k. We publish a detailed price sheet during your quote.",
+      "The Standard starts at $51k delivered within 300 miles of Audubon, IA. We publish a detailed price sheet during your quote.",
   },
   {
     question: "Do I handle permits or do you?",

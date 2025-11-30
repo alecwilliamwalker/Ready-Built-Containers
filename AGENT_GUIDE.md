@@ -127,7 +127,7 @@ prisma/
 public/images/
 ├── models/                       # Product photography
 │   ├── heroes/                   # Hero images for model pages
-│   └── basecamp-40-real/         # Real photos
+│   └── standard/                 # Real photos
 ├── floorplans/                   # SVG floor plan diagrams
 ├── process-*.svg                 # Process timeline images
 └── hero-*.svg                    # Homepage hero assets

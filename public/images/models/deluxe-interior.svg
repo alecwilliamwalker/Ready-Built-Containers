@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="1400" height="700" viewBox="0 0 1400 700" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="wall-outfitter-40-plus" x1="0%" y1="0%" x2="0%" y2="100%">
+    <linearGradient id="wall-deluxe" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#f8fafc;stop-opacity:1" />
       <stop offset="100%" style="stop-color:#f1f5f9;stop-opacity:1" />
     </linearGradient>
-    <linearGradient id="floor-outfitter-40-plus" x1="0%" y1="0%" x2="0%" y2="100%">
+    <linearGradient id="floor-deluxe" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#475569;stop-opacity:1" />
       <stop offset="100%" style="stop-color:#334155;stop-opacity:1" />
     </linearGradient>
@@ -22,7 +22,7 @@
   <!-- Title -->
   <text x="700" y="50" font-family="system-ui, -apple-system, sans-serif" 
         font-size="32" font-weight="700" fill="white" text-anchor="middle">
-    Outfitter 40 Plus Interior Layout
+    Deluxe Interior Layout
   </text>
   <text x="700" y="80" font-family="system-ui, -apple-system, sans-serif" 
         font-size="14" font-weight="500" fill="#10b981" text-anchor="middle" letter-spacing="2">
@@ -37,7 +37,7 @@
   <rect x="50" y="500" width="1300" height="100" fill="url(#wood-floor)"/>
   
   <!-- Back wall -->
-  <rect x="50" y="120" width="1300" height="380" fill="url(#wall-outfitter-40-plus)"/>
+  <rect x="50" y="120" width="1300" height="380" fill="url(#wall-deluxe)"/>
   
   <!-- Zones -->
   

@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import type { ZoneType, TemplateTier } from "@/lib/design/templates";
 import {
-  ZONE_INFO,
-  getZoneTemplatesByZone,
+  CABIN_TEMPLATES,
   buildDesignFromZoneSelections,
-  calculateTotalPrice
 } from "@/lib/design/templates";
+import type { CabinTemplate } from "@/lib/design/templates";
 import type { DesignConfig } from "@/types/design";
 import { Button } from "@/components/ui/Button";
 import { formatCurrencyCents } from "@/lib/format";
@@ -16,35 +14,19 @@ export type TemplateSelectorProps = {
   onSelectTemplate: (design: DesignConfig | null) => void;
 };
 
-const TIERS: { id: TemplateTier; label: string }[] = [
-  { id: "basic", label: "Basic" },
-  { id: "standard", label: "Standard" },
-  { id: "ultimate", label: "Ultimate" },
-];
-
-const ZONE_ORDER: ZoneType[] = ["kitchen-living", "bath-hallway", "hallway", "bedroom"];
-
 export function TemplateSelector({ onSelectTemplate }: TemplateSelectorProps) {
-  const [selectedZones, setSelectedZones] = useState<Record<ZoneType, TemplateTier | "">>({
-    "kitchen-living": "basic",
-    "bath-hallway": "basic",
-    "hallway": "basic",
-    "bedroom": "basic",
-  });
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>(
+    CABIN_TEMPLATES[0]?.id ?? ""
+  );
 
-  const handleZoneChange = (zone: ZoneType, tier: TemplateTier | "") => {
-    setSelectedZones(prev => ({
-      ...prev,
-      [zone]: tier,
-    }));
-  };
-
-  const allZonesSelected = ZONE_ORDER.every(zone => selectedZones[zone] !== "");
+  const selectedTemplate = CABIN_TEMPLATES.find(
+    (t) => t.id === selectedTemplateId
+  );
 
   const handleStartDesigning = () => {
-    if (!allZonesSelected) return;
+    if (!selectedTemplate) return;
 
-    const design = buildDesignFromZoneSelections(selectedZones as Record<ZoneType, TemplateTier>);
+    const design = buildDesignFromZoneSelections(selectedTemplate.zoneSelections);
     onSelectTemplate(design);
   };
 
@@ -52,11 +34,9 @@ export function TemplateSelector({ onSelectTemplate }: TemplateSelectorProps) {
     onSelectTemplate(null);
   };
 
-  const totalPrice = calculateTotalPrice(selectedZones);
-
   return (
     <div className="min-h-screen bg-slate-950 pt-[56px]">
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
+      <div className="container mx-auto px-4 py-8 max-w-xl">
         <div className="rounded-3xl border border-surface-muted/60 bg-white p-8 shadow-2xl">
           <div className="mb-8 text-center">
             <h1 className="text-3xl font-bold text-foreground">Choose Your Layout</h1>
@@ -65,80 +45,45 @@ export function TemplateSelector({ onSelectTemplate }: TemplateSelectorProps) {
             </p>
           </div>
 
-          <div className="space-y-6 pb-20">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-foreground/60">
-              Select Category
-            </h2>
+          <div className="space-y-6">
+            <div>
+              <label
+                htmlFor="cabin-template"
+                className="block text-sm font-semibold uppercase tracking-[0.3em] text-foreground/60 mb-3"
+              >
+                Select a Template
+              </label>
 
-            {/* Zone Selection Cards */}
-            <div className="grid gap-6 md:grid-cols-2">
-              {ZONE_ORDER.map((zone) => {
-                const zoneInfo = ZONE_INFO[zone];
-                const templates = getZoneTemplatesByZone(zone);
-                const selectedTier = selectedZones[zone];
+              <select
+                id="cabin-template"
+                value={selectedTemplateId}
+                onChange={(e) => setSelectedTemplateId(e.target.value)}
+                className="w-full rounded-lg border border-surface-muted/60 bg-white px-4 py-3 text-base text-foreground transition-colors hover:border-forest focus:border-forest focus:outline-none focus:ring-2 focus:ring-forest/20"
+                suppressHydrationWarning={true}
+              >
+                {CABIN_TEMPLATES.map((template) => (
+                  <option key={template.id} value={template.id}>
+                    {template.name} - {formatCurrencyCents(template.priceCents)}
+                  </option>
+                ))}
+              </select>
 
-                return (
-                  <div
-                    key={zone}
-                    className="rounded-2xl border-2 border-surface-muted/60 bg-surface p-6 transition-all hover:border-forest hover:shadow-lg"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="text-xl font-bold text-foreground">
-                          {zoneInfo.label}
-                        </h3>
-                        <p className="mt-1 text-sm text-foreground/60">{zoneInfo.description}</p>
-                        <p className="mt-1 text-xs text-foreground/40">
-                          {zoneInfo.defaultLengthFt}' length
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-4">
-                      <select
-                        value={selectedTier}
-                        onChange={(e) => handleZoneChange(zone, e.target.value as TemplateTier | "")}
-                        className="w-full rounded-lg border border-surface-muted/60 bg-white px-3 py-2 text-sm text-foreground transition-colors hover:border-forest focus:border-forest focus:outline-none focus:ring-2 focus:ring-forest/20"
-                        suppressHydrationWarning={true}
-                      >
-                        <option value="">Select tier...</option>
-                        {TIERS.map((tier) => {
-                          const template = templates.find((t) => t.tier === tier.id);
-                          if (!template) return null;
-                          return (
-                            <option key={tier.id} value={tier.id}>
-                              {tier.label} - {formatCurrencyCents(template.priceCents)}
-                            </option>
-                          );
-                        })}
-                      </select>
-                    </div>
-                  </div>
-                );
-              })}
+              {selectedTemplate && (
+                <p className="mt-2 text-sm text-foreground/60">
+                  {selectedTemplate.description}
+                </p>
+              )}
             </div>
 
-            {/* Total Price Display */}
-            {allZonesSelected && (
-              <div className="rounded-xl border border-forest/20 bg-forest/5 p-4 text-center">
-                <div className="text-sm font-semibold uppercase tracking-wide text-foreground/60">
-                  Total Estimated Price
-                </div>
-                <div className="mt-1 text-3xl font-bold text-forest">
-                  {formatCurrencyCents(totalPrice)}
-                </div>
-              </div>
-            )}
-
             {/* Action Buttons */}
-            <div className="mt-8 space-y-3 border-t border-surface-muted/40 pt-6">
+            <div className="space-y-3 border-t border-surface-muted/40 pt-6">
               <Button
                 type="button"
                 className="w-full"
                 onClick={handleStartDesigning}
-                disabled={!allZonesSelected}
+                disabled={!selectedTemplate}
               >
-                {allZonesSelected ? "Start Designing" : "Select all zones to continue"}
+                Start Designing
               </Button>
 
               <Button

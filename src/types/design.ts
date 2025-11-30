@@ -286,13 +286,14 @@ export type DesignAction =
     fixtureWidth?: number;
     fixtureHeight?: number;
     footprintAnchor?: "center" | "front-left" | "back-left";
+    skipSnap?: boolean;  // Skip grid snapping (for mobile)
   }
   | { type: "END_DRAG" }
   | { type: "START_MARQUEE"; origin: { x: number; y: number } }
   | { type: "UPDATE_MARQUEE"; current: { x: number; y: number } }
   | { type: "END_MARQUEE" }
-  | { type: "PAN_VIEWPORT"; deltaPx: { x: number; y: number } }
-  | { type: "ZOOM_VIEWPORT"; deltaScale: number; centerPx?: { x: number; y: number } }
+  | { type: "PAN_VIEWPORT"; deltaPx: { x: number; y: number }; bounds?: { minX: number; maxX: number; minY: number; maxY: number } }
+  | { type: "ZOOM_VIEWPORT"; deltaScale: number; centerPx?: { x: number; y: number }; bounds?: { minX: number; maxX: number; minY: number; maxY: number } }
   | { type: "SET_VIEWPORT"; viewport: ViewportState }
   | { type: "SET_SNAP_INCREMENT"; snapIncrement: number }
   // Zone editing actions

@@ -10,26 +10,11 @@
   <!-- Background -->
   <rect width="800" height="400" fill="url(#bg-models)"/>
   
-  <!-- Three floor plan cards -->
-  <!-- Basecamp 20 -->
-  <g transform="translate(40, 80)">
-    <rect width="200" height="240" fill="white" stroke="#cbd5e1" stroke-width="2" rx="8"/>
-    <text x="100" y="30" font-family="system-ui" font-size="14" font-weight="600" fill="#0f172a" text-anchor="middle">Basecamp 20</text>
-    
-    <!-- Mini floor plan -->
-    <rect x="20" y="50" width="160" height="140" fill="#f1f5f9" rx="4"/>
-    <rect x="25" y="55" width="30" height="130" fill="#1e293b" opacity="0.3" rx="2"/>
-    <rect x="60" y="55" width="60" height="130" fill="#314c3a" opacity="0.3" rx="2"/>
-    <rect x="125" y="55" width="30" height="130" fill="#06b6d4" opacity="0.3" rx="2"/>
-    <rect x="160" y="55" width="15" height="130" fill="#0ea5e9" opacity="0.3" rx="2"/>
-    
-    <text x="100" y="215" font-family="system-ui" font-size="11" fill="#475569" text-anchor="middle">20' Compact</text>
-  </g>
-  
-  <!-- Basecamp 40 -->
-  <g transform="translate(280, 80)">
+  <!-- Two floor plan cards -->
+  <!-- Standard -->
+  <g transform="translate(150, 80)">
     <rect width="200" height="240" fill="white" stroke="#10b981" stroke-width="3" rx="8"/>
-    <text x="100" y="30" font-family="system-ui" font-size="14" font-weight="600" fill="#314c3a" text-anchor="middle">Basecamp 40</text>
+    <text x="100" y="30" font-family="system-ui" font-size="14" font-weight="600" fill="#314c3a" text-anchor="middle">Standard</text>
     
     <!-- Mini floor plan -->
     <rect x="20" y="50" width="160" height="140" fill="#f1f5f9" rx="4"/>
@@ -42,10 +27,10 @@
     <circle cx="100" cy="230" r="3" fill="#10b981"/>
   </g>
   
-  <!-- Outfitter 40 Plus -->
-  <g transform="translate(520, 80)">
+  <!-- Deluxe -->
+  <g transform="translate(450, 80)">
     <rect width="200" height="240" fill="white" stroke="#cbd5e1" stroke-width="2" rx="8"/>
-    <text x="100" y="30" font-family="system-ui" font-size="14" font-weight="600" fill="#0f172a" text-anchor="middle">Outfitter 40+</text>
+    <text x="100" y="30" font-family="system-ui" font-size="14" font-weight="600" fill="#0f172a" text-anchor="middle">Deluxe</text>
     
     <!-- Mini floor plan -->
     <rect x="20" y="50" width="160" height="140" fill="#f1f5f9" rx="4"/>
@@ -54,6 +39,6 @@
     <rect x="110" y="55" width="25" height="130" fill="#06b6d4" opacity="0.3" rx="2"/>
     <rect x="140" y="55" width="35" height="130" fill="#0ea5e9" opacity="0.3" rx="2"/>
     
-    <text x="100" y="215" font-family="system-ui" font-size="11" fill="#475569" text-anchor="middle">40' Outfitter</text>
+    <text x="100" y="215" font-family="system-ui" font-size="11" fill="#475569" text-anchor="middle">40' Deluxe</text>
   </g>
 </svg>

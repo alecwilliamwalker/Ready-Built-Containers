@@ -169,7 +169,7 @@ export function FixtureLibrary({
                       isSelected ? "bg-cyan-500" : CATEGORY_COLORS[item.category]
                     } text-white`}
                   >
-                    <FixtureIcon category={item.category} className="h-8 w-8" />
+                    <FixtureIcon category={item.category} fixtureKey={item.key} className="h-8 w-8" />
                   </div>
 
                   {/* Info */}

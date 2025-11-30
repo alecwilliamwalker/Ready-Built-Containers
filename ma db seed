@@ -1,0 +1,84 @@
+warning: in the working copy of 'IMAGE_ASSETS.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'prisma/seed.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'public/image-preview.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'public/images/process-1-models.svg', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'scripts/generate-heroes.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/ModelCard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/ModelPlanThumb.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/PlansGallery.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/design/BOMPanel.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/design/DesignStudio.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/design/DockablePanel.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/design/FixtureCanvas.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/design/FixtureLibrary.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/design/TemplateSelector.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/design/ThreeViewport.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/design/Toolbar.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/design/editor-reducer.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/design/templates.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/design/three/FloorPlaneDragController.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/env.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/types/design.ts', LF will be replaced by CRLF the next time Git touches it
+AGENT_GUIDE.md
+IMAGE_ASSETS.md
+README.md
+package-lock.json
+package.json
+prisma/seed.ts
+public/image-preview.html
+public/images/floorplans/basecamp-20-plan.svg
+public/images/floorplans/basecamp-40-plan.svg
+public/images/floorplans/outfitter-40-plus-plan.svg
+public/images/models/basecamp-20-exterior.svg
+public/images/models/basecamp-40-exterior.svg
+public/images/models/basecamp-40-interior.svg
+public/images/models/basecamp-40-real/exterior-entry-closeup.jpg
+public/images/models/basecamp-40-real/exterior-front-deck.jpg
+public/images/models/basecamp-40-real/exterior-full-length.jpg
+public/images/models/basecamp-40-real/exterior-rear.jpg
+public/images/models/basecamp-40-real/exterior-yard-context.jpg
+public/images/models/basecamp-40-real/interior-bathroom.jpg
+public/images/models/basecamp-40-real/interior-bunk-room.jpg
+public/images/models/basecamp-40-real/interior-bunk-storage.jpg
+public/images/models/basecamp-40-real/interior-hallway-kitchen.jpg
+public/images/models/basecamp-40-real/interior-living-corner.jpg
+public/images/models/basecamp-40-real/interior-living-room.jpg
+public/images/models/basecamp-40-real/interior-shower.jpg
+public/images/models/basecamp-40-real/workspace.code-workspace
+public/images/models/heroes/basecamp-20-hero.jpg
+public/images/models/heroes/outfitter-40-plus-hero.jpg
+public/images/models/outfitter-40-plus-exterior.svg
+public/images/models/outfitter-40-plus-interior.svg
+public/images/process-1-models.svg
+scripts/generate-floorplans.js
+scripts/generate-heroes.js
+scripts/generate-model-detail-images.js
+scripts/generate-placeholder-images.js
+scripts/generate-process-images.js
+scripts/update-basecamp-40-plan.js
+src/app/(marketing)/faq/page.tsx
+src/app/(marketing)/page.tsx
+src/app/(marketing)/process/page.tsx
+src/components/Hero.tsx
+src/components/ModelCard.tsx
+src/components/ModelPlanThumb.tsx
+src/components/PlansGallery.tsx
+src/components/design/BOMPanel.tsx
+src/components/design/DebugPanel.tsx
+src/components/design/DesignStudio.tsx
+src/components/design/DockablePanel.tsx
+src/components/design/FixtureCanvas.tsx
+src/components/design/FixtureIcon.tsx
+src/components/design/FixtureLibrary.tsx
+src/components/design/StatusBar.tsx
+src/components/design/TemplateSelector.tsx
+src/components/design/ThreeViewport.tsx
+src/components/design/Toolbar.tsx
+src/components/providers/ToastProvider.tsx
+src/lib/design/bom-calculator.ts
+src/lib/design/editor-reducer.ts
+src/lib/design/templates.ts
+src/lib/design/three/FloorPlaneDragController.ts
+src/lib/env.ts
+src/types/bom.ts
+src/types/design.ts

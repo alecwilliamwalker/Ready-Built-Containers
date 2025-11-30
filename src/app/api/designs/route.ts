@@ -3,6 +3,8 @@ import prisma from "@/lib/db";
 import { getUserSession } from "@/lib/user-auth";
 import { designSaveSchema } from "@/lib/validation";
 
+export const dynamic = "force-dynamic";
+
 async function requireUser() {
   const session = await getUserSession();
   if (!session) {

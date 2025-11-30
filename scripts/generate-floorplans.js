@@ -25,7 +25,7 @@ function generateFloorPlan(filename, title, lengthFt, zones) {
   const width = 1200;
   const height = 400;
   // Scale: 40ft fits in 1100px (approx). 
-  // Let's use a fixed scale of 27.5 px/ft to match Basecamp 40.
+  // Let's use a fixed scale of 27.5 px/ft to match Standard 40.
   const scale = 27.5;
 
   // Calculate total width based on length
@@ -137,33 +137,22 @@ function generateFloorPlan(filename, title, lengthFt, zones) {
 
 // DEFINITIONS
 
-// Basecamp 20
-// [Kitchen 12'] [Bath 4' (Side Hall)] [Bunks 4' (Full Width)]
-// Removed Vestibule (3'), added to Kitchen.
-const basecamp20Zones = [
-  { label: 'Kitchen', length: 12, color: colors.forest, fullWidth: true },
-  { label: 'Bath', length: 4, color: colors.cyan, hasSideHall: true, subLabel: "4' × 5'" },
-  { label: 'Bunks', length: 4, color: colors.sky, fullWidth: true }
-];
-
-// Basecamp 40 (Refined)
+// Standard (40')
 // [Kitchen 20'] [Bath 7' (Side Hall)] [Bunks 13' (Full Width)]
-const basecamp40Zones = [
+const standardZones = [
   { label: 'Living / Kitchen', length: 20, color: colors.forest, fullWidth: true },
   { label: 'Bath', length: 7, color: colors.cyan, hasSideHall: true, subLabel: "7' × 5'" },
   { label: 'Bunk Room', length: 13, color: colors.sky, fullWidth: true }
 ];
 
-// Outfitter 40 Plus
+// Deluxe (40')
 // [Galley 20'] [Bath 6' (Side Hall)] [Bunks 14' (Full Width)]
-// Removed Vestibule (4'), added to Galley.
-const outfitter40PlusZones = [
+const deluxeZones = [
   { label: 'Extended Galley', length: 20, color: colors.forest, fullWidth: true },
   { label: 'Full Bath', length: 6, color: colors.cyan, hasSideHall: true, subLabel: "6' × 5'" },
   { label: '6-Bunk Bay', length: 14, color: colors.sky, fullWidth: true }
 ];
 
 // Generate
-generateFloorPlan('basecamp-20-plan.svg', 'Basecamp 20 Floor Plan', 20, basecamp20Zones);
-generateFloorPlan('basecamp-40-plan.svg', 'Basecamp 40 Floor Plan', 40, basecamp40Zones);
-generateFloorPlan('outfitter-40-plus-plan.svg', 'Outfitter 40 Plus Floor Plan', 40, outfitter40PlusZones);
+generateFloorPlan('standard-plan.svg', 'Standard Floor Plan', 40, standardZones);
+generateFloorPlan('deluxe-plan.svg', 'Deluxe Floor Plan', 40, deluxeZones);

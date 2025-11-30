@@ -4,37 +4,19 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function seedModels() {
+  // Delete old models that are no longer used
+  await prisma.model.deleteMany({
+    where: {
+      slug: {
+        in: ["basecamp-20", "basecamp-40", "outfitter-40-plus"]
+      }
+    }
+  });
+
   const models = [
     {
-      slug: "basecamp-20",
-      name: "Basecamp 20",
-      tagline: "Compact steel cabin for remote scouting bases",
-      description:
-        "A nimble 20' high-cube container refitted with a secure entry, efficient galley kitchen, and convertible bunks. Ideal for single hunters or a tight-knit crew needing a heated, dry basecamp.",
-      lengthFt: 20,
-      sleeps: 2,
-      hasBathroom: false,
-      hasKitchen: true,
-      basePrice: 6200000,
-      images: [
-        {
-          url: "/images/models/heroes/basecamp-20-hero.jpg",
-          alt: "Basecamp 20 hero exterior",
-          sortOrder: 0,
-        },
-      ],
-      floorplans: [
-        {
-          name: "Base Layout",
-          description: "Direct entry, galley living core, optional bath bay, and rear bunks.",
-          imageUrl: "/images/floorplans/basecamp-20-plan.svg",
-          isDefault: true,
-        },
-      ],
-    },
-    {
-      slug: "basecamp-40",
-      name: "Basecamp 40",
+      slug: "standard",
+      name: "Standard",
       tagline: "Flagship 40' cabin with full amenities",
       description:
         "Our most-requested layout: locking container doors shield the man-door entry, leading into a warm living space with kitchen, a center hall and full bathroom, and a rear bunk room with four stacked bunks and gear storage.",
@@ -42,66 +24,66 @@ async function seedModels() {
       sleeps: 4,
       hasBathroom: true,
       hasKitchen: true,
-      basePrice: 11800000,
+      basePrice: 5100000,
       images: [
         {
-          url: "/images/models/basecamp-40-real/exterior-front-deck.jpg",
-          alt: "Basecamp 40 front exterior deck and entry",
+          url: "/images/models/standard/exterior-front-deck.jpg",
+          alt: "Standard front exterior deck and entry",
           sortOrder: 0,
         },
         {
-          url: "/images/models/basecamp-40-real/exterior-full-length.jpg",
-          alt: "Basecamp 40 full length exterior side view",
+          url: "/images/models/standard/exterior-full-length.jpg",
+          alt: "Standard full length exterior side view",
           sortOrder: 1,
         },
         {
-          url: "/images/models/basecamp-40-real/exterior-entry-closeup.jpg",
-          alt: "Basecamp 40 entry closeup detail",
+          url: "/images/models/standard/exterior-entry-closeup.jpg",
+          alt: "Standard entry closeup detail",
           sortOrder: 2,
         },
         {
-          url: "/images/models/basecamp-40-real/exterior-rear.jpg",
-          alt: "Basecamp 40 rear exterior bunk area",
+          url: "/images/models/standard/exterior-rear.jpg",
+          alt: "Standard rear exterior bunk area",
           sortOrder: 3,
         },
         {
-          url: "/images/models/basecamp-40-real/exterior-yard-context.jpg",
-          alt: "Basecamp 40 in yard context",
+          url: "/images/models/standard/exterior-yard-context.jpg",
+          alt: "Standard in yard context",
           sortOrder: 4,
         },
         {
-          url: "/images/models/basecamp-40-real/interior-living-room.jpg",
-          alt: "Basecamp 40 living room interior",
+          url: "/images/models/standard/interior-living-room.jpg",
+          alt: "Standard living room interior",
           sortOrder: 5,
         },
         {
-          url: "/images/models/basecamp-40-real/interior-hallway-kitchen.jpg",
-          alt: "Basecamp 40 hallway to kitchen interior",
+          url: "/images/models/standard/interior-hallway-kitchen.jpg",
+          alt: "Standard hallway to kitchen interior",
           sortOrder: 6,
         },
         {
-          url: "/images/models/basecamp-40-real/interior-living-corner.jpg",
-          alt: "Basecamp 40 living corner detail",
+          url: "/images/models/standard/interior-living-corner.jpg",
+          alt: "Standard living corner detail",
           sortOrder: 7,
         },
         {
-          url: "/images/models/basecamp-40-real/interior-bunk-room.jpg",
-          alt: "Basecamp 40 bunk room interior",
+          url: "/images/models/standard/interior-bunk-room.jpg",
+          alt: "Standard bunk room interior",
           sortOrder: 8,
         },
         {
-          url: "/images/models/basecamp-40-real/interior-bunk-storage.jpg",
-          alt: "Basecamp 40 bunk storage interior",
+          url: "/images/models/standard/interior-bunk-storage.jpg",
+          alt: "Standard bunk storage interior",
           sortOrder: 9,
         },
         {
-          url: "/images/models/basecamp-40-real/interior-bathroom.jpg",
-          alt: "Basecamp 40 bathroom interior",
+          url: "/images/models/standard/interior-bathroom.jpg",
+          alt: "Standard bathroom interior",
           sortOrder: 10,
         },
         {
-          url: "/images/models/basecamp-40-real/interior-shower.jpg",
-          alt: "Basecamp 40 shower interior",
+          url: "/images/models/standard/interior-shower.jpg",
+          alt: "Standard shower interior",
           sortOrder: 11,
         },
       ],
@@ -109,14 +91,14 @@ async function seedModels() {
         {
           name: "Standard Bunk Layout",
           description: "Secure entry with living + galley front half, hall bath mid, four bunks aft.",
-          imageUrl: "/images/floorplans/basecamp-40-plan.svg",
+          imageUrl: "/images/floorplans/standard-plan.svg",
           isDefault: true,
         },
       ],
     },
     {
-      slug: "outfitter-40-plus",
-      name: "Outfitter 40 Plus",
+      slug: "deluxe",
+      name: "Deluxe",
       tagline: "Gear-forward layout with dual entries",
       description:
         "Designed for outfitters that rotate hunters weekly. Adds a gear area, enlarged galley, and split bunks with dedicated firearm lockers. Reinforced framing for rooftop solar array and observation deck access.",
@@ -124,11 +106,11 @@ async function seedModels() {
       sleeps: 6,
       hasBathroom: true,
       hasKitchen: true,
-      basePrice: 14900000,
+      basePrice: 8900000,
       images: [
         {
-          url: "/images/models/heroes/outfitter-40-plus-hero.jpg",
-          alt: "Outfitter 40 Plus hero exterior",
+          url: "/images/models/heroes/deluxe-hero.jpg",
+          alt: "Deluxe hero exterior",
           sortOrder: 0,
         },
       ],
@@ -136,7 +118,7 @@ async function seedModels() {
         {
           name: "Guide Team Layout",
           description: "Gear area, extended galley lounge, full bath, and six-pack bunk bay with dual egress.",
-          imageUrl: "/images/floorplans/outfitter-40-plus-plan.svg",
+          imageUrl: "/images/floorplans/deluxe-plan.svg",
           isDefault: true,
         },
       ],

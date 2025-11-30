@@ -58,6 +58,18 @@ export function ThreeViewport({
   const [isLocked, setIsLocked] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [showPositionPanel, setShowPositionPanel] = useState(true);
+  const [showMobileControls, setShowMobileControls] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Mobile drag-from-anywhere state
+  const mobileDragRef = useRef<{
+    isTracking: boolean;
+    startX: number;
+    startY: number;
+    hasMoved: boolean;
+    pointerId: number;
+  } | null>(null);
+  const MOBILE_DRAG_THRESHOLD = 10; // pixels before drag starts
 
   // Debug state (only used in dev mode)
   const [showDebug, setShowDebug] = useState(false);
@@ -101,6 +113,16 @@ export function ThreeViewport({
     onUpdateFixtureRef.current = onUpdateFixture;
     designFixturesRef.current = design.fixtures;
   }, [pendingPlacement, onPlaceFixture, onUpdateFixture, design.fixtures]);
+
+  // Detect mobile for collapsible controls
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // Initialize scene
   useEffect(() => {
@@ -360,6 +382,165 @@ export function ThreeViewport({
     };
   }, [shellConfig]); // Re-init if shell changes
 
+  // Mobile drag-from-anywhere: when a fixture is selected, drag from anywhere on canvas
+  useEffect(() => {
+    if (!isMobile) return;
+    const sceneManager = sceneManagerRef.current;
+    const cameraController = cameraControllerRef.current;
+    const dragController = dragControllerRef.current;
+    if (!sceneManager || !cameraController || !dragController) return;
+
+    const domElement = sceneManager.renderer.domElement;
+
+    const handleMobilePointerDown = (event: PointerEvent) => {
+      // Only handle touch/left click
+      if (event.button !== 0) return;
+      
+      // Only activate if we have exactly one fixture selected
+      if (selectedIds.length !== 1) return;
+      
+      // Don't interfere with placement mode
+      if (pendingPlacementRef.current) return;
+      
+      // Don't interfere if already dragging (clicked on fixture directly)
+      if (dragController.isDragging()) return;
+
+      const selectedFixtureId = selectedIds[0];
+      const fixture = designFixturesRef.current.find(f => f.id === selectedFixtureId);
+      if (!fixture || fixture.locked) return;
+
+      // CRITICAL: Stop the event from reaching orbit controls
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      
+      // Disable orbit controls immediately to prevent any panning
+      cameraController.orbitControls.enabled = false;
+
+      // Start tracking for potential drag
+      mobileDragRef.current = {
+        isTracking: true,
+        startX: event.clientX,
+        startY: event.clientY,
+        hasMoved: false,
+        pointerId: event.pointerId,
+      };
+
+      // Capture pointer to receive all events
+      domElement.setPointerCapture(event.pointerId);
+      
+      addLog(`[Mobile3D] Started tracking pointer for fixture ${selectedFixtureId}`);
+    };
+
+    const handleMobilePointerMove = (event: PointerEvent) => {
+      const tracking = mobileDragRef.current;
+      if (!tracking || !tracking.isTracking) return;
+      if (event.pointerId !== tracking.pointerId) return;
+
+      // Stop event from reaching orbit controls
+      event.preventDefault();
+      event.stopPropagation();
+
+      const deltaX = event.clientX - tracking.startX;
+      const deltaY = event.clientY - tracking.startY;
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+      // If we haven't started dragging yet, check threshold
+      if (!tracking.hasMoved) {
+        if (distance >= MOBILE_DRAG_THRESHOLD) {
+          tracking.hasMoved = true;
+          
+          // Start actual drag for the selected fixture
+          const selectedFixtureId = selectedIds[0];
+          if (selectedFixtureId) {
+            const fixtureObject = dragController.findFixtureObject(selectedFixtureId);
+            if (fixtureObject) {
+              const started = dragController.startDragForFixture(
+                selectedFixtureId,
+                fixtureObject,
+                event
+              );
+              
+              if (started) {
+                setIsDragging(true);
+                addLog(`[Mobile3D] Started drag-from-anywhere for ${selectedFixtureId}`);
+              }
+            }
+          }
+        }
+      } else {
+        // Already dragging - update position
+        dragController.processDragMove(event);
+      }
+    };
+
+    const handleMobilePointerUp = (event: PointerEvent) => {
+      const tracking = mobileDragRef.current;
+      if (!tracking || !tracking.isTracking) return;
+      if (event.pointerId !== tracking.pointerId) return;
+
+      // Stop event propagation
+      event.preventDefault();
+      event.stopPropagation();
+
+      // Release pointer capture
+      if (domElement.hasPointerCapture(event.pointerId)) {
+        domElement.releasePointerCapture(event.pointerId);
+      }
+
+      if (tracking.hasMoved && dragController.isDragging()) {
+        // End the drag
+        dragController.endDrag(event);
+        setIsDragging(false);
+        addLog(`[Mobile3D] Ended drag-from-anywhere`);
+      } else if (!tracking.hasMoved) {
+        // Quick tap without movement - deselect
+        addLog(`[Mobile3D] Quick tap - deselecting`);
+        onSelectFixture?.("");
+      }
+
+      // Always re-enable orbit controls when interaction ends
+      cameraController.orbitControls.enabled = true;
+      
+      // Reset tracking state
+      mobileDragRef.current = null;
+    };
+
+    const handleMobilePointerCancel = (event: PointerEvent) => {
+      const tracking = mobileDragRef.current;
+      if (!tracking) return;
+      
+      // Release pointer capture
+      if (domElement.hasPointerCapture(event.pointerId)) {
+        domElement.releasePointerCapture(event.pointerId);
+      }
+
+      // If we were dragging, end it
+      if (tracking.hasMoved && dragController.isDragging()) {
+        dragController.endDrag(event);
+        setIsDragging(false);
+      }
+
+      // Always re-enable orbit controls
+      cameraController.orbitControls.enabled = true;
+      
+      mobileDragRef.current = null;
+    };
+
+    // Add listeners with capture phase to intercept before orbit controls
+    domElement.addEventListener("pointerdown", handleMobilePointerDown, { capture: true });
+    domElement.addEventListener("pointermove", handleMobilePointerMove, { capture: true });
+    domElement.addEventListener("pointerup", handleMobilePointerUp, { capture: true });
+    domElement.addEventListener("pointercancel", handleMobilePointerCancel, { capture: true });
+
+    return () => {
+      domElement.removeEventListener("pointerdown", handleMobilePointerDown, { capture: true });
+      domElement.removeEventListener("pointermove", handleMobilePointerMove, { capture: true });
+      domElement.removeEventListener("pointerup", handleMobilePointerUp, { capture: true });
+      domElement.removeEventListener("pointercancel", handleMobilePointerCancel, { capture: true });
+    };
+  }, [isMobile, selectedIds, onSelectFixture, addLog]);
+
   // Get selected fixture for position panel
   const selectedFixture = useMemo(() => {
     if (selectedIds.length !== 1) return null;
@@ -598,18 +779,56 @@ export function ThreeViewport({
         </div>
       )}
 
-      {/* Controls Overlay */}
-      <div className="absolute right-4 top-4 space-y-2 pointer-events-none">
+      {/* Mobile Controls Toggle Button - only show when controls are hidden */}
+      {isMobile && !showMobileControls && (
+        <button
+          onClick={() => setShowMobileControls(true)}
+          className="absolute right-4 top-4 z-10 w-12 h-12 rounded-xl bg-cyan-600 border border-cyan-400/30 backdrop-blur-sm flex items-center justify-center text-white shadow-lg shadow-cyan-500/30 active:scale-95 transition-all"
+          aria-label="Show controls"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
+      )}
+
+      {/* Controls Overlay - Always visible on desktop, toggleable on mobile */}
+      <div className={`absolute right-4 space-y-2 pointer-events-none ${isMobile ? (showMobileControls ? 'block' : 'hidden') : 'block'} ${isMobile ? 'top-4' : 'top-4'}`}>
         <div className="rounded-lg border border-white/10 bg-slate-900/90 p-2 backdrop-blur-sm pointer-events-auto">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/60">
-            Camera
-          </p>
-          <div className="grid grid-cols-2 gap-1">
-            {(["iso", "top", "front", "right", "first-person"] as CameraView[]).map((view) => (
+          {/* Mobile: Header with close button */}
+          {isMobile && (
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-white/60">
+                Camera
+              </p>
+              <button
+                onClick={() => setShowMobileControls(false)}
+                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-red-500/50 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+                aria-label="Hide controls"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
+          {/* Desktop: Just the label */}
+          {!isMobile && (
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/60">
+              Camera
+            </p>
+          )}
+          <div className={`grid gap-1 ${isMobile ? 'grid-cols-2' : 'grid-cols-2'}`}>
+            {/* Filter out first-person on mobile since it doesn't work */}
+            {(isMobile 
+              ? (["iso", "top", "front", "right"] as CameraView[])
+              : (["iso", "top", "front", "right", "first-person"] as CameraView[])
+            ).map((view) => (
               <button
                 key={view}
                 onClick={() => setCameraView(view)}
-                className={`rounded px-2 py-1 text-xs font-semibold transition-colors ${currentView === view
+                className={`rounded px-2 py-1.5 text-xs font-semibold transition-colors ${currentView === view
                   ? "bg-cyan-500 text-white"
                   : "bg-white/10 text-white/70 hover:bg-white/20"
                   }`}
@@ -627,12 +846,14 @@ export function ThreeViewport({
           {showGrid ? "Hide" : "Show"} Grid
         </button>
 
-        <button
-          onClick={() => setShowPositionPanel(!showPositionPanel)}
-          className="w-full rounded-lg border border-white/10 bg-slate-900/90 px-3 py-2 text-xs font-semibold text-white/70 backdrop-blur-sm transition-colors hover:bg-white/10 pointer-events-auto"
-        >
-          {showPositionPanel ? "Hide" : "Show"} Position
-        </button>
+        {!isMobile && (
+          <button
+            onClick={() => setShowPositionPanel(!showPositionPanel)}
+            className="w-full rounded-lg border border-white/10 bg-slate-900/90 px-3 py-2 text-xs font-semibold text-white/70 backdrop-blur-sm transition-colors hover:bg-white/10 pointer-events-auto"
+          >
+            {showPositionPanel ? "Hide" : "Show"} Position
+          </button>
+        )}
 
         <button
           onClick={handleSnapshot}
@@ -641,7 +862,7 @@ export function ThreeViewport({
           Snapshot
         </button>
 
-        {DEBUG_MODE && (
+        {DEBUG_MODE && !isMobile && (
           <button
             onClick={() => setShowDebug(!showDebug)}
             className="w-full rounded-lg border border-white/10 bg-slate-900/90 px-3 py-2 text-xs font-semibold text-white/70 backdrop-blur-sm transition-colors hover:bg-white/10 pointer-events-auto"
@@ -651,8 +872,8 @@ export function ThreeViewport({
         )}
       </div>
 
-      {/* Position Input Panel (left side) */}
-      {showPositionPanel && (
+      {/* Position Input Panel (left side) - hidden on mobile */}
+      {showPositionPanel && !isMobile && (
         <div className="absolute left-4 top-4 w-56 pointer-events-auto">
           <PositionInputPanel
             fixture={selectedFixture}
@@ -662,20 +883,24 @@ export function ThreeViewport({
         </div>
       )}
 
-      {/* Info Overlay */}
-      <div className="absolute bottom-4 left-4 rounded-lg border border-white/10 bg-slate-900/90 px-4 py-2 backdrop-blur-sm">
+      {/* Info Overlay - simplified on mobile */}
+      <div className="absolute bottom-4 left-4 right-4 md:right-auto rounded-lg border border-white/10 bg-slate-900/90 px-3 md:px-4 py-2 backdrop-blur-sm">
         <p className="text-xs font-mono text-white/60">
           <span className="text-white/80">Fixtures:</span> {design.fixtures.length}
           {selectedIds.length > 0 && (
             <>
-              <span className="ml-3">
-                <span className="text-cyan-400">Selected:</span> {selectedIds.length}
+              <span className="ml-2 md:ml-3">
+                <span className="text-cyan-400">Sel:</span> {selectedIds.length}
               </span>
-              <span className="ml-3 text-white/40">• Drag to move • Arrow keys for fine control</span>
+              {isMobile ? (
+                <span className="ml-2 text-white/40">• Drag anywhere to move • Tap to deselect</span>
+              ) : (
+                <span className="ml-3 text-white/40">• Drag to move • Arrow keys for fine control</span>
+              )}
             </>
           )}
           {isDragging && (
-            <span className="ml-3 text-yellow-400">Dragging...</span>
+            <span className="ml-2 md:ml-3 text-yellow-400">Dragging...</span>
           )}
         </p>
       </div>

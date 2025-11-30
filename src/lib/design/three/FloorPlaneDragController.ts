@@ -144,6 +144,94 @@ export class FloorPlaneDragController {
   }
 
   /**
+   * Start a drag operation programmatically for a specific fixture
+   * Used for mobile "drag from anywhere" behavior when a fixture is selected
+   */
+  startDragForFixture(
+    fixtureId: string,
+    fixtureObject: THREE.Object3D,
+    pointerEvent: PointerEvent
+  ): boolean {
+    // Check if fixture can be dragged (e.g., not locked)
+    if (this.callbacks.canDrag && !this.callbacks.canDrag(fixtureId)) {
+      return false;
+    }
+
+    this.updateMousePosition(pointerEvent);
+    const floorPos = this.getFloorIntersection();
+    if (!floorPos) return false;
+
+    // Calculate offset from click point to object center
+    this.dragState.offset.copy(floorPos).sub(fixtureObject.position);
+    this.dragState.offset.y = 0; // Keep on floor plane
+
+    this.dragState.isDragging = true;
+    this.dragState.fixtureId = fixtureId;
+    this.dragState.startPosition.copy(fixtureObject.position);
+    this.dragState.currentPosition.copy(fixtureObject.position);
+    this.draggedObject = fixtureObject;
+
+    // Get fixture footprint dimensions and anchor from userData (set by FixtureRenderer)
+    const userData = fixtureObject.userData as { 
+      footprintWidthFt?: number; 
+      footprintLengthFt?: number;
+      footprintAnchor?: string;
+    };
+    const baseWidth = userData.footprintWidthFt ?? 1;
+    const baseLength = userData.footprintLengthFt ?? 1;
+    this.draggedFixtureAnchor = userData.footprintAnchor ?? "center";
+    
+    // Check if fixture is rotated 90 or 270 degrees - if so, swap width/length
+    const rotationDeg = Math.round(THREE.MathUtils.radToDeg(-fixtureObject.rotation.y)) % 360;
+    const isRotated90or270 = rotationDeg === 90 || rotationDeg === 270 || 
+                             rotationDeg === -90 || rotationDeg === -270;
+    
+    this.draggedFixtureSizeFt = isRotated90or270
+      ? { widthFt: baseLength, lengthFt: baseWidth }
+      : { widthFt: baseWidth, lengthFt: baseLength };
+
+    // Show snap grid
+    this.snapGridGroup.visible = true;
+
+    // Change cursor
+    this.domElement.style.cursor = "grabbing";
+
+    // Notify callback
+    this.callbacks.onDragStart?.(fixtureId);
+
+    return true;
+  }
+
+  /**
+   * Process a pointer move event externally (for mobile drag from anywhere)
+   */
+  processDragMove(pointerEvent: PointerEvent): void {
+    if (!this.dragState.isDragging || !this.draggedObject) return;
+    this.handlePointerMove(pointerEvent);
+  }
+
+  /**
+   * End the current drag operation externally (for mobile drag from anywhere)
+   */
+  endDrag(pointerEvent: PointerEvent): void {
+    if (!this.dragState.isDragging) return;
+    this.handlePointerUp(pointerEvent);
+  }
+
+  /**
+   * Find a fixture object by ID in the module group
+   * Only checks direct children (fixture groups), not nested meshes
+   */
+  findFixtureObject(fixtureId: string): THREE.Object3D | null {
+    for (const child of this.moduleGroup.children) {
+      if (child.userData.fixtureId === fixtureId) {
+        return child;
+      }
+    }
+    return null;
+  }
+
+  /**
    * Enable/disable snap-to-grid
    */
   setSnapEnabled(enabled: boolean): void {

@@ -292,63 +292,8 @@ function generateDetailedInterior(modelSlug, modelName, lengthFt, zones) {
 // Model configurations
 const models = [
   {
-    slug: 'basecamp-20',
-    name: 'Basecamp 20',
-    lengthFt: 20,
-    exterior: {
-      windows: [
-        { x: 150, width: 120 },
-        { x: 320, width: 100 }
-      ],
-      callouts: [
-        { x: 250, y: 350, labelX: 150, labelY: 280, label: 'Locking Vestibule' },
-        { x: 450, y: 300, labelX: 550, labelY: 250, label: 'Dual-Pane Windows' },
-        { x: 600, y: 450, labelX: 700, labelY: 500, label: 'Pier Foundation' }
-      ]
-    },
-    interior: {
-      zones: [
-        {
-          name: 'Vestibule',
-          lengthFt: 3,
-          color: colors.slate[800],
-          items: [
-            { x: 0.5, width: 40, height: 80, fill: colors.slate[700], label: 'Gear' }
-          ]
-        },
-        {
-          name: 'Living / Kitchen',
-          lengthFt: 9,
-          color: colors.forest,
-          items: [
-            { x: 1, width: 100, height: 70, fill: colors.forest, label: 'Counter' },
-            { x: 4, width: 80, height: 60, fill: colors.slate[700], label: 'Table' }
-          ]
-        },
-        {
-          name: 'Optional Bath',
-          lengthFt: 4,
-          color: colors.cyan,
-          items: [
-            { x: 0.5, width: 50, height: 60, fill: colors.slate[100], label: 'Toilet' },
-            { x: 2, width: 50, height: 70, fill: colors.slate[100], label: 'Shower' }
-          ]
-        },
-        {
-          name: 'Bunks',
-          lengthFt: 4,
-          color: colors.sky,
-          items: [
-            { x: 0.5, width: 70, height: 50, fill: colors.slate[800], label: 'Lower' },
-            { x: 0.5, width: 70, height: 50, fill: colors.slate[800], label: 'Upper' }
-          ]
-        }
-      ]
-    }
-  },
-  {
-    slug: 'basecamp-40',
-    name: 'Basecamp 40',
+    slug: 'standard',
+    name: 'Standard',
     lengthFt: 40,
     exterior: {
       windows: [
@@ -409,8 +354,8 @@ const models = [
     }
   },
   {
-    slug: 'outfitter-40-plus',
-    name: 'Outfitter 40 Plus',
+    slug: 'deluxe',
+    name: 'Deluxe',
     lengthFt: 40,
     exterior: {
       windows: [
@@ -490,8 +435,8 @@ models.forEach(model => {
   fs.writeFileSync(exteriorPath, exteriorSvg);
   console.log(`✓ Generated ${exteriorPath}`);
   
-  // Interior (for Basecamp 40 and Outfitter)
-  if (model.slug !== 'basecamp-20') {
+  // Interior (for both models)
+  if (model.slug === 'standard' || model.slug === 'deluxe') {
     const interiorSvg = generateDetailedInterior(
       model.slug,
       model.name,

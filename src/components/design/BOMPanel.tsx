@@ -2,16 +2,22 @@
 
 import { useState, useMemo, useCallback } from "react";
 import type { DesignConfig, ModuleCatalogItem } from "@/types/design";
-import type { BOMSelections, LaborBreakdownItem } from "@/types/bom";
+import type { BOMSelections, LaborBreakdownItem, ElectricalLoadBreakdown } from "@/types/bom";
 import {
   INSULATION_PRICES,
   INTERIOR_FINISH_PRICES,
   FLOORING_PRICES,
   EXTERIOR_FINISH_PRICES,
+  ROOFING_PRICES,
+  FOUNDATION_PRICES,
+  ELECTRICAL_POWER_SOURCE_LABELS,
   InsulationType,
   InteriorWallFinish,
   FlooringType,
   ExteriorFinish,
+  RoofingType,
+  FoundationType,
+  ElectricalPowerSource,
 } from "@/types/bom";
 import { calculateBOM, getDesignAnalysis } from "@/lib/design/bom-calculator";
 import { getZipLocationInfo } from "@/lib/design/zip-distance";
@@ -123,6 +129,59 @@ function LaborBreakdownTable({ breakdown, totalHours }: { breakdown: LaborBreakd
   );
 }
 
+function ElectricalLoadBreakdownTable({ loadBreakdown }: { loadBreakdown: ElectricalLoadBreakdown }) {
+  return (
+    <div className="mt-2 rounded-lg bg-gray-800/50 border border-gray-700/50 overflow-hidden">
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="border-b border-gray-700/50 bg-gray-800">
+            <th className="px-2 py-1.5 text-left font-medium text-gray-400">Load Source</th>
+            <th className="px-2 py-1.5 text-right font-medium text-gray-400">Watts</th>
+          </tr>
+        </thead>
+        <tbody>
+          {/* Heating */}
+          <tr className="border-b border-gray-700/30">
+            <td className="px-2 py-1.5 text-gray-300">
+              Electric Space Heating
+              <span className="text-gray-500 ml-1">(10W/sqft)</span>
+            </td>
+            <td className="px-2 py-1.5 text-right text-gray-200 font-mono">
+              {loadBreakdown.heatingWatts.toLocaleString()}
+            </td>
+          </tr>
+          {/* Base Lighting */}
+          <tr className="border-b border-gray-700/30">
+            <td className="px-2 py-1.5 text-gray-300">Base Lighting</td>
+            <td className="px-2 py-1.5 text-right text-gray-200 font-mono">
+              {loadBreakdown.lightingWatts.toLocaleString()}
+            </td>
+          </tr>
+          {/* Fixture details */}
+          {loadBreakdown.fixtureDetails.map((fixture, idx) => (
+            <tr key={idx} className="border-b border-gray-700/30 last:border-0">
+              <td className="px-2 py-1.5 text-gray-300 pl-4">
+                {fixture.label}
+              </td>
+              <td className="px-2 py-1.5 text-right text-gray-200 font-mono">
+                {fixture.watts.toLocaleString()}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr className="bg-gray-800 border-t border-gray-600">
+            <td className="px-2 py-1.5 font-semibold text-gray-200">Total Load</td>
+            <td className="px-2 py-1.5 text-right font-bold text-amber-400 font-mono">
+              {(loadBreakdown.totalWatts / 1000).toFixed(1)} kW
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  );
+}
+
 export function BOMPanel({ 
   design, 
   catalog, 
@@ -135,6 +194,7 @@ export function BOMPanel({
   isExportingPDF = false,
 }: BOMPanelProps) {
   const [showLaborBreakdown, setShowLaborBreakdown] = useState(false);
+  const [showElectricalBreakdown, setShowElectricalBreakdown] = useState(false);
 
   const updateSelection = useCallback(<K extends keyof BOMSelections>(
     key: K,
@@ -214,7 +274,7 @@ export function BOMPanel({
     // Header row (row 2)
     data.push(["Category", "Description", "Cost"]);
     
-    // Main cost items (rows 3-12)
+    // Main cost items (rows 3-13)
     data.push(["Container Shell", bom.container.details || "", `$${(bom.container.costCents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`]);
     data.push(["Fixtures & Appliances", bom.fixtures.details || "", `$${(bom.fixtures.costCents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`]);
     data.push(["Walls & Insulation", bom.wallsInsulation.details || "", `$${(bom.wallsInsulation.costCents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`]);
@@ -223,10 +283,11 @@ export function BOMPanel({
     data.push(["Plumbing", bom.plumbing.details || "", `$${(bom.plumbing.costCents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`]);
     data.push(["Exterior Finish", bom.exteriorFinish.details || "", `$${(bom.exteriorFinish.costCents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`]);
     data.push(["Roofing", bom.roofing.details || "", `$${(bom.roofing.costCents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`]);
+    data.push(["Foundation", bom.foundation.details || "", `$${(bom.foundation.costCents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`]);
     data.push(["Labor", `${bom.labor.totalHours} hours @ $${(selections.laborRateCents / 100).toFixed(2)}/hr`, `$${(bom.labor.costCents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`]);
     data.push(["Delivery", bom.delivery.details || "", `$${(bom.delivery.costCents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`]);
     
-    // Empty row before totals (row 13)
+    // Empty row before totals (row 14)
     data.push([]);
     
     // Totals section (rows 14-16)
@@ -264,8 +325,8 @@ export function BOMPanel({
       if (ws[cell]) ws[cell].s = headerStyle;
     });
     
-    // Data rows (rows 3-12)
-    for (let row = 4; row <= 13; row++) {
+    // Data rows (rows 3-13)
+    for (let row = 4; row <= 14; row++) {
       if (ws[`A${row}`]) ws[`A${row}`].s = { ...dataStyle, font: { ...dataStyle.font, bold: true } };
       if (ws[`B${row}`]) ws[`B${row}`].s = dataStyle;
       if (ws[`C${row}`]) ws[`C${row}`].s = costStyle;
@@ -338,7 +399,7 @@ export function BOMPanel({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
               d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
           </svg>
-          <h2 className="text-base font-semibold text-white">Bill of Materials</h2>
+          <h2 className="text-base font-semibold text-white">Quote & Order</h2>
         </div>
         <p className="text-xs text-gray-400 mt-1">
           {analysis.shellLengthFt}' × {analysis.shellWidthFt}' × {analysis.shellHeightFt}' container
@@ -434,7 +495,70 @@ export function BOMPanel({
           title="Electrical"
           amount={bom.electrical.costCents}
           details={bom.electrical.details}
-        />
+          defaultOpen
+        >
+          <div className="mt-2 space-y-3">
+            {/* Power Source Selector */}
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">
+                Power Source
+              </label>
+              <Select
+                value={selections.electricalPowerSource}
+                onChange={(e) => updateSelection("electricalPowerSource", e.target.value as ElectricalPowerSource)}
+                className="!bg-gray-800 !text-gray-200 !border-gray-600 text-xs !py-1.5"
+              >
+                {Object.entries(ELECTRICAL_POWER_SOURCE_LABELS).map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+              </Select>
+            </div>
+
+            {/* System Info for Off-Grid Options */}
+            {selections.electricalPowerSource !== "grid" && bom.electrical.systemInfo.systemLabel && (
+              <div className="rounded-md bg-gray-800/50 border border-gray-700/50 px-2.5 py-2">
+                <p className="text-xs font-medium text-amber-400">
+                  Recommended: {bom.electrical.systemInfo.systemLabel}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  System cost: ${(bom.electrical.systemInfo.systemCostCents / 100).toLocaleString()}
+                </p>
+              </div>
+            )}
+
+            {/* Load Summary */}
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-400">Estimated Load:</span>
+              <span className="text-gray-200 font-medium">
+                {(bom.electrical.systemInfo.loadBreakdown.totalWatts / 1000).toFixed(1)} kW
+              </span>
+            </div>
+
+            {/* Load Breakdown Toggle */}
+            <button
+              onClick={() => setShowElectricalBreakdown(!showElectricalBreakdown)}
+              className="flex items-center gap-1 text-xs text-amber-400 hover:text-amber-300 transition-colors"
+            >
+              <svg
+                className={`w-3 h-3 transition-transform ${showElectricalBreakdown ? "rotate-90" : ""}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+              {showElectricalBreakdown ? "Hide" : "Show"} load breakdown
+            </button>
+
+            {showElectricalBreakdown && (
+              <ElectricalLoadBreakdownTable
+                loadBreakdown={bom.electrical.systemInfo.loadBreakdown}
+              />
+            )}
+          </div>
+        </CollapsibleSection>
 
         {/* Plumbing */}
         <CollapsibleSection
@@ -475,25 +599,68 @@ export function BOMPanel({
           details={bom.roofing.details}
           defaultOpen
         >
-          <div className="mt-2 space-y-2">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={selections.roofingDeckPrep}
-                onChange={(e) => updateSelection("roofingDeckPrep", e.target.checked)}
-                className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-amber-500 focus:ring-amber-500/30"
-              />
-              <span className="text-xs text-gray-300">Deck Prep (+$3.00/sqft)</span>
+          <div className="mt-2 space-y-3">
+            <label className="block text-xs text-gray-400">
+              Roofing Type
             </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={selections.roofingSolarRails}
-                onChange={(e) => updateSelection("roofingSolarRails", e.target.checked)}
-                className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-amber-500 focus:ring-amber-500/30"
-              />
-              <span className="text-xs text-gray-300">Solar Mounting Rails (+$2.50/sqft)</span>
+            <Select
+              value={selections.roofingType}
+              onChange={(e) => updateSelection("roofingType", e.target.value as RoofingType)}
+              className="w-full"
+            >
+              {Object.entries(ROOFING_PRICES).map(([key, { label, centsPerSqft }]) => (
+                <option key={key} value={key}>
+                  {label} {centsPerSqft > 0 ? `($${(centsPerSqft / 100).toFixed(2)}/sqft)` : ""}
+                </option>
+              ))}
+            </Select>
+            {selections.roofingType !== "none" && (
+              <div className="space-y-2 pt-1">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selections.roofingDeckPrep}
+                    onChange={(e) => updateSelection("roofingDeckPrep", e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-amber-500 focus:ring-amber-500/30"
+                  />
+                  <span className="text-xs text-gray-300">Deck Prep (+$3.00/sqft)</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selections.roofingSolarRails}
+                    onChange={(e) => updateSelection("roofingSolarRails", e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-amber-500 focus:ring-amber-500/30"
+                  />
+                  <span className="text-xs text-gray-300">Solar Mounting Rails (+$2.50/sqft)</span>
+                </label>
+              </div>
+            )}
+          </div>
+        </CollapsibleSection>
+
+        {/* Foundation */}
+        <CollapsibleSection
+          title="Foundation"
+          amount={bom.foundation.costCents}
+          details={bom.foundation.details}
+          defaultOpen
+        >
+          <div className="mt-2">
+            <label className="block text-xs font-medium text-gray-400 mb-1">
+              Foundation Type
             </label>
+            <Select
+              value={selections.foundation}
+              onChange={(e) => updateSelection("foundation", e.target.value as FoundationType)}
+              className="!bg-gray-800 !text-gray-200 !border-gray-600 text-xs !py-1.5"
+            >
+              {Object.entries(FOUNDATION_PRICES).map(([key, { label, baseCents }]) => (
+                <option key={key} value={key}>
+                  {label} {baseCents > 0 ? `($${(baseCents / 100).toLocaleString()})` : ""}
+                </option>
+              ))}
+            </Select>
           </div>
         </CollapsibleSection>
 

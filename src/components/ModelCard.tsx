@@ -6,17 +6,11 @@ import type { ModelSummary } from "@/types/model";
 import Image from "next/image";
 
 export function ModelCard({ model }: { model: ModelSummary }) {
-  const bathroomLabel =
-    model.slug === "basecamp-20"
-      ? "Dry cabin / optional bath"
-      : model.hasBathroom
-      ? "Full bath"
-      : "Dry cabin";
+  const bathroomLabel = model.hasBathroom ? "Full bath" : "Dry cabin";
 
   const bunksLabel = (() => {
-    if (model.slug === "basecamp-20") return "Upper / lower bunks";
-    if (model.slug === "basecamp-40") return "Four stacked bunks";
-    if (model.slug.includes("outfitter")) return "Six stacked bunks";
+    if (model.slug === "standard") return "Four stacked bunks";
+    if (model.slug === "deluxe") return "Six stacked bunks";
     return "Bunk-ready layout";
   })();
 

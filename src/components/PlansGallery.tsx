@@ -32,7 +32,7 @@ type PlansGalleryProps = {
 };
 
 export function PlansGallery({ models, floorplans, initialModel }: PlansGalleryProps) {
-  const [activeModelSlug, setActiveModelSlug] = useState(initialModel || models[0]?.slug || "basecamp-40");
+  const [activeModelSlug, setActiveModelSlug] = useState(initialModel || models[0]?.slug || "standard");
   const [activePlanId, setActivePlanId] = useState("");
   const [isPending, startTransition] = useTransition();
   const router = useRouter();

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pan-pinch";
 import type {
   AnnotationDragState,
   DesignAction,
@@ -24,6 +25,23 @@ const BASE_SCALE = 32;
 const CANVAS_PADDING = 80;
 const DROP_MIME = "application/x-readybuilt-fixture";
 const ALIGN_THRESHOLD_FT = 0.25;
+
+// Color palette for the canvas (matches desktop styling)
+const COLORS = {
+  canvasBg: "#020617",
+  shellFill: "#0f172a",
+  shellStroke: "#1e293b",
+  gridLine: "#334155",
+  zoneFill: "rgba(34, 211, 238, 0.05)",
+  zoneStroke: "rgba(34, 211, 238, 0.3)",
+  zoneHoverFill: "rgba(34, 211, 238, 0.1)",
+  zoneHoverStroke: "rgba(34, 211, 238, 0.5)",
+  zoneSelectedFill: "rgba(34, 211, 238, 0.15)",
+  zoneSelectedStroke: "rgba(34, 211, 238, 0.8)",
+  zoneLabel: "rgba(34, 211, 238, 0.6)",
+  selectionBounds: "rgba(34, 211, 238, 0.6)",
+  alignmentGuide: "rgba(251, 191, 36, 0.8)",
+};
 
 type DebugLogFn = (type: "click" | "action" | "state" | "coord" | "error" | "info", message: string, data?: Record<string, unknown>) => void;
 
@@ -49,12 +67,14 @@ type FixtureCanvasProps = {
     coords: { xFt: number; yFt: number }
   ) => void;
   activeTool?: ToolType;
+  onToolChange?: (tool: ToolType) => void;
   zoneEditMode?: boolean;
   onDebugLog?: DebugLogFn;
   pendingPlacement?: ModuleCatalogItem | null;
   pendingPlacementRotation?: 0 | 90 | 180 | 270;
   onPlaceFixture?: (catalogKey: string, coords: { xFt: number; yFt: number }) => void;
   onEditAnnotation?: (id: string) => void;
+  onAnnotationPlaced?: () => void;
 };
 
 export function FixtureCanvas({
@@ -76,12 +96,14 @@ export function FixtureCanvas({
   dispatch,
   onAddFixtureAt,
   activeTool = "select",
+  onToolChange,
   zoneEditMode = false,
   onDebugLog,
   pendingPlacement,
   pendingPlacementRotation = 0,
   onPlaceFixture,
   onEditAnnotation,
+  onAnnotationPlaced,
 }: FixtureCanvasProps) {
   // Debug log helper (no-op if not provided)
   const log: DebugLogFn = onDebugLog || (() => {});
@@ -99,10 +121,31 @@ export function FixtureCanvas({
   const [wallSnapPreview, setWallSnapPreview] = useState<{ xFt: number; yFt: number } | null>(null);
   const [placementPreview, setPlacementPreview] = useState<{ xFt: number; yFt: number } | null>(null);
   const [measureSnapPreview, setMeasureSnapPreview] = useState<{ xFt: number; yFt: number } | null>(null);
+  
+  // Mobile magnifier - shows zoomed view above finger during precision operations
+  const [magnifierPos, setMagnifierPos] = useState<{ screenX: number; screenY: number; vbX: number; vbY: number } | null>(null);
 
-  // Add touch refs/state:
-  const touchStartDistanceRef = useRef(0);
-  const lastTouchCenterRef = useRef({ x: 0, y: 0 });
+  // Mobile "drag from anywhere" pending state - waits for movement threshold before starting drag
+  const [pendingMobileDrag, setPendingMobileDrag] = useState<{
+    fixtureId: string;
+    startClientX: number;
+    startClientY: number;
+    startPointPx: { x: number; y: number };
+    fixtureWidth: number;
+    fixtureHeight: number;
+    footprintAnchor: "center" | "front-left" | "back-left";
+  } | null>(null);
+  const MOBILE_DRAG_THRESHOLD = 10; // pixels of movement before drag starts
+
+  // Mobile detection for gesture library vs desktop controls
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // Log wallDrawState changes for debugging
   useEffect(() => {
@@ -121,6 +164,7 @@ export function FixtureCanvas({
     }
   }, [activeTool]);
 
+
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
   const errorSet = useMemo(
     () =>
@@ -134,6 +178,7 @@ export function FixtureCanvas({
 
   const shellWidthPx = design.shell.lengthFt * BASE_SCALE;
   const shellHeightPx = design.shell.widthFt * BASE_SCALE;
+
 
   const gridLinesX = useMemo(() => {
     const lines: number[] = [];
@@ -176,51 +221,44 @@ export function FixtureCanvas({
 
   /**
    * Convert screen coordinates to SVG viewBox coordinates
-   * This properly handles aspect ratio preservation (default SVG behavior)
-   * and accounts for centering when the container doesn't match the viewBox aspect ratio.
-   * Works dynamically on any device/screen size.
+   * Uses SVG's built-in getScreenCTM() which properly handles all transforms
+   * including CSS transforms from gesture libraries like react-zoom-pan-pinch
    */
   const screenToViewBox = (clientX: number, clientY: number) => {
     const svg = svgRef.current;
     if (!svg) return null;
     
-    // Get actual rendered size on this device (dynamic!)
-    const bounds = svg.getBoundingClientRect();
-    if (bounds.width === 0 || bounds.height === 0) return null;
+    // Use SVG's coordinate transformation matrix - handles ALL transforms including CSS
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return null;
     
-    // Calculate how the browser scaled the viewBox to fit (preserving aspect ratio)
-    // The browser uses the smaller scale to ensure the entire viewBox fits
-    const scaleX = bounds.width / viewBoxWidth;
-    const scaleY = bounds.height / viewBoxHeight;
-    const actualScale = Math.min(scaleX, scaleY);
+    // Create a point and transform it from screen to SVG coordinates
+    const point = svg.createSVGPoint();
+    point.x = clientX;
+    point.y = clientY;
     
-    // Calculate the actual rendered size of the viewBox content
-    const renderedWidth = viewBoxWidth * actualScale;
-    const renderedHeight = viewBoxHeight * actualScale;
+    // Apply inverse of the screen CTM to get SVG coordinates
+    const svgPoint = point.matrixTransform(ctm.inverse());
     
-    // Calculate centering offset (SVG centers content by default with xMidYMid)
-    const offsetX = (bounds.width - renderedWidth) / 2;
-    const offsetY = (bounds.height - renderedHeight) / 2;
-    
-    // Convert screen coords to viewBox coords
-    // 1. Subtract bounds.left/top to get coords relative to SVG element
-    // 2. Subtract centering offset to get coords relative to actual content
-    // 3. Divide by actualScale to convert from screen pixels to viewBox units
     return {
-      x: (clientX - bounds.left - offsetX) / actualScale,
-      y: (clientY - bounds.top - offsetY) / actualScale,
+      x: svgPoint.x,
+      y: svgPoint.y,
     };
   };
 
   /**
    * Convert screen coordinates to world coordinates (inside the viewport transform group)
    * This applies the inverse of the viewport transform to viewBox coords
+   * 
+   * On mobile, getScreenCTM() may not correctly include CSS transforms from 
+   * react-zoom-pan-pinch on iOS Safari, so we apply the viewport correction
+   * just like we do on desktop.
    */
   const screenToWorldPx = (clientX: number, clientY: number) => {
     const vb = screenToViewBox(clientX, clientY);
     if (!vb) return null;
     
-    // Apply inverse viewport transform (reverse translate then scale)
+    // Apply inverse viewport transform (same for both mobile and desktop)
     return {
       x: (vb.x - viewport.offsetX) / viewport.scale,
       y: (vb.y - viewport.offsetY) / viewport.scale,
@@ -237,6 +275,62 @@ export function FixtureCanvas({
     return {
       xFt: (world.x - CANVAS_PADDING) / BASE_SCALE,
       yFt: (world.y - CANVAS_PADDING) / BASE_SCALE,
+    };
+  };
+
+  /**
+   * Convert screen coordinates to feet - MOBILE ONLY
+   * Uses getBoundingClientRect which correctly includes CSS transforms from react-zoom-pan-pinch
+   * This is used for absolute positioning (wall, measure, annotate, fixture placement)
+   * where we need accurate coordinates, not relative deltas
+   * 
+   * IMPORTANT: Accounts for SVG preserveAspectRatio="xMidYMid meet" which centers content
+   * and may leave empty space around the edges
+   */
+  const screenToFtMobile = (clientX: number, clientY: number) => {
+    const svg = svgRef.current;
+    if (!svg) return null;
+    
+    // getBoundingClientRect includes all CSS transforms from react-zoom-pan-pinch
+    const rect = svg.getBoundingClientRect();
+    const viewBox = svg.viewBox.baseVal;
+    
+    // Calculate the actual rendered size accounting for preserveAspectRatio="xMidYMid meet"
+    // The SVG content scales uniformly to fit while maintaining aspect ratio
+    const viewBoxAspect = viewBox.width / viewBox.height;
+    const containerAspect = rect.width / rect.height;
+    
+    let renderedWidth: number;
+    let renderedHeight: number;
+    let offsetX: number;
+    let offsetY: number;
+    
+    if (containerAspect > viewBoxAspect) {
+      // Container is wider than content - letterboxing on sides
+      renderedHeight = rect.height;
+      renderedWidth = rect.height * viewBoxAspect;
+      offsetX = (rect.width - renderedWidth) / 2;
+      offsetY = 0;
+    } else {
+      // Container is taller than content - letterboxing on top/bottom
+      renderedWidth = rect.width;
+      renderedHeight = rect.width / viewBoxAspect;
+      offsetX = 0;
+      offsetY = (rect.height - renderedHeight) / 2;
+    }
+    
+    // Map screen position to viewBox position, accounting for centering offset
+    const relX = clientX - rect.left - offsetX;
+    const relY = clientY - rect.top - offsetY;
+    const scaleX = viewBox.width / renderedWidth;
+    const scaleY = viewBox.height / renderedHeight;
+    const vbX = relX * scaleX;
+    const vbY = relY * scaleY;
+    
+    // Convert viewBox coords to feet (viewBox has CANVAS_PADDING offset)
+    return {
+      xFt: (vbX - CANVAS_PADDING) / BASE_SCALE,
+      yFt: (vbY - CANVAS_PADDING) / BASE_SCALE,
     };
   };
 
@@ -261,14 +355,14 @@ export function FixtureCanvas({
 
   const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
     event.preventDefault();
-    const bounds = svgRef.current?.getBoundingClientRect();
-    if (!bounds) return;
+    const svgBounds = svgRef.current?.getBoundingClientRect();
+    if (!svgBounds) return;
     dispatch({
       type: "ZOOM_VIEWPORT",
       deltaScale: -event.deltaY * 0.001,
       centerPx: {
-        x: event.clientX - bounds.left,
-        y: event.clientY - bounds.top,
+        x: event.clientX - svgBounds.left,
+        y: event.clientY - svgBounds.top,
       },
     });
   };
@@ -284,6 +378,47 @@ export function FixtureCanvas({
   };
 
   const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
+    // Handle pending mobile drag - check if movement threshold exceeded
+    if (pendingMobileDrag) {
+      const dx = event.clientX - pendingMobileDrag.startClientX;
+      const dy = event.clientY - pendingMobileDrag.startClientY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance >= MOBILE_DRAG_THRESHOLD) {
+        log("action", "[MOBILE] Movement threshold exceeded - starting actual drag", {
+          fixtureId: pendingMobileDrag.fixtureId,
+          distance,
+        });
+        
+        // Start the actual drag
+        dispatch({
+          type: "START_DRAG",
+          id: pendingMobileDrag.fixtureId,
+          pointerStartPx: pendingMobileDrag.startPointPx,
+          fixtureWidth: pendingMobileDrag.fixtureWidth,
+          fixtureHeight: pendingMobileDrag.fixtureHeight,
+          footprintAnchor: pendingMobileDrag.footprintAnchor,
+        });
+        
+        // Clear pending state
+        setPendingMobileDrag(null);
+        
+        // Continue to process this move event as a drag update
+        const point = screenToWorldPx(event.clientX, event.clientY);
+        if (point) {
+          dispatch({
+            type: "UPDATE_DRAG",
+            pointerCurrentPx: point,
+            scalePxPerFt: BASE_SCALE * viewport.scale,
+            skipSnap: true,
+          });
+        }
+        return;
+      }
+      // Still under threshold - don't process other move handlers
+      return;
+    }
+
     // Handle zone dragging
     if (zoneDragState) {
       const point = screenToWorldPx(event.clientX, event.clientY);
@@ -322,32 +457,73 @@ export function FixtureCanvas({
 
     // Handle annotation dragging - use raw screen coords since that's what we stored at drag start
     if (annotationDragState) {
+      // Calculate scale factor to convert screen pixels to feet
+      // On mobile, need to account for CSS transforms + SVG viewBox scaling
+      let scalePxPerFt = BASE_SCALE * viewport.scale;
+      if (isMobile && svgRef.current) {
+        const rect = svgRef.current.getBoundingClientRect();
+        const viewBox = svgRef.current.viewBox.baseVal;
+        // Screen pixels per viewBox pixel (includes CSS zoom)
+        const screenToViewBoxRatio = rect.width / viewBox.width;
+        // Feet to screen pixels: BASE_SCALE viewBox pixels * screen/viewBox ratio
+        scalePxPerFt = BASE_SCALE * screenToViewBoxRatio;
+      }
+      
       dispatch({
         type: "UPDATE_ANNOTATION_DRAG",
         pointerCurrentPx: { x: event.clientX, y: event.clientY },
-        scalePxPerFt: BASE_SCALE * viewport.scale, // Account for viewport zoom
+        scalePxPerFt,
       });
       return;
     }
 
     // Handle wall drawing preview
     if (wallDrawState && activeTool === "wall") {
-      const coords = screenToFt(event.clientX, event.clientY);
+      // Use mobile-specific coordinate conversion for accurate preview
+      const coords = isMobile ? screenToFtMobile(event.clientX, event.clientY) : screenToFt(event.clientX, event.clientY);
       if (!coords) return;
       dispatch({
         type: "UPDATE_WALL_DRAW",
         currentPoint: coords,
       });
+      // Update magnifier position on mobile
+      if (isMobile) {
+        const vbX = CANVAS_PADDING + coords.xFt * BASE_SCALE;
+        const vbY = CANVAS_PADDING + coords.yFt * BASE_SCALE;
+        setMagnifierPos({ screenX: event.clientX, screenY: event.clientY, vbX, vbY });
+      }
       return;
     }
 
     if (dragState) {
       const point = screenToWorldPx(event.clientX, event.clientY);
-      if (!point) return;
+      
+      // Debug logging for mobile drag - log every 10th event to avoid flooding
+      if (isMobile && Math.random() < 0.1) {
+        log("coord", `[MOBILE DEBUG] Drag MOVE`, {
+          fixtureId: dragState.fixtureId,
+          clientX: event.clientX,
+          clientY: event.clientY,
+          convertedX: point?.x ?? "NULL",
+          convertedY: point?.y ?? "NULL",
+          pointerType: event.pointerType,
+          hasPointerCapture: svgRef.current?.hasPointerCapture(event.pointerId) ?? false,
+          viewportScale: viewport.scale,
+        });
+      }
+      
+      if (!point) {
+        log("error", `[MOBILE DEBUG] Drag MOVE - screenToWorldPx returned NULL!`, {
+          clientX: event.clientX,
+          clientY: event.clientY,
+        });
+        return;
+      }
       dispatch({
         type: "UPDATE_DRAG",
         pointerCurrentPx: point,
         scalePxPerFt: BASE_SCALE,
+        skipSnap: false,  // Enable 0.25ft snapping on both mobile and desktop
       });
       return;
     }
@@ -370,14 +546,22 @@ export function FixtureCanvas({
 
     // Wall tool snap preview - show where the start point will snap to before clicking
     if (activeTool === "wall" && !wallDrawState) {
-      const coords = screenToFt(event.clientX, event.clientY);
+      // Use mobile-specific coordinate conversion for accurate preview
+      const coords = isMobile ? screenToFtMobile(event.clientX, event.clientY) : screenToFt(event.clientX, event.clientY);
       if (coords) {
         // Apply snapping to show where point will actually land
         const snappedX = Math.round(coords.xFt / snapIncrement) * snapIncrement;
         const snappedY = Math.round(coords.yFt / snapIncrement) * snapIncrement;
         setWallSnapPreview({ xFt: snappedX, yFt: snappedY });
+        // Update magnifier position on mobile
+        if (isMobile) {
+          const vbX = CANVAS_PADDING + snappedX * BASE_SCALE;
+          const vbY = CANVAS_PADDING + snappedY * BASE_SCALE;
+          setMagnifierPos({ screenX: event.clientX, screenY: event.clientY, vbX, vbY });
+        }
       } else {
         setWallSnapPreview(null);
+        if (isMobile) setMagnifierPos(null);
       }
     } else if (wallSnapPreview) {
       // Clear preview when not in wall tool or when drawing has started
@@ -386,7 +570,8 @@ export function FixtureCanvas({
 
     // Placement mode preview - show ghost fixture following cursor
     if (pendingPlacement) {
-      const coords = screenToFt(event.clientX, event.clientY);
+      // Use mobile-specific coordinate conversion for accurate preview
+      const coords = isMobile ? screenToFtMobile(event.clientX, event.clientY) : screenToFt(event.clientX, event.clientY);
       if (coords) {
         // Apply snapping to the placement preview
         const snappedX = Math.round(coords.xFt / snapIncrement) * snapIncrement;
@@ -401,16 +586,25 @@ export function FixtureCanvas({
 
     // Measure tool snap preview - show where the next point will be placed
     if (activeTool === "measure") {
-      const coords = screenToFt(event.clientX, event.clientY);
+      // Use mobile-specific coordinate conversion for accurate preview
+      const coords = isMobile ? screenToFtMobile(event.clientX, event.clientY) : screenToFt(event.clientX, event.clientY);
       if (coords) {
         const snappedX = Math.round(coords.xFt / snapIncrement) * snapIncrement;
         const snappedY = Math.round(coords.yFt / snapIncrement) * snapIncrement;
         setMeasureSnapPreview({ xFt: snappedX, yFt: snappedY });
+        // Update magnifier position on mobile
+        if (isMobile) {
+          const vbX = CANVAS_PADDING + snappedX * BASE_SCALE;
+          const vbY = CANVAS_PADDING + snappedY * BASE_SCALE;
+          setMagnifierPos({ screenX: event.clientX, screenY: event.clientY, vbX, vbY });
+        }
       } else {
         setMeasureSnapPreview(null);
+        if (isMobile) setMagnifierPos(null);
       }
     } else if (measureSnapPreview) {
       setMeasureSnapPreview(null);
+      if (isMobile) setMagnifierPos(null);
     }
   };
 
@@ -448,6 +642,59 @@ export function FixtureCanvas({
   };
 
   const handlePointerUp = (event: React.PointerEvent<SVGSVGElement>) => {
+    // Log pointer up/leave events on mobile for debugging
+    if (isMobile && (dragState || zoneDragState || annotationDragState || wallDrawState)) {
+      log("action", `[MOBILE DEBUG] PointerUp/Leave triggered`, {
+        eventType: event.type,
+        pointerId: event.pointerId,
+        pointerType: event.pointerType,
+        clientX: event.clientX,
+        clientY: event.clientY,
+        hasDragState: !!dragState,
+        hasWallDrawState: !!wallDrawState,
+        dragFixtureId: dragState?.fixtureId ?? "none",
+      });
+    }
+    
+    // Mobile wall tool: Complete wall on pointer up (drag-to-draw gesture)
+    if (isMobile && wallDrawState && activeTool === "wall") {
+      const coords = screenToFtMobile(event.clientX, event.clientY);
+      if (coords) {
+        // Only create wall if there's meaningful distance from start
+        const dx = coords.xFt - wallDrawState.startPoint.xFt;
+        const dy = coords.yFt - wallDrawState.startPoint.yFt;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance >= 0.5) { // Minimum 0.5ft wall length
+          log("action", "[MOBILE] END_WALL_DRAW (drag gesture complete)", { 
+            startPoint: wallDrawState.startPoint,
+            endPoint: coords,
+            distance,
+          });
+          dispatch({ type: "END_WALL_DRAW", endPoint: coords });
+          // Switch back to select tool for adjustment
+          onToolChange?.("select");
+        } else {
+          // Too short - cancel the wall
+          log("action", "[MOBILE] Wall too short, canceling", { distance });
+          dispatch({ type: "CANCEL_WALL_DRAW" });
+        }
+      } else {
+        dispatch({ type: "CANCEL_WALL_DRAW" });
+      }
+      return;
+    }
+    
+    // Handle pending mobile drag - if we get pointer up without starting actual drag, 
+    // it was a tap in empty space, so deselect
+    if (pendingMobileDrag) {
+      log("action", "[MOBILE] Tap in empty space - clearing selection (no drag started)", {
+        fixtureId: pendingMobileDrag.fixtureId,
+      });
+      setPendingMobileDrag(null);
+      dispatch({ type: "CLEAR_SELECTION" });
+    }
+    
     if (zoneDragState) {
       dispatch({ type: "END_ZONE_DRAG" });
     }
@@ -461,6 +708,19 @@ export function FixtureCanvas({
       dispatch({ type: "END_ANNOTATION_DRAG" });
     }
     if (dragState) {
+      // Find the fixture to log its final position
+      const draggedFixture = design.fixtures.find(f => f.id === dragState.fixtureId);
+      log("action", `[MOBILE DEBUG] Drag END`, {
+        fixtureId: dragState.fixtureId,
+        finalXFt: draggedFixture?.xFt ?? "unknown",
+        finalYFt: draggedFixture?.yFt ?? "unknown",
+        startXFt: dragState.startXFt,
+        startYFt: dragState.startYFt,
+        clientX: event.clientX,
+        clientY: event.clientY,
+        pointerType: event.pointerType,
+        isMobile,
+      });
       dispatch({ type: "END_DRAG" });
     }
     if (isPanning) {
@@ -469,10 +729,39 @@ export function FixtureCanvas({
     if (marqueeState) {
       finalizeMarquee();
     }
-    // Release pointer capture if it was set for panning
-    if (svgRef.current?.hasPointerCapture(event.pointerId)) {
-      svgRef.current.releasePointerCapture(event.pointerId);
+    // Release pointer capture if it was set (for panning, fixture dragging, etc.)
+    const hadPointerCapture = svgRef.current?.hasPointerCapture(event.pointerId) ?? false;
+    if (hadPointerCapture) {
+      svgRef.current!.releasePointerCapture(event.pointerId);
     }
+    // Clear magnifier on pointer up
+    if (isMobile) {
+      setMagnifierPos(null);
+      log("info", `[MOBILE DEBUG] PointerUp complete`, {
+        hadPointerCapture,
+        pointerId: event.pointerId,
+      });
+    }
+  };
+
+  // Separate handler for pointerleave - ignore during active drag on mobile
+  // iOS WebKit fires pointerleave even with pointer capture when touch moves
+  const handlePointerLeave = (event: React.PointerEvent<SVGSVGElement>) => {
+    // On mobile, ignore pointerleave during active drag, wall drawing, or pending drag - only end on pointerup
+    // This is critical because iOS fires spurious pointerleave events even with pointer capture
+    const hasActiveDrag = !!(dragState || zoneDragState || zoneResizeState || wallLengthDragState || annotationDragState || pendingMobileDrag || (wallDrawState && activeTool === "wall"));
+    
+    if (isMobile && hasActiveDrag) {
+      log("info", `[MOBILE DEBUG] PointerLeave IGNORED during active drag`, {
+        pointerId: event.pointerId,
+        dragFixtureId: dragState?.fixtureId ?? "none",
+        hasPendingMobileDrag: !!pendingMobileDrag,
+      });
+      return; // Don't end the drag on pointerleave
+    }
+    
+    // For non-drag scenarios or desktop, handle normally
+    handlePointerUp(event);
   };
 
   const handleBackgroundPointerDown = (
@@ -532,12 +821,22 @@ export function FixtureCanvas({
     }
 
     // Placement mode - click to place fixture
+    if (isMobile) {
+      log("action", "[MOBILE DEBUG] Placement check", {
+        hasPendingPlacement: !!pendingPlacement,
+        pendingKey: pendingPlacement?.key ?? "none",
+        hasOnPlaceFixture: !!onPlaceFixture,
+        eventButton: event.button,
+        pointerType: event.pointerType,
+      });
+    }
     if (pendingPlacement && onPlaceFixture && event.button === 0) {
       event.preventDefault();
       event.stopPropagation();
-      const coords = screenToFt(event.clientX, event.clientY);
+      // Use mobile-specific coordinate conversion for accurate placement
+      const coords = isMobile ? screenToFtMobile(event.clientX, event.clientY) : screenToFt(event.clientX, event.clientY);
       if (!coords) {
-        log("error", "Placement - screenToFt returned null");
+        log("error", "Placement - coordinate conversion returned null");
         return;
       }
       // Snap to grid
@@ -554,28 +853,41 @@ export function FixtureCanvas({
     // Wall drawing tool - handle at SVG level so it works regardless of what element is clicked
     if (activeTool === "wall" && event.button === 0) {
       event.preventDefault();
-      const coords = screenToFt(event.clientX, event.clientY);
-      log("coord", "Wall tool - screenToFt result", {
+      // Use mobile-specific coordinate conversion for accurate placement
+      const coords = isMobile ? screenToFtMobile(event.clientX, event.clientY) : screenToFt(event.clientX, event.clientY);
+      log("coord", "Wall tool - coordinate result", {
         clientX: event.clientX,
         clientY: event.clientY,
         coords: coords ?? "null",
+        isMobile,
       });
       if (!coords) {
-        log("error", "screenToFt returned null - click may be outside canvas");
+        log("error", "Coordinate conversion returned null - click may be outside canvas");
         return;
       }
       
-      if (!wallDrawState) {
-        // First click - start wall drawing
+      if (isMobile) {
+        // Mobile: Always start a new wall on touch down (drag-to-draw gesture)
+        // Wall will be completed on pointer up
+        log("action", "[MOBILE] START_WALL_DRAW (drag gesture)", { startPoint: coords });
+        dispatch({ type: "START_WALL_DRAW", startPoint: coords });
+        // Capture pointer to ensure we get all move/up events
+        if (svgRef.current) {
+          svgRef.current.setPointerCapture(event.pointerId);
+        }
+      } else if (!wallDrawState) {
+        // Desktop: First click - start wall drawing
         log("action", "START_WALL_DRAW dispatched", { startPoint: coords });
         dispatch({ type: "START_WALL_DRAW", startPoint: coords });
       } else {
-        // Second click - end wall drawing and place the wall
+        // Desktop: Second click - end wall drawing and place the wall
         log("action", "END_WALL_DRAW dispatched", { 
           startPoint: wallDrawState.startPoint,
           endPoint: coords 
         });
         dispatch({ type: "END_WALL_DRAW", endPoint: coords });
+        // Switch back to select tool for adjustment
+        onToolChange?.("select");
       }
       return;
     }
@@ -583,7 +895,8 @@ export function FixtureCanvas({
     // Measure tool - click to add points
     if (activeTool === "measure" && event.button === 0) {
       event.preventDefault();
-      const coords = screenToFt(event.clientX, event.clientY);
+      // Use mobile-specific coordinate conversion for accurate placement
+      const coords = isMobile ? screenToFtMobile(event.clientX, event.clientY) : screenToFt(event.clientX, event.clientY);
       if (!coords) return;
       
       // Snap to grid
@@ -604,7 +917,8 @@ export function FixtureCanvas({
     // Annotate tool - click to add annotation
     if (activeTool === "annotate" && event.button === 0) {
       event.preventDefault();
-      const coords = screenToFt(event.clientX, event.clientY);
+      // Use mobile-specific coordinate conversion for accurate placement
+      const coords = isMobile ? screenToFtMobile(event.clientX, event.clientY) : screenToFt(event.clientX, event.clientY);
       if (!coords) return;
       
       // Snap to grid
@@ -620,7 +934,51 @@ export function FixtureCanvas({
       
       log("action", "ADD_ANNOTATION dispatched", { anchorFt, labelFt });
       dispatch({ type: "ADD_ANNOTATION", anchorFt, labelFt });
+      onAnnotationPlaced?.();
       return;
+    }
+
+    // Mobile: Prepare to drag selected fixture from anywhere on canvas
+    // This makes it easier to move objects on touch devices where precise tapping is difficult
+    // We use a pending state so that a quick tap deselects, but tap-and-drag moves the fixture
+    if (isMobile && activeTool === "select" && selectedIds.length === 1 && event.button === 0) {
+      const selectedFixtureId = selectedIds[0];
+      const fixture = design.fixtures.find((f) => f.id === selectedFixtureId);
+      
+      if (fixture && !fixture.locked) {
+        const catalogItem = catalog[fixture.catalogKey];
+        if (catalogItem) {
+          event.preventDefault();
+          
+          // Set pointer capture on SVG
+          if (svgRef.current) {
+            svgRef.current.setPointerCapture(event.pointerId);
+          }
+          
+          const rect = rectFromFixture(fixture, catalogItem);
+          const point = screenToWorldPx(event.clientX, event.clientY);
+          
+          if (point) {
+            log("action", "[MOBILE] Pending drag from anywhere - waiting for movement threshold", {
+              fixtureId: selectedFixtureId,
+              clientX: event.clientX,
+              clientY: event.clientY,
+            });
+            
+            // Set pending drag - actual drag will start when movement threshold is exceeded
+            setPendingMobileDrag({
+              fixtureId: selectedFixtureId,
+              startClientX: event.clientX,
+              startClientY: event.clientY,
+              startPointPx: point,
+              fixtureWidth: rect.width,
+              fixtureHeight: rect.height,
+              footprintAnchor: catalogItem.footprintAnchor,
+            });
+            return;
+          }
+        }
+      }
     }
   };
 
@@ -632,7 +990,14 @@ export function FixtureCanvas({
       fixtureId,
       activeTool,
       zoneEditMode,
+      hasPendingPlacement: !!pendingPlacement,
     });
+
+    // Don't intercept if we're in placement mode - let it bubble to SVG handler
+    if (pendingPlacement) {
+      log("info", "Fixture click ignored - pending placement active");
+      return;
+    }
 
     // Don't handle fixture selection when in zone edit mode or wall tool is active
     if (zoneEditMode) {
@@ -645,21 +1010,67 @@ export function FixtureCanvas({
     }
     
     log("info", "Fixture click stopping propagation");
+    event.preventDefault();
     event.stopPropagation();
+    
+    // Set pointer capture on SVG to ensure we receive events even when finger moves outside fixture
+    // This is critical for mobile touch dragging
+    const pointerCaptureSet = !!svgRef.current;
+    if (svgRef.current) {
+      svgRef.current.setPointerCapture(event.pointerId);
+    }
+    
+    log("action", `[MOBILE DEBUG] Drag START attempt`, {
+      fixtureId,
+      isMobile,
+      pointerType: event.pointerType,
+      pointerId: event.pointerId,
+      clientX: event.clientX,
+      clientY: event.clientY,
+      pointerCaptureSet,
+      viewportScale: viewport.scale,
+      viewportOffsetX: viewport.offsetX,
+      viewportOffsetY: viewport.offsetY,
+    });
+    
     const fixture = design.fixtures.find((f) => f.id === fixtureId);
-    if (!fixture) return;
+    if (!fixture) {
+      log("error", `[MOBILE DEBUG] Fixture not found: ${fixtureId}`);
+      return;
+    }
     
     // Don't allow selection or drag of locked fixtures
     if (fixture.locked) {
       log("info", "Fixture click ignored - fixture is locked");
+      // Release capture since we're not starting a drag
+      if (svgRef.current?.hasPointerCapture(event.pointerId)) {
+        svgRef.current.releasePointerCapture(event.pointerId);
+      }
       return;
     }
     
     const catalogItem = catalog[fixture.catalogKey];
-    if (!catalogItem) return;
+    if (!catalogItem) {
+      log("error", `[MOBILE DEBUG] Catalog item not found: ${fixture.catalogKey}`);
+      return;
+    }
     const rect = rectFromFixture(fixture, catalogItem);
     const point = screenToWorldPx(event.clientX, event.clientY);
-    if (!point) return;
+    if (!point) {
+      log("error", `[MOBILE DEBUG] screenToWorldPx returned null!`);
+      return;
+    }
+    
+    log("action", `[MOBILE DEBUG] Drag START success`, {
+      fixtureId,
+      fixtureXFt: fixture.xFt,
+      fixtureYFt: fixture.yFt,
+      convertedPointX: point.x,
+      convertedPointY: point.y,
+      fixtureWidth: rect.width,
+      fixtureHeight: rect.height,
+    });
+    
     dispatch({
       type: "SELECT_FIXTURE",
       id: fixtureId,
@@ -683,7 +1094,14 @@ export function FixtureCanvas({
       zoneId,
       zoneEditMode,
       activeTool,
+      hasPendingPlacement: !!pendingPlacement,
     });
+
+    // Don't intercept if we're in placement mode - let it bubble to SVG handler
+    if (pendingPlacement) {
+      log("info", "Zone click ignored - pending placement active");
+      return;
+    }
 
     if (!zoneEditMode) {
       log("info", "Zone click ignored - zoneEditMode not active");
@@ -747,67 +1165,700 @@ export function FixtureCanvas({
     });
   };
 
-  const handleTouchStart = (e: React.TouchEvent<SVGSVGElement>) => {
-    if (e.touches.length === 1) {
-      startPan(e.touches[0].clientX, e.touches[0].clientY);
-    } else if (e.touches.length === 2) {
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
-      touchStartDistanceRef.current = Math.sqrt(dx*dx + dy*dy);
-      lastTouchCenterRef.current = {
-        x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
-        y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
-      };
-    }
-  };
+  // Sync gesture library transform with our viewport state
+  const handleTransformChange = useCallback((ref: { state: { scale: number; positionX: number; positionY: number } }) => {
+    const { scale, positionX, positionY } = ref.state;
+    // Update our viewport state to keep StatusBar zoom display in sync
+    dispatch({ 
+      type: "SET_VIEWPORT", 
+      viewport: { 
+        scale, 
+        offsetX: positionX, 
+        offsetY: positionY 
+      } 
+    });
+  }, [dispatch]);
 
-  const handleTouchMove = (e: React.TouchEvent<SVGSVGElement>) => {
-    if (e.touches.length === 1 && isPanning && panOrigin) {
-      // Single touch pan with screen-size-aware sensitivity
-      const touch = e.touches[0];
-      const multiplier = getPanMultiplier() * 1.5; // Slight boost for touch
-      const deltaX = (touch.clientX - panOrigin.x) * multiplier;
-      const deltaY = (touch.clientY - panOrigin.y) * multiplier;
-      setPanOrigin({ x: touch.clientX, y: touch.clientY });
-      dispatch({ type: "PAN_VIEWPORT", deltaPx: { x: deltaX, y: deltaY } });
-    } else if (e.touches.length === 2) {
-      e.preventDefault();
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
-      const distance = Math.sqrt(dx*dx + dy*dy);
-      const deltaDistance = distance - touchStartDistanceRef.current;
-      const deltaScale = deltaDistance * 0.005; // Pinch sensitivity
-      const center = {
-        x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
-        y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
-      };
-      const bounds = svgRef.current?.getBoundingClientRect();
-      if (bounds) {
-        dispatch({
-          type: "ZOOM_VIEWPORT",
-          deltaScale,
-          centerPx: { x: center.x - bounds.left, y: center.y - bounds.top },
-        });
-      }
-      touchStartDistanceRef.current = distance;
-      lastTouchCenterRef.current = center;
-    }
-  };
+  // Disable panning when any drag operation is in progress
+  const isDragging = !!(dragState || zoneDragState || zoneResizeState || wallLengthDragState || annotationDragState);
 
-  const handleTouchEnd = () => {
-    stopPan();
-  };
+  // Mobile: Use gesture library for smooth pinch/pan
+  // Desktop: Use our existing wheel/pointer handlers
+  if (isMobile) {
+    return (
+      <div className="h-full w-full overflow-hidden bg-slate-950" data-canvas="fixture-canvas">
+        <TransformWrapper
+          initialScale={1}
+          minScale={0.5}
+          maxScale={4}
+          limitToBounds={true}
+          centerOnInit={true}
+          doubleClick={{ mode: "reset" }}
+          panning={{ 
+            disabled: true,  // Disable single-finger pan - use two fingers instead
+            excluded: ["fixture-draggable", "zone-draggable"]  // Exclude draggable elements
+          }}
+          pinch={{ 
+            disabled: isDragging,  // Disable pinch during drag to prevent interference
+            excluded: ["fixture-draggable", "zone-draggable"]
+          }}
+          wheel={{ disabled: true }}  // Disable wheel on mobile
+          velocityAnimation={{ disabled: true }}  // Disable velocity animation to prevent drift after gestures
+          onTransformed={handleTransformChange}
+        >
+          {({ resetTransform }) => (
+            <>
+              {/* Reset View Button for Mobile */}
+              <button
+                onClick={() => resetTransform()}
+                className="absolute bottom-20 left-4 z-20 px-3 py-2 rounded-lg bg-slate-800/90 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm active:scale-95 transition-transform"
+              >
+                Reset View
+              </button>
+              
+              <TransformComponent
+                wrapperStyle={{ width: "100%", height: "100%", touchAction: "none" }}
+                contentStyle={{ width: "100%", height: "100%", touchAction: "none" }}
+              >
+                <svg
+                  ref={svgRef}
+                  className="h-full w-full"
+                  style={{ touchAction: "none", cursor: pendingPlacement ? "crosshair" : undefined }}
+                  viewBox={`0 0 ${shellWidthPx + CANVAS_PADDING * 2} ${shellHeightPx + CANVAS_PADDING * 2}`}
+                  role="img"
+                  aria-label="Design workspace"
+                  onPointerDown={handleSvgPointerDown}
+                  onPointerMove={handlePointerMove}
+                  onPointerUp={handlePointerUp}
+                  onPointerLeave={handlePointerLeave}
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                >
+                  <defs>
+                    {/* Arrow marker for dimension lines */}
+                    <marker
+                      id="arrow"
+                      viewBox="0 0 10 10"
+                      refX="5"
+                      refY="5"
+                      markerWidth="6"
+                      markerHeight="6"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M 0 0 L 10 5 L 0 10 z" fill="#fbbf24" />
+                    </marker>
+                  </defs>
 
+                  <rect
+                    x={0}
+                    y={0}
+                    width={shellWidthPx + CANVAS_PADDING * 2}
+                    height={shellHeightPx + CANVAS_PADDING * 2}
+                    fill={COLORS.canvasBg}
+                  />
+
+                  {/* Content group - no internal transform, TransformWrapper handles zoom/pan */}
+                  <g>
+                    {/* Grid */}
+                    <g opacity={0.15}>
+                      {gridLinesX.map((ft) => (
+                        <line
+                          key={`gx-${ft}`}
+                          x1={CANVAS_PADDING + ft * BASE_SCALE}
+                          y1={CANVAS_PADDING}
+                          x2={CANVAS_PADDING + ft * BASE_SCALE}
+                          y2={CANVAS_PADDING + shellHeightPx}
+                          stroke={COLORS.gridLine}
+                          strokeWidth={ft % 1 === 0 ? 1 : 0.5}
+                        />
+                      ))}
+                      {gridLinesY.map((ft) => (
+                        <line
+                          key={`gy-${ft}`}
+                          x1={CANVAS_PADDING}
+                          y1={CANVAS_PADDING + ft * BASE_SCALE}
+                          x2={CANVAS_PADDING + shellWidthPx}
+                          y2={CANVAS_PADDING + ft * BASE_SCALE}
+                          stroke={COLORS.gridLine}
+                          strokeWidth={ft % 1 === 0 ? 1 : 0.5}
+                        />
+                      ))}
+                    </g>
+
+                    {/* Shell outline */}
+                    <rect
+                      x={CANVAS_PADDING}
+                      y={CANVAS_PADDING}
+                      width={shellWidthPx}
+                      height={shellHeightPx}
+                      fill={COLORS.shellFill}
+                      stroke={COLORS.shellStroke}
+                      strokeWidth={2}
+                    />
+
+                    {/* Zones */}
+                    {design.zones.map((zone) => {
+                      const isSelected = zone.id === selectedZoneId;
+                      const isHovered = zone.id === hoveredZoneId;
+                      return (
+                        <g key={zone.id} className="zone-draggable">
+                          <rect
+                            x={CANVAS_PADDING + zone.xFt * BASE_SCALE}
+                            y={CANVAS_PADDING + zone.yFt * BASE_SCALE}
+                            width={zone.lengthFt * BASE_SCALE}
+                            height={zone.widthFt * BASE_SCALE}
+                            fill={isSelected ? COLORS.zoneSelectedFill : isHovered ? COLORS.zoneHoverFill : COLORS.zoneFill}
+                            stroke={isSelected ? COLORS.zoneSelectedStroke : isHovered ? COLORS.zoneHoverStroke : COLORS.zoneStroke}
+                            strokeWidth={isSelected ? 2 : 1}
+                            strokeDasharray={isSelected ? "none" : "4 2"}
+                            style={{ cursor: zoneEditMode ? "move" : "default", touchAction: "none" }}
+                            onPointerDown={(e) => {
+                              // Don't stop propagation during placement mode - let it bubble to SVG
+                              if (!pendingPlacement && zoneEditMode) {
+                                e.stopPropagation();
+                              }
+                              handleZonePointerDown(e, zone.id);
+                            }}
+                            onPointerEnter={() => zoneEditMode && setHoveredZoneId(zone.id)}
+                            onPointerLeave={() => setHoveredZoneId(null)}
+                          />
+                          {/* Zone label */}
+                          <text
+                            x={CANVAS_PADDING + zone.xFt * BASE_SCALE + 4}
+                            y={CANVAS_PADDING + zone.yFt * BASE_SCALE + 14}
+                            fill={COLORS.zoneLabel}
+                            fontSize="11"
+                            fontWeight="500"
+                          >
+                            {zone.name}
+                          </text>
+                          {/* Zone resize handle (bottom-right) */}
+                          {zoneEditMode && (
+                            <rect
+                              x={CANVAS_PADDING + (zone.xFt + zone.lengthFt) * BASE_SCALE - 8}
+                              y={CANVAS_PADDING + (zone.yFt + zone.widthFt) * BASE_SCALE - 8}
+                              width={16}
+                              height={16}
+                              fill={hoveredResizeHandle === zone.id ? COLORS.zoneSelectedStroke : COLORS.zoneStroke}
+                              stroke="white"
+                              strokeWidth={1}
+                              rx={2}
+                              style={{ cursor: "se-resize", touchAction: "none" }}
+                              onPointerEnter={() => setHoveredResizeHandle(zone.id)}
+                              onPointerLeave={() => setHoveredResizeHandle(null)}
+                              onPointerDown={(e) => {
+                                handleZoneResizePointerDown(e, zone.id, "se");
+                              }}
+                            />
+                          )}
+                        </g>
+                      );
+                    })}
+
+                    {/* Clearance rects (rendered behind fixtures) */}
+                    {clearanceRects.map((rect, i) => (
+                      <rect
+                        key={`clear-${i}`}
+                        x={CANVAS_PADDING + rect.x * BASE_SCALE}
+                        y={CANVAS_PADDING + rect.y * BASE_SCALE}
+                        width={rect.width * BASE_SCALE}
+                        height={rect.height * BASE_SCALE}
+                        fill="rgba(59, 130, 246, 0.08)"
+                        stroke="rgba(59, 130, 246, 0.3)"
+                        strokeWidth={1}
+                        strokeDasharray="3 3"
+                        pointerEvents="none"
+                      />
+                    ))}
+
+                    {/* Fixtures */}
+                    {design.fixtures.map((fixture) => {
+                      const catalogItem = catalog[fixture.catalogKey];
+                      if (!catalogItem) return null;
+                      const rect = rectFromFixture(fixture, catalogItem);
+                      const x = CANVAS_PADDING + rect.x * BASE_SCALE;
+                      const y = CANVAS_PADDING + rect.y * BASE_SCALE;
+                      const width = rect.width * BASE_SCALE;
+                      const height = rect.height * BASE_SCALE;
+                      const isSelected = selectedSet.has(fixture.id);
+                      const hasError = errorSet.has(fixture.id);
+                      const isHovered = fixture.id === hoveredFixtureId;
+                      const isLocked = fixture.locked ?? false;
+                      const isBeingDragged = dragState?.fixtureId === fixture.id;
+                      const anotherFixtureIsDragging = !!dragState && !isBeingDragged;
+                      return (
+                        <g key={fixture.id} className="fixture-draggable">
+                          <g
+                            onPointerDown={(e) => {
+                              // Don't stop propagation during placement mode - let it bubble to SVG
+                              if (!pendingPlacement) {
+                                e.stopPropagation();
+                              }
+                              handleFixturePointerDown(e, fixture.id);
+                            }}
+                            // Disable hover events during drag to prevent interference
+                            onPointerEnter={anotherFixtureIsDragging ? undefined : () => setHoveredFixtureId(fixture.id)}
+                            onPointerLeave={anotherFixtureIsDragging ? undefined : () => setHoveredFixtureId(null)}
+                            style={{ 
+                              cursor: isLocked ? "not-allowed" : "pointer", 
+                              touchAction: "none",
+                              // Disable pointer events on non-dragged fixtures during drag to prevent event interference
+                              pointerEvents: anotherFixtureIsDragging ? "none" : "auto"
+                            }}
+                            opacity={isLocked ? 0.7 : 1}
+                          >
+                            <Fixture2DRenderer
+                              fixture={fixture}
+                              catalogItem={catalogItem}
+                              x={x}
+                              y={y}
+                              width={width}
+                              height={height}
+                              isSelected={isSelected}
+                              hasError={hasError}
+                              isHovered={isHovered}
+                            />
+                          </g>
+                        </g>
+                      );
+                    })}
+
+                    {/* Collision overlays */}
+                    {collisionRects.map((rect, i) => (
+                      <rect
+                        key={`coll-${i}`}
+                        x={CANVAS_PADDING + rect.x * BASE_SCALE}
+                        y={CANVAS_PADDING + rect.y * BASE_SCALE}
+                        width={rect.width * BASE_SCALE}
+                        height={rect.height * BASE_SCALE}
+                        fill="rgba(239, 68, 68, 0.2)"
+                        stroke="rgba(239, 68, 68, 0.6)"
+                        strokeWidth={2}
+                        strokeDasharray="4 2"
+                        pointerEvents="none"
+                      />
+                    ))}
+
+                    {/* Multi-select bounding box */}
+                    {selectionBounds && selectedIds.length > 1 && (
+                      <rect
+                        x={CANVAS_PADDING + selectionBounds.x * BASE_SCALE - 4}
+                        y={CANVAS_PADDING + selectionBounds.y * BASE_SCALE - 4}
+                        width={selectionBounds.width * BASE_SCALE + 8}
+                        height={selectionBounds.height * BASE_SCALE + 8}
+                        fill="none"
+                        stroke={COLORS.selectionBounds}
+                        strokeWidth={1.5}
+                        strokeDasharray="6 3"
+                        pointerEvents="none"
+                      />
+                    )}
+
+                    {/* Alignment guides */}
+                    <g stroke={COLORS.alignmentGuide} strokeDasharray="4 4" strokeWidth={1.5} opacity={0.8}>
+                      {alignmentGuides.map((guide, i) =>
+                        guide.orientation === "vertical" ? (
+                          <line
+                            key={`guide-v-${i}`}
+                            x1={CANVAS_PADDING + guide.value * BASE_SCALE}
+                            x2={CANVAS_PADDING + guide.value * BASE_SCALE}
+                            y1={CANVAS_PADDING}
+                            y2={CANVAS_PADDING + shellHeightPx}
+                            pointerEvents="none"
+                          />
+                        ) : (
+                          <line
+                            key={`guide-h-${i}`}
+                            y1={CANVAS_PADDING + guide.value * BASE_SCALE}
+                            y2={CANVAS_PADDING + guide.value * BASE_SCALE}
+                            x1={CANVAS_PADDING}
+                            x2={CANVAS_PADDING + shellWidthPx}
+                            pointerEvents="none"
+                          />
+                        )
+                      )}
+                    </g>
+
+                    {/* Marquee selection */}
+                    {marqueeState && (
+                      <rect
+                        x={Math.min(marqueeState.origin.x, marqueeState.current.x)}
+                        y={Math.min(marqueeState.origin.y, marqueeState.current.y)}
+                        width={Math.abs(marqueeState.current.x - marqueeState.origin.x)}
+                        height={Math.abs(marqueeState.current.y - marqueeState.origin.y)}
+                        fill="rgba(34, 211, 238, 0.1)"
+                        stroke="rgba(34, 211, 238, 0.6)"
+                        strokeWidth={1}
+                        strokeDasharray="4 2"
+                        pointerEvents="none"
+                      />
+                    )}
+
+                    {/* Placement ghost */}
+                    {pendingPlacement && placementPreview && (
+                      <g opacity={0.6} pointerEvents="none">
+                        <rect
+                          x={CANVAS_PADDING + placementPreview.xFt * BASE_SCALE - (pendingPlacement.footprintFt.length * BASE_SCALE) / 2}
+                          y={CANVAS_PADDING + placementPreview.yFt * BASE_SCALE - (pendingPlacement.footprintFt.width * BASE_SCALE) / 2}
+                          width={pendingPlacement.footprintFt.length * BASE_SCALE}
+                          height={pendingPlacement.footprintFt.width * BASE_SCALE}
+                          fill="rgba(34, 211, 238, 0.3)"
+                          stroke="rgba(34, 211, 238, 0.8)"
+                          strokeWidth={2}
+                          strokeDasharray="4 2"
+                          transform={`rotate(${pendingPlacementRotation} ${CANVAS_PADDING + placementPreview.xFt * BASE_SCALE} ${CANVAS_PADDING + placementPreview.yFt * BASE_SCALE})`}
+                        />
+                      </g>
+                    )}
+
+                    {/* Measure tool */}
+                    {measurePoints.length > 0 && (
+                      <g>
+                        {measurePoints.map((pt, i) => (
+                          <circle
+                            key={`mp-${i}`}
+                            cx={CANVAS_PADDING + pt.xFt * BASE_SCALE}
+                            cy={CANVAS_PADDING + pt.yFt * BASE_SCALE}
+                            r={6}
+                            fill="#fbbf24"
+                            stroke="#fff"
+                            strokeWidth={2}
+                          />
+                        ))}
+                        {measurePoints.length === 2 && (
+                          <>
+                            <line
+                              x1={CANVAS_PADDING + measurePoints[0].xFt * BASE_SCALE}
+                              y1={CANVAS_PADDING + measurePoints[0].yFt * BASE_SCALE}
+                              x2={CANVAS_PADDING + measurePoints[1].xFt * BASE_SCALE}
+                              y2={CANVAS_PADDING + measurePoints[1].yFt * BASE_SCALE}
+                              stroke="#fbbf24"
+                              strokeWidth={2}
+                              markerStart="url(#arrow)"
+                              markerEnd="url(#arrow)"
+                            />
+                            <text
+                              x={(CANVAS_PADDING + measurePoints[0].xFt * BASE_SCALE + CANVAS_PADDING + measurePoints[1].xFt * BASE_SCALE) / 2}
+                              y={(CANVAS_PADDING + measurePoints[0].yFt * BASE_SCALE + CANVAS_PADDING + measurePoints[1].yFt * BASE_SCALE) / 2 - 10}
+                              fill="#fbbf24"
+                              fontSize="14"
+                              fontWeight="bold"
+                              textAnchor="middle"
+                            >
+                              {Math.sqrt(
+                                Math.pow(measurePoints[1].xFt - measurePoints[0].xFt, 2) +
+                                Math.pow(measurePoints[1].yFt - measurePoints[0].yFt, 2)
+                              ).toFixed(2)} ft
+                            </text>
+                          </>
+                        )}
+                      </g>
+                    )}
+
+                    {/* Wall drawing preview */}
+                    {wallDrawState && (
+                      <g>
+                        <circle
+                          cx={CANVAS_PADDING + wallDrawState.startPoint.xFt * BASE_SCALE}
+                          cy={CANVAS_PADDING + wallDrawState.startPoint.yFt * BASE_SCALE}
+                          r={6}
+                          fill="#22d3ee"
+                          stroke="#fff"
+                          strokeWidth={2}
+                        />
+                        {wallDrawState.currentPoint && (
+                          <>
+                            <line
+                              x1={CANVAS_PADDING + wallDrawState.startPoint.xFt * BASE_SCALE}
+                              y1={CANVAS_PADDING + wallDrawState.startPoint.yFt * BASE_SCALE}
+                              x2={CANVAS_PADDING + wallDrawState.currentPoint.xFt * BASE_SCALE}
+                              y2={CANVAS_PADDING + wallDrawState.currentPoint.yFt * BASE_SCALE}
+                              stroke="#22d3ee"
+                              strokeWidth={4}
+                              strokeLinecap="round"
+                              opacity={0.7}
+                            />
+                            <circle
+                              cx={CANVAS_PADDING + wallDrawState.currentPoint.xFt * BASE_SCALE}
+                              cy={CANVAS_PADDING + wallDrawState.currentPoint.yFt * BASE_SCALE}
+                              r={4}
+                              fill="#22d3ee"
+                              stroke="#fff"
+                              strokeWidth={1}
+                            />
+                          </>
+                        )}
+                      </g>
+                    )}
+
+                    {/* Wall snap preview (before wall draw starts) */}
+                    {wallSnapPreview && activeTool === "wall" && !wallDrawState && (
+                      <circle
+                        cx={CANVAS_PADDING + wallSnapPreview.xFt * BASE_SCALE}
+                        cy={CANVAS_PADDING + wallSnapPreview.yFt * BASE_SCALE}
+                        r={6}
+                        fill="none"
+                        stroke="#22d3ee"
+                        strokeWidth={2}
+                        strokeDasharray="3 3"
+                        pointerEvents="none"
+                      />
+                    )}
+
+                    {/* Measure snap preview */}
+                    {measureSnapPreview && activeTool === "measure" && (
+                      <circle
+                        cx={CANVAS_PADDING + measureSnapPreview.xFt * BASE_SCALE}
+                        cy={CANVAS_PADDING + measureSnapPreview.yFt * BASE_SCALE}
+                        r={6}
+                        fill="none"
+                        stroke="#fbbf24"
+                        strokeWidth={2}
+                        strokeDasharray="3 3"
+                        pointerEvents="none"
+                      />
+                    )}
+
+                    {/* Annotations layer */}
+                    {(design.annotations?.length ?? 0) > 0 && (
+                      <g transform={`translate(${CANVAS_PADDING}, ${CANVAS_PADDING})`}>
+                        <AnnotationLayer
+                          annotations={design.annotations ?? []}
+                          selectedAnnotationId={selectedAnnotationId}
+                          viewport={viewport}
+                          scalePxPerFt={BASE_SCALE}
+                          dispatch={dispatch}
+                          onStartDrag={(id, target, pointerStartPx) => {
+                            dispatch({ type: "START_ANNOTATION_DRAG", id, target, pointerStartPx });
+                          }}
+                          onEditText={(id) => {
+                            if (onEditAnnotation) {
+                              onEditAnnotation(id);
+                            }
+                          }}
+                        />
+                      </g>
+                    )}
+                  </g>
+                </svg>
+              </TransformComponent>
+              
+              {/* Mobile Magnifier - shows zoomed view above finger */}
+              {magnifierPos && (activeTool === "wall" || activeTool === "measure") && (
+                <div
+                  className="pointer-events-none fixed z-50"
+                  style={{
+                    left: magnifierPos.screenX - 60,
+                    top: magnifierPos.screenY - 140,
+                    width: 120,
+                    height: 120,
+                  }}
+                >
+                  <svg
+                    width="120"
+                    height="120"
+                    viewBox={`${magnifierPos.vbX - 40} ${magnifierPos.vbY - 40} 80 80`}
+                    className="rounded-full border-4 border-white shadow-2xl"
+                    style={{ 
+                      backgroundColor: COLORS.canvasBg,
+                      boxShadow: "0 0 20px rgba(0,0,0,0.5), 0 0 0 2px rgba(255,255,255,0.3)",
+                    }}
+                  >
+                    {/* Grid lines in magnifier */}
+                    <g opacity={0.2}>
+                      {Array.from({ length: 11 }, (_, i) => {
+                        const ft = Math.floor((magnifierPos.vbX - 40 - CANVAS_PADDING) / BASE_SCALE) + i - 5;
+                        const x = CANVAS_PADDING + ft * BASE_SCALE;
+                        return (
+                          <line
+                            key={`mg-gx-${i}`}
+                            x1={x}
+                            y1={magnifierPos.vbY - 40}
+                            x2={x}
+                            y2={magnifierPos.vbY + 40}
+                            stroke={COLORS.gridLine}
+                            strokeWidth={0.5}
+                          />
+                        );
+                      })}
+                      {Array.from({ length: 11 }, (_, i) => {
+                        const ft = Math.floor((magnifierPos.vbY - 40 - CANVAS_PADDING) / BASE_SCALE) + i - 5;
+                        const y = CANVAS_PADDING + ft * BASE_SCALE;
+                        return (
+                          <line
+                            key={`mg-gy-${i}`}
+                            x1={magnifierPos.vbX - 40}
+                            y1={y}
+                            x2={magnifierPos.vbX + 40}
+                            y2={y}
+                            stroke={COLORS.gridLine}
+                            strokeWidth={0.5}
+                          />
+                        );
+                      })}
+                    </g>
+                    
+                    {/* Shell outline */}
+                    <rect
+                      x={CANVAS_PADDING}
+                      y={CANVAS_PADDING}
+                      width={shellWidthPx}
+                      height={shellHeightPx}
+                      rx={4}
+                      fill="none"
+                      stroke={COLORS.shellStroke}
+                      strokeWidth={1}
+                    />
+                    
+                    {/* Existing fixtures in magnifier */}
+                    {design.fixtures.map((fixture) => {
+                      const catalogItem = catalog[fixture.catalogKey];
+                      if (!catalogItem) return null;
+                      const rect = rectFromFixture(fixture, catalogItem);
+                      const x = CANVAS_PADDING + rect.x * BASE_SCALE;
+                      const y = CANVAS_PADDING + rect.y * BASE_SCALE;
+                      const width = rect.width * BASE_SCALE;
+                      const height = rect.height * BASE_SCALE;
+                      return (
+                        <rect
+                          key={`mag-fix-${fixture.id}`}
+                          x={x}
+                          y={y}
+                          width={width}
+                          height={height}
+                          rx={2}
+                          fill="rgba(100, 116, 139, 0.5)"
+                          stroke="#64748b"
+                          strokeWidth={1}
+                          transform={`rotate(${fixture.rotationDeg || 0} ${x + width/2} ${y + height/2})`}
+                        />
+                      );
+                    })}
+                    
+                    {/* Existing walls in magnifier */}
+                    {design.fixtures
+                      .filter((f) => f.catalogKey.includes('wall'))
+                      .map((wall) => {
+                        const wallCatalog = catalog[wall.catalogKey];
+                        if (!wallCatalog) return null;
+                        
+                        const props = wall.properties as { lengthOverrideFt?: number; thicknessIn?: number } | undefined;
+                        const lengthFt = props?.lengthOverrideFt ?? wallCatalog.footprintFt.length;
+                        const thicknessIn = props?.thicknessIn ?? 4;
+                        
+                        // Wall is positioned at center, extends along its rotation
+                        const isHorizontal = wall.rotationDeg === 0;
+                        const halfLength = lengthFt / 2;
+                        
+                        let x1Ft, y1Ft, x2Ft, y2Ft;
+                        if (isHorizontal) {
+                          x1Ft = wall.xFt - halfLength;
+                          x2Ft = wall.xFt + halfLength;
+                          y1Ft = y2Ft = wall.yFt;
+                        } else {
+                          y1Ft = wall.yFt - halfLength;
+                          y2Ft = wall.yFt + halfLength;
+                          x1Ft = x2Ft = wall.xFt;
+                        }
+                        
+                        return (
+                          <line
+                            key={`mag-wall-${wall.id}`}
+                            x1={CANVAS_PADDING + x1Ft * BASE_SCALE}
+                            y1={CANVAS_PADDING + y1Ft * BASE_SCALE}
+                            x2={CANVAS_PADDING + x2Ft * BASE_SCALE}
+                            y2={CANVAS_PADDING + y2Ft * BASE_SCALE}
+                            stroke="#94a3b8"
+                            strokeWidth={thicknessIn / 12 * BASE_SCALE}
+                            strokeLinecap="round"
+                          />
+                        );
+                      })}
+                    
+                    {/* Wall preview line in magnifier */}
+                    {wallDrawState && (
+                      <>
+                        {/* Wall line */}
+                        <line
+                          x1={CANVAS_PADDING + wallDrawState.startPoint.xFt * BASE_SCALE}
+                          y1={CANVAS_PADDING + wallDrawState.startPoint.yFt * BASE_SCALE}
+                          x2={magnifierPos.vbX}
+                          y2={magnifierPos.vbY}
+                          stroke="#06b6d4"
+                          strokeWidth={3}
+                          strokeLinecap="round"
+                        />
+                        {/* Start point */}
+                        <circle
+                          cx={CANVAS_PADDING + wallDrawState.startPoint.xFt * BASE_SCALE}
+                          cy={CANVAS_PADDING + wallDrawState.startPoint.yFt * BASE_SCALE}
+                          r={4}
+                          fill="#06b6d4"
+                          stroke="#fff"
+                          strokeWidth={1}
+                        />
+                      </>
+                    )}
+                    
+                    {/* Crosshair at center */}
+                    <line
+                      x1={magnifierPos.vbX - 15}
+                      y1={magnifierPos.vbY}
+                      x2={magnifierPos.vbX + 15}
+                      y2={magnifierPos.vbY}
+                      stroke="#22d3ee"
+                      strokeWidth={1.5}
+                    />
+                    <line
+                      x1={magnifierPos.vbX}
+                      y1={magnifierPos.vbY - 15}
+                      x2={magnifierPos.vbX}
+                      y2={magnifierPos.vbY + 15}
+                      stroke="#22d3ee"
+                      strokeWidth={1.5}
+                    />
+                    
+                    {/* Center dot (end point of wall) */}
+                    <circle
+                      cx={magnifierPos.vbX}
+                      cy={magnifierPos.vbY}
+                      r={4}
+                      fill="#22d3ee"
+                      stroke="#fff"
+                      strokeWidth={1}
+                    />
+                  </svg>
+                  
+                  {/* Pointer line from magnifier to actual position */}
+                  <div 
+                    className="absolute left-1/2 -translate-x-1/2"
+                    style={{
+                      top: 120,
+                      width: 2,
+                      height: 16,
+                      background: "linear-gradient(to bottom, white, transparent)",
+                    }}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </TransformWrapper>
+      </div>
+    );
+  }
+
+  // Desktop: Use existing wheel/pointer handlers
   return (
     <div className="h-full w-full overflow-hidden bg-slate-950" data-canvas="fixture-canvas">
       <svg
         ref={svgRef}
-        className="h-full w-full touch-action-pan-x pan-y pinch-zoom"
+        className="h-full w-full"
+        style={{ touchAction: "none", cursor: pendingPlacement ? "crosshair" : undefined }}
         viewBox={`0 0 ${shellWidthPx + CANVAS_PADDING * 2} ${shellHeightPx + CANVAS_PADDING * 2
           }`}
         role="img"
         aria-label="Design workspace"
-        style={{ cursor: pendingPlacement ? "crosshair" : undefined }}
         onPointerDown={handleSvgPointerDown}
         onWheel={handleWheel}
         onPointerMove={handlePointerMove}
@@ -815,9 +1866,6 @@ export function FixtureCanvas({
         onPointerLeave={handlePointerUp}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
       >
         <defs>
           {/* Arrow marker for dimension lines */}

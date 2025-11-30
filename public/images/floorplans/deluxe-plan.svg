@@ -20,7 +20,7 @@
   <!-- Title -->
   <text x="600" y="40" font-family="system-ui, -apple-system, sans-serif" 
         font-size="20" font-weight="600" fill="#0f172a" text-anchor="middle">
-    Basecamp 40 Floor Plan
+    Deluxe Floor Plan
   </text>
   <text x="600" y="65" font-family="system-ui, -apple-system, sans-serif" 
         font-size="12" font-weight="400" fill="#334155" text-anchor="middle" letter-spacing="2">
@@ -35,7 +35,7 @@
     <text x="325" y="190" 
           font-family="system-ui" font-size="14" font-weight="600" 
           fill="#f8fafc" text-anchor="middle">
-      Living / Kitchen
+      Extended Galley
     </text>
     <text x="325" y="215" 
           font-family="system-ui" font-size="12" font-weight="400" 
@@ -44,34 +44,34 @@
     </text>
   </g>
   <g filter="url(#zone-shadow)">
-    <rect x="600" y="250" width="192.5" height="50" 
+    <rect x="600" y="250" width="165" height="50" 
           fill="#64748b" stroke="#0f172a" stroke-width="2" rx="0" opacity="0.85"/>
-    <text x="696.25" y="280" font-family="system-ui" font-size="11" font-weight="500" fill="#0f172a" text-anchor="middle">Hall</text>
-    <rect x="600" y="100" width="192.5" height="150" 
+    <text x="682.5" y="280" font-family="system-ui" font-size="11" font-weight="500" fill="#0f172a" text-anchor="middle">Hall</text>
+    <rect x="600" y="100" width="165" height="150" 
           fill="#06b6d4" stroke="#0f172a" stroke-width="2" rx="4" opacity="0.85"/>
-    <text x="696.25" y="190" 
+    <text x="682.5" y="190" 
           font-family="system-ui" font-size="14" font-weight="600" 
           fill="#f8fafc" text-anchor="middle">
-      Bath
+      Full Bath
     </text>
-    <text x="696.25" y="215" 
+    <text x="682.5" y="215" 
           font-family="system-ui" font-size="12" font-weight="400" 
           fill="#e2e8f0" text-anchor="middle">
-      7' × 5'
+      6' × 5'
     </text>
   </g>
   <g filter="url(#zone-shadow)">
-    <rect x="792.5" y="100" width="357.5" height="200" 
+    <rect x="765" y="100" width="385" height="200" 
           fill="#0ea5e9" stroke="#0f172a" stroke-width="2" rx="4" opacity="0.85"/>
-    <text x="971.25" y="190" 
+    <text x="957.5" y="190" 
           font-family="system-ui" font-size="14" font-weight="600" 
           fill="#f8fafc" text-anchor="middle">
-      Bunk Room
+      6-Bunk Bay
     </text>
-    <text x="971.25" y="215" 
+    <text x="957.5" y="215" 
           font-family="system-ui" font-size="12" font-weight="400" 
           fill="#e2e8f0" text-anchor="middle">
-      13'
+      14'
     </text>
   </g>
   <!-- Overall dimension line -->

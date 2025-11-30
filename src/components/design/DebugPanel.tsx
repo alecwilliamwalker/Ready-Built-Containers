@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 
 export type DebugLog = {
   timestamp: number;
@@ -17,6 +17,7 @@ export type DebugPanelProps = {
 
 export function DebugPanel({ logs, onClear, onClose }: DebugPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">("idle");
 
   // Auto-scroll to bottom when new logs arrive
   useEffect(() => {
@@ -25,7 +26,7 @@ export function DebugPanel({ logs, onClear, onClose }: DebugPanelProps) {
     }
   }, [logs]);
 
-  const copyToClipboard = () => {
+  const copyToClipboard = async () => {
     const logText = logs
       .map((log) => {
         const time = new Date(log.timestamp).toISOString().split("T")[1].slice(0, -1);
@@ -33,7 +34,40 @@ export function DebugPanel({ logs, onClear, onClose }: DebugPanelProps) {
         return `[${time}] [${log.type.toUpperCase()}] ${log.message}${dataStr}`;
       })
       .join("\n");
-    navigator.clipboard.writeText(logText);
+    
+    try {
+      // Try modern clipboard API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(logText);
+        setCopyStatus("success");
+      } else {
+        // Fallback for older browsers / iOS
+        const textArea = document.createElement("textarea");
+        textArea.value = logText;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.top = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        const success = document.execCommand("copy");
+        document.body.removeChild(textArea);
+        
+        if (success) {
+          setCopyStatus("success");
+        } else {
+          throw new Error("execCommand copy failed");
+        }
+      }
+      
+      // Reset status after 2 seconds
+      setTimeout(() => setCopyStatus("idle"), 2000);
+    } catch (err) {
+      console.error("Copy to clipboard failed:", err);
+      setCopyStatus("error");
+      setTimeout(() => setCopyStatus("idle"), 2000);
+    }
   };
 
   const getLogColor = (type: DebugLog["type"]) => {
@@ -54,29 +88,51 @@ export function DebugPanel({ logs, onClear, onClose }: DebugPanelProps) {
     }
   };
 
+  const getCopyButtonText = () => {
+    switch (copyStatus) {
+      case "success":
+        return "✓ Copied!";
+      case "error":
+        return "✗ Failed";
+      default:
+        return "📋 Copy";
+    }
+  };
+
+  const getCopyButtonClass = () => {
+    switch (copyStatus) {
+      case "success":
+        return "bg-green-600 text-white";
+      case "error":
+        return "bg-red-600 text-white";
+      default:
+        return "bg-slate-700 hover:bg-slate-600 text-white";
+    }
+  };
+
   return (
-    <div className="fixed bottom-10 right-4 w-[500px] h-[400px] bg-slate-900 border border-slate-700 rounded-lg shadow-2xl z-[100] flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-slate-700 bg-slate-800 rounded-t-lg">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">🐛</span>
-          <span className="text-sm font-semibold text-white">Debug Log</span>
-          <span className="text-xs text-slate-400">({logs.length} entries)</span>
+    <div className="fixed bottom-20 left-2 right-2 sm:left-auto sm:right-4 sm:w-[500px] h-64 sm:h-80 bg-slate-900 border border-slate-700 rounded-lg shadow-2xl z-[100] flex flex-col">
+      {/* Header - fixed at top */}
+      <div className="flex-shrink-0 flex items-center justify-between px-3 sm:px-4 py-2 border-b border-slate-700 bg-slate-800 rounded-t-lg">
+        <div className="flex items-center gap-1 sm:gap-2">
+          <span className="text-base sm:text-lg">🐛</span>
+          <span className="text-xs sm:text-sm font-semibold text-white">Debug</span>
+          <span className="text-xs text-slate-400">({logs.length})</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <button
             onClick={copyToClipboard}
-            className="px-2 py-1 text-xs bg-slate-700 hover:bg-slate-600 text-white rounded transition-colors"
+            className={`px-2 py-1 text-xs rounded transition-colors ${getCopyButtonClass()}`}
             title="Copy all logs to clipboard"
           >
-            📋 Copy
+            {getCopyButtonText()}
           </button>
           <button
             onClick={onClear}
             className="px-2 py-1 text-xs bg-slate-700 hover:bg-slate-600 text-white rounded transition-colors"
             title="Clear logs"
           >
-            🗑️ Clear
+            🗑️
           </button>
           <button
             onClick={onClose}
@@ -88,10 +144,10 @@ export function DebugPanel({ logs, onClear, onClose }: DebugPanelProps) {
         </div>
       </div>
 
-      {/* Log Content */}
+      {/* Log Content - scrollable area */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-2 font-mono text-xs"
+        className="flex-1 min-h-0 overflow-y-auto p-2 font-mono text-xs"
       >
         {logs.length === 0 ? (
           <div className="text-slate-500 text-center py-4">
@@ -133,9 +189,9 @@ export function DebugPanel({ logs, onClear, onClose }: DebugPanelProps) {
         )}
       </div>
 
-      {/* Footer */}
-      <div className="px-4 py-2 border-t border-slate-700 bg-slate-800 rounded-b-lg">
-        <div className="flex items-center gap-4 text-xs text-slate-400">
+      {/* Footer - fixed at bottom */}
+      <div className="flex-shrink-0 px-2 sm:px-4 py-1.5 sm:py-2 border-t border-slate-700 bg-slate-800 rounded-b-lg">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-[10px] sm:text-xs text-slate-400">
           <span className="text-cyan-400">● click</span>
           <span className="text-green-400">● action</span>
           <span className="text-yellow-400">● state</span>

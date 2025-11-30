@@ -3,6 +3,8 @@ import prisma from "@/lib/db";
 import { getUserSession } from "@/lib/user-auth";
 import { designSaveSchema, designUpdateSchema } from "@/lib/validation";
 
+export const dynamic = "force-dynamic";
+
 type RouteParams = {
   params: Promise<{ id: string }>;
 };

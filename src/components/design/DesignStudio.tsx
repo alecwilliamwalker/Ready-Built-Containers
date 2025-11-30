@@ -18,11 +18,17 @@ import { LayersPanel } from "./LayersPanel";
 import { Toolbar, ToolType } from "./Toolbar";
 import { StatusBar } from "./StatusBar";
 import { DockablePanel } from "./DockablePanel";
+import { MobilePanelMenu, PanelConfig } from "./MobilePanelMenu";
+import { MobileFixtureCarousel } from "./MobileFixtureCarousel";
+import { MobileLayersPanel } from "./MobileLayersPanel";
+import { MobilePropertiesPanel } from "./MobilePropertiesPanel";
+import { HelpOverlay } from "./HelpOverlay";
 import { ThreeViewport } from "./ThreeViewport";
 import { DebugPanel, DebugLog } from "./DebugPanel";
 import { BOMPanel } from "./BOMPanel";
 import { AuthModal } from "./AuthModal";
 import { SaveConfirmModal } from "./SaveConfirmModal";
+import { LeaveConfirmModal } from "./LeaveConfirmModal";
 import { designEditorReducer } from "@/lib/design/editor-reducer";
 import { generatePDF } from "@/lib/design/pdf-export";
 import { entriesToCatalogMap } from "@/lib/design/catalog-utils";
@@ -67,12 +73,106 @@ export function DesignStudio({
   );
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showSaveConfirmModal, setShowSaveConfirmModal] = useState(false);
+  const [showLeaveConfirmModal, setShowLeaveConfirmModal] = useState(false);
   const [pendingSubmitAfterSave, setPendingSubmitAfterSave] = useState(false);
   const [currentUserEmail, setCurrentUserEmail] = useState(userEmail);
   const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
+  const [activeMobilePanel, setActiveMobilePanel] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const { showToast } = useToast();
   const router = useRouter();
+
+  // Detect mobile for carousel vs panel
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Show help overlay for non-signed-in users on first visit (mobile or desktop)
+  useEffect(() => {
+    if (currentUserEmail) return; // Don't show for signed-in users
+    
+    // Check if user has dismissed the help before (separate keys for mobile/desktop)
+    const storageKey = isMobile ? "mobileHelpDismissed" : "desktopHelpDismissed";
+    const helpDismissed = localStorage.getItem(storageKey);
+    if (!helpDismissed) {
+      setShowHelp(true);
+    }
+  }, [isMobile, currentUserEmail]);
+
+  // Handler to dismiss help and remember the preference
+  const handleDismissHelp = useCallback(() => {
+    setShowHelp(false);
+    const storageKey = isMobile ? "mobileHelpDismissed" : "desktopHelpDismissed";
+    localStorage.setItem(storageKey, "true");
+  }, [isMobile]);
+
+  // Handler to show help again (from toolbar button)
+  const handleShowHelp = useCallback(() => {
+    setShowHelp(true);
+  }, []);
+
+  // Warn user before page refresh/close to prevent losing unsaved changes
+  // Note: Mobile Safari does not support beforeunload - this is a browser limitation
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      // Setting returnValue is required for Chrome/Edge compatibility
+      e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+      return e.returnValue;
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
+  
+  // Mobile panel configurations
+  const mobilePanelConfigs: PanelConfig[] = [
+    {
+      id: "fixture-library",
+      title: "Fixture Library",
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+        </svg>
+      ),
+    },
+    {
+      id: "properties",
+      title: "Properties",
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+        </svg>
+      ),
+    },
+    {
+      id: "bom",
+      title: "Quote & Order",
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+      ),
+    },
+    {
+      id: "layers",
+      title: "Layers",
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+      ),
+    },
+  ];
 
   // Debug logging function
   const addDebugLog = useCallback((type: DebugLog["type"], message: string, data?: Record<string, unknown>) => {
@@ -182,6 +282,24 @@ export function DesignStudio({
   const handleRedo = useCallback(() => {
     dispatch({ type: "REDO" });
   }, []);
+
+  const handleDelete = useCallback(() => {
+    // Delete all selected fixtures
+    editorState.selectedIds.forEach((id) => {
+      dispatch({ type: "REMOVE_FIXTURE", id });
+    });
+  }, [editorState.selectedIds]);
+
+  const handleRotate = useCallback(() => {
+    // Rotate all selected fixtures by 90 degrees
+    editorState.selectedIds.forEach((id) => {
+      const fixture = design.fixtures.find((f) => f.id === id);
+      if (fixture) {
+        const newRotation = ((fixture.rotationDeg || 0) + 90) % 360 as 0 | 90 | 180 | 270;
+        dispatch({ type: "UPDATE_FIXTURE_ROTATION", id, rotationDeg: newRotation });
+      }
+    });
+  }, [editorState.selectedIds, design.fixtures]);
 
   // Track the "anchor" fixture for Tab cycling (the fixture we started cycling from)
   const [tabCycleAnchorId, setTabCycleAnchorId] = useState<string | null>(null);
@@ -742,23 +860,67 @@ export function DesignStudio({
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950">
-      {/* Toolbar */}
-      <Toolbar
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        onUndo={handleUndo}
-        onRedo={handleRedo}
-        canUndo={editorState.history.length > 0}
-        canRedo={editorState.future.length > 0}
-        activeTool={activeTool}
-        onToolChange={setActiveTool}
-        onToggleDebug={() => setDebugEnabled((prev) => !prev)}
-        debugEnabled={debugEnabled}
-      />
+    <div className="fixed inset-0 bg-slate-950 flex flex-col">
+      {/* Header stack - Toolbar + Mobile Carousel (not transformed) */}
+      <div className="relative z-50 flex-shrink-0">
+        <Toolbar
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          canUndo={editorState.history.length > 0}
+          canRedo={editorState.future.length > 0}
+          onDelete={handleDelete}
+          canDelete={editorState.selectedIds.length > 0}
+          onRotate={handleRotate}
+          canRotate={editorState.selectedIds.length > 0}
+          activeTool={activeTool}
+          onToolChange={setActiveTool}
+          onToggleDebug={() => setDebugEnabled((prev) => !prev)}
+          debugEnabled={debugEnabled}
+          onHomeClick={() => setShowLeaveConfirmModal(true)}
+          onShowHelp={handleShowHelp}
+        />
 
-      {/* Main Canvas Area */}
-      <div className="absolute inset-0 pb-[32px] pt-[112px]">
+        {/* Mobile Fixture Carousel - rendered here, outside any transformed container */}
+        {isMobile && activeMobilePanel === "fixture-library" && (
+          <MobileFixtureCarousel
+            catalog={catalog}
+            pendingPlacement={pendingPlacement}
+            onSetPendingPlacement={handleSetPendingPlacement}
+            onClose={() => setActiveMobilePanel(null)}
+          />
+        )}
+
+        {/* Mobile Layers Panel - compact top panel */}
+        {isMobile && activeMobilePanel === "layers" && (
+          <MobileLayersPanel
+            design={design}
+            dispatch={dispatch}
+            zoneEditMode={zoneEditMode}
+            onZoneEditModeChange={setZoneEditMode}
+            selectedZoneId={editorState.selectedZoneId}
+            onClose={() => setActiveMobilePanel(null)}
+          />
+        )}
+
+        {/* Mobile Properties Panel - compact top panel */}
+        {isMobile && activeMobilePanel === "properties" && (
+          <MobilePropertiesPanel
+            design={design}
+            selectedFixture={selectedFixture}
+            catalogItem={selectedCatalogItem}
+            validationIssues={validationIssues}
+            dispatch={dispatch}
+            onSave={handleSaveDesign}
+            isSaving={isSaving}
+            onClose={() => setActiveMobilePanel(null)}
+          />
+        )}
+      </div>
+
+      {/* Main Canvas Area - fills remaining space */}
+      <div className="flex-1 relative pb-[28px] md:pb-[32px]">
         {viewMode === "2d" ? (
           <FixtureCanvas
             design={design}
@@ -778,12 +940,14 @@ export function DesignStudio({
             annotationDragState={editorState.annotationDrag}
             dispatch={dispatch}
             activeTool={activeTool}
+            onToolChange={setActiveTool}
             zoneEditMode={zoneEditMode}
             onDebugLog={addDebugLog}
             pendingPlacement={pendingPlacement}
             pendingPlacementRotation={pendingPlacementRotation}
             onPlaceFixture={handlePlaceFixture}
             onEditAnnotation={(id) => setEditingAnnotationId(id)}
+            onAnnotationPlaced={() => setActiveTool("select")}
             onAddFixtureAt={(catalogKey, coords) => {
               const zoneId = design.zones.find(
                 (zone) =>
@@ -852,42 +1016,46 @@ export function DesignStudio({
         )}
       </div>
 
-      {/* Left Panel: Fixture Library */}
-      <DockablePanel
-        title="Fixture Library"
-        position="left"
-        defaultOpen={false}
-        width="320px"
-        panelIndex={0}
-        icon={
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-          </svg>
-        }
-      >
-        <FixtureLibrary 
-          catalog={catalog} 
-          onAddFixture={handleAddFixture}
-          pendingPlacement={pendingPlacement}
-          onSetPendingPlacement={handleSetPendingPlacement}
-        />
-      </DockablePanel>
+      {/* Left Panel: Fixture Library - Desktop only, mobile uses carousel */}
+      {!isMobile && (
+        <DockablePanel
+          title="Fixture Library"
+          position="left"
+          defaultOpen={false}
+          width="320px"
+          panelIndex={0}
+          icon={
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+          }
+        >
+          <FixtureLibrary 
+            catalog={catalog} 
+            onAddFixture={handleAddFixture}
+            pendingPlacement={pendingPlacement}
+            onSetPendingPlacement={handleSetPendingPlacement}
+          />
+        </DockablePanel>
+      )}
 
-      {/* Right Panel: Properties */}
-      <DockablePanel
-        title="Properties"
-        position="right"
-        defaultOpen={false}
-        width="320px"
-        panelIndex={0}
-        icon={
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-          </svg>
-        }
-      >
+
+      {/* Right Panel: Properties - Desktop only, mobile uses compact top panel */}
+      {!isMobile && (
+        <DockablePanel
+          title="Properties"
+          position="right"
+          defaultOpen={false}
+          width="320px"
+          panelIndex={0}
+          icon={
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+            </svg>
+          }
+        >
         <div className="space-y-4">
           {/* Save Button */}
           <div className="rounded-xl border border-surface-muted/60 bg-white p-4">
@@ -940,11 +1108,12 @@ export function DesignStudio({
             </div>
           )}
         </div>
-      </DockablePanel>
+        </DockablePanel>
+      )}
 
-      {/* Right Panel 2: Bill of Materials */}
+      {/* Right Panel 2: Quote & Order */}
       <DockablePanel
-        title="Bill of Materials"
+        title="Quote & Order"
         position="right"
         defaultOpen={false}
         width="340px"
@@ -955,6 +1124,8 @@ export function DesignStudio({
               d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
           </svg>
         }
+        mobileOpen={activeMobilePanel === "bom"}
+        onMobileClose={() => setActiveMobilePanel(null)}
       >
         <BOMPanel 
           design={design} 
@@ -969,28 +1140,30 @@ export function DesignStudio({
         />
       </DockablePanel>
 
-      {/* Left Panel 2: Layers */}
-      <DockablePanel
-        title="Layers"
-        position="left"
-        defaultOpen={false}
-        width="280px"
-        panelIndex={1}
-        icon={
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-          </svg>
-        }
-      >
-        <LayersPanel
-          design={design}
-          dispatch={dispatch}
-          zoneEditMode={zoneEditMode}
-          onZoneEditModeChange={setZoneEditMode}
-          selectedZoneId={editorState.selectedZoneId}
-        />
-      </DockablePanel>
+      {/* Left Panel 2: Layers - Desktop only, mobile uses compact top panel */}
+      {!isMobile && (
+        <DockablePanel
+          title="Layers"
+          position="left"
+          defaultOpen={false}
+          width="280px"
+          panelIndex={1}
+          icon={
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          }
+        >
+          <LayersPanel
+            design={design}
+            dispatch={dispatch}
+            zoneEditMode={zoneEditMode}
+            onZoneEditModeChange={setZoneEditMode}
+            selectedZoneId={editorState.selectedZoneId}
+          />
+        </DockablePanel>
+      )}
 
       {/* Status Bar */}
       <StatusBar
@@ -1040,6 +1213,13 @@ export function DesignStudio({
         isProcessing={isSaving}
       />
 
+      {/* Leave Confirmation Modal */}
+      <LeaveConfirmModal
+        open={showLeaveConfirmModal}
+        onClose={() => setShowLeaveConfirmModal(false)}
+        onConfirm={() => router.push("/")}
+      />
+
       {/* Auth Modal for Save */}
       <AuthModal
         open={showAuthModal}
@@ -1048,6 +1228,21 @@ export function DesignStudio({
           setPendingSubmitAfterSave(false);
         }}
         onSuccess={handleAuthSuccess}
+      />
+
+      {/* Mobile Panel Menu */}
+      <MobilePanelMenu
+        panels={mobilePanelConfigs}
+        activePanel={activeMobilePanel}
+        onSelectPanel={setActiveMobilePanel}
+      />
+
+      {/* Help Overlay (mobile & desktop) */}
+      <HelpOverlay
+        open={showHelp}
+        onDismiss={handleDismissHelp}
+        viewMode={viewMode}
+        isMobile={isMobile}
       />
     </div>
   );

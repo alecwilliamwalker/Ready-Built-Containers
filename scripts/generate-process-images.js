@@ -53,26 +53,11 @@ function generateModelsImage() {
   <!-- Background -->
   <rect width="${width}" height="${height}" fill="url(#bg-models)"/>
   
-  <!-- Three floor plan cards -->
-  <!-- Basecamp 20 -->
-  <g transform="translate(40, 80)">
-    <rect width="200" height="240" fill="white" stroke="${colors.slate[300]}" stroke-width="2" rx="8"/>
-    <text x="100" y="30" font-family="system-ui" font-size="14" font-weight="600" fill="${colors.slate[900]}" text-anchor="middle">Basecamp 20</text>
-    
-    <!-- Mini floor plan -->
-    <rect x="20" y="50" width="160" height="140" fill="${colors.slate[100]}" rx="4"/>
-    <rect x="25" y="55" width="30" height="130" fill="${colors.slate[800]}" opacity="0.3" rx="2"/>
-    <rect x="60" y="55" width="60" height="130" fill="${colors.forest}" opacity="0.3" rx="2"/>
-    <rect x="125" y="55" width="30" height="130" fill="${colors.cyan}" opacity="0.3" rx="2"/>
-    <rect x="160" y="55" width="15" height="130" fill="${colors.sky}" opacity="0.3" rx="2"/>
-    
-    <text x="100" y="215" font-family="system-ui" font-size="11" fill="${colors.slate[600]}" text-anchor="middle">20' Compact</text>
-  </g>
-  
-  <!-- Basecamp 40 -->
-  <g transform="translate(280, 80)">
+  <!-- Two floor plan cards -->
+  <!-- Standard -->
+  <g transform="translate(150, 80)">
     <rect width="200" height="240" fill="white" stroke="${colors.emerald}" stroke-width="3" rx="8"/>
-    <text x="100" y="30" font-family="system-ui" font-size="14" font-weight="600" fill="${colors.forest}" text-anchor="middle">Basecamp 40</text>
+    <text x="100" y="30" font-family="system-ui" font-size="14" font-weight="600" fill="${colors.forest}" text-anchor="middle">Standard</text>
     
     <!-- Mini floor plan -->
     <rect x="20" y="50" width="160" height="140" fill="${colors.slate[100]}" rx="4"/>
@@ -85,10 +70,10 @@ function generateModelsImage() {
     <circle cx="100" cy="230" r="3" fill="${colors.emerald}"/>
   </g>
   
-  <!-- Outfitter 40 Plus -->
-  <g transform="translate(520, 80)">
+  <!-- Deluxe -->
+  <g transform="translate(450, 80)">
     <rect width="200" height="240" fill="white" stroke="${colors.slate[300]}" stroke-width="2" rx="8"/>
-    <text x="100" y="30" font-family="system-ui" font-size="14" font-weight="600" fill="${colors.slate[900]}" text-anchor="middle">Outfitter 40+</text>
+    <text x="100" y="30" font-family="system-ui" font-size="14" font-weight="600" fill="${colors.slate[900]}" text-anchor="middle">Deluxe</text>
     
     <!-- Mini floor plan -->
     <rect x="20" y="50" width="160" height="140" fill="${colors.slate[100]}" rx="4"/>
@@ -97,7 +82,7 @@ function generateModelsImage() {
     <rect x="110" y="55" width="25" height="130" fill="${colors.cyan}" opacity="0.3" rx="2"/>
     <rect x="140" y="55" width="35" height="130" fill="${colors.sky}" opacity="0.3" rx="2"/>
     
-    <text x="100" y="215" font-family="system-ui" font-size="11" fill="${colors.slate[600]}" text-anchor="middle">40' Outfitter</text>
+    <text x="100" y="215" font-family="system-ui" font-size="11" fill="${colors.slate[600]}" text-anchor="middle">40' Deluxe</text>
   </g>
 </svg>`;
 }

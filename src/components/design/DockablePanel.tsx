@@ -12,6 +12,9 @@ export type DockablePanelProps = {
   maxHeight?: string;
   panelIndex?: number;
   icon?: React.ReactNode;
+  // Mobile-specific props for external control
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 };
 
 export function DockablePanel({
@@ -23,6 +26,8 @@ export function DockablePanel({
   maxHeight = "calc(100vh - 120px)",
   panelIndex = 0,
   icon,
+  mobileOpen,
+  onMobileClose,
 }: DockablePanelProps) {
   const panelKey = `${title}-${panelIndex}`;
   // Always initialize with defaultOpen to avoid hydration mismatch
@@ -52,10 +57,10 @@ export function DockablePanel({
 
   // Persist to localStorage when isOpen changes (only after initial mount)
   useEffect(() => {
-    if (hasMounted) {
+    if (hasMounted && !isMobile) {
       localStorage.setItem(panelKey, isOpen.toString());
     }
-  }, [isOpen, panelKey, hasMounted]);
+  }, [isOpen, panelKey, hasMounted, isMobile]);
 
   const positionClasses = {
     left: "left-0 top-0 bottom-0",
@@ -69,57 +74,61 @@ export function DockablePanel({
     bottom: isOpen ? "translate-y-0" : "translate-y-full",
   };
 
-  const sizeClasses = {
-    left: `w-[${width}]`,
-    right: `w-[${width}]`,
-    bottom: "h-[300px]",
-  };
-
-  // On mobile, panels become bottom sheets
+  // On mobile, panels become bottom sheets controlled externally
   if (isMobile) {
+    const isMobileOpen = mobileOpen ?? false;
+    const handleClose = () => {
+      onMobileClose?.();
+    };
+
+    // Only render if open on mobile
+    if (!isMobileOpen) return null;
+
     return (
       <>
-        {/* Mobile Toggle Button */}
-        <button
-          onClick={() => setIsOpen(prev => !prev)}
-          className="fixed bottom-16 right-4 z-[60] w-14 h-14 rounded-2xl bg-gradient-to-r from-forest to-emerald-600 shadow-2xl shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all text-white text-xl font-bold flex items-center justify-center"
-        >
-          {isOpen ? '✕' : '☰'}
-        </button>
-
+        {/* Backdrop */}
+        <div 
+          className="fixed inset-0 z-[65] bg-slate-950/70 backdrop-blur-sm" 
+          onClick={handleClose} 
+        />
+        
         {/* Mobile Bottom Sheet */}
-        {isOpen && (
-          <>
-            <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm" onClick={() => setIsOpen(false)} />
-            <div 
-              className="fixed bottom-0 left-0 right-0 z-[70] max-h-[75vh] rounded-t-3xl border-t-2 border-slate-200 bg-white/95 shadow-2xl backdrop-blur-xl overflow-hidden"
-              onTouchStart={(e) => { startY.current = e.touches[0].clientY; }}
-              onTouchMove={(e) => {
-                const deltaY = e.touches[0].clientY - startY.current;
-                if (deltaY > 100) setIsOpen(false); // Swipe up dismiss
-              }}
+        <div 
+          className="fixed bottom-0 left-0 right-0 z-[70] max-h-[80vh] rounded-t-3xl border-t-2 border-slate-200 bg-white shadow-2xl overflow-hidden"
+          onTouchStart={(e) => { startY.current = e.touches[0].clientY; }}
+          onTouchMove={(e) => {
+            const deltaY = e.touches[0].clientY - startY.current;
+            // Swipe down to dismiss (positive deltaY = moving finger down)
+            if (deltaY > 100) handleClose();
+          }}
+        >
+          {/* Drag handle pill */}
+          <div className="flex justify-center pt-3 pb-1">
+            <div className="w-12 h-1.5 rounded-full bg-slate-300" />
+          </div>
+          
+          {/* Mobile header */}
+          <div className="flex items-center justify-between border-b border-surface-muted/40 px-4 py-2">
+            <h2 className="text-lg font-bold text-foreground">
+              {title}
+            </h2>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-10 w-10 p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full transition-all flex items-center justify-center"
+              onClick={handleClose}
+              title="Close Panel"
             >
-              {/* Mobile header (~78-92): */}
-              <div className="flex items-center justify-between border-b border-surface-muted/40 px-4 py-3">
-                <h2 className="text-lg font-bold text-foreground">  // Larger title
-                  {title}
-                </h2>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="lg"
-                  className="h-12 w-12 p-3 ml-auto mr-2 bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-500 font-bold text-2xl shadow-lg rounded-full transition-all flex items-center justify-center group hover:scale-105"
-                  onClick={() => setIsOpen(false)}
-                  title="Close Panel"
-                >
-                  ✕
-                  <span className="text-xs font-medium block mt-1 group-hover:block hidden">Close</span>
-                </Button>
-              </div>
-              <div className="max-h-[calc(70vh-52px)] overflow-y-auto p-4">{children}</div>
-            </div>
-          </>
-        )}
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </Button>
+          </div>
+          
+          {/* Content */}
+          <div className="max-h-[calc(80vh-80px)] overflow-y-auto p-4">{children}</div>
+        </div>
       </>
     );
   }
@@ -221,4 +230,3 @@ export function DockablePanel({
     </>
   );
 }
-

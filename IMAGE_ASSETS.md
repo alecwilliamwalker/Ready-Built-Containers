@@ -5,40 +5,29 @@ This document catalogs all placeholder images generated for the Ready Built Cont
 
 ## Generated Placeholder Images
 
-### Basecamp 20
-- **Exterior**: `/public/images/models/basecamp-20-exterior.svg`
-  - 1200×600px SVG
-  - Features: Compact 20' container with vestibule, windows, emerald accent stripe
-  - Color scheme: Slate gray body, emerald accents
-  
-- **Floorplan**: `/public/images/floorplans/basecamp-20-plan.svg`
-  - 1200×400px SVG
-  - Zones: Vestibule (3'), Living/Kitchen (9'), Optional Bath (4'), Bunks (4')
-  - Color-coded zones with dimension labels
-
-### Basecamp 40
-- **Exterior**: `/public/images/models/basecamp-40-exterior.svg`
+### Standard
+- **Exterior**: `/public/images/models/standard-exterior.svg`
   - 1200×600px SVG
   - Features: Full 40' container with vestibule, 3 windows, emerald accent stripe
   - Color scheme: Slate gray body, emerald accents
   
-- **Interior**: `/public/images/models/basecamp-40-interior.svg`
+- **Interior**: `/public/images/models/standard-interior.svg`
   - 1200×600px SVG
   - Features: Interior perspective showing kitchen counter, table, bunk beds
   - Color scheme: Light walls, dark wood floors, forest green accents
   
-- **Floorplan**: `/public/images/floorplans/basecamp-40-plan.svg`
+- **Floorplan**: `/public/images/floorplans/standard-plan.svg`
   - 1200×400px SVG
   - Zones: Vestibule (3'), Living/Kitchen (17'), Hall+Bath (7'), 4-Bunk Cabin (13')
   - Color-coded zones with dimension labels
 
-### Outfitter 40 Plus
-- **Exterior**: `/public/images/models/outfitter-40-plus-exterior.svg`
+### Deluxe
+- **Exterior**: `/public/images/models/deluxe-exterior.svg`
   - 1200×600px SVG
   - Features: 40' container with gear vestibule, 3 windows, amber accent stripe
-  - Color scheme: Slate gray body, amber accents (distinguishes from Basecamp 40)
+  - Color scheme: Slate gray body, amber accents (distinguishes from Standard)
   
-- **Floorplan**: `/public/images/floorplans/outfitter-40-plus-plan.svg`
+- **Floorplan**: `/public/images/floorplans/deluxe-plan.svg`
   - 1200×400px SVG
   - Zones: Gear Vestibule (4'), Extended Galley (16'), Full Bath (6'), 6-Bunk Bay (14')
   - Color-coded zones with dimension labels
@@ -47,7 +36,7 @@ This document catalogs all placeholder images generated for the Ready Built Cont
 
 **Step 1 - Choose your model**: `/public/images/process-1-models.svg`
 - 800×400px SVG
-- Features: Three floor plan cards showing Basecamp 20, Basecamp 40, and Outfitter 40+
+- Features: Two floor plan cards showing Standard and Deluxe
 - Color scheme: White cards with color-coded zone previews
 
 **Step 2 - Site & permits**: `/public/images/process-2-permits.svg`
@@ -69,8 +58,8 @@ This document catalogs all placeholder images generated for the Ready Built Cont
 
 ### Brand Colors
 - **Forest**: `#314c3a` - Primary brand color, used for living areas
-- **Emerald**: `#10b981` - Accent color for Basecamp models
-- **Amber**: `#f59e0b` - Accent color for Outfitter model
+- **Emerald**: `#10b981` - Accent color for Standard model
+- **Amber**: `#f59e0b` - Accent color for Deluxe model
 - **Cyan**: `#06b6d4` - Bathroom zones
 - **Sky**: `#0ea5e9` - Bunk areas
 - **Slate 800**: `#1e293b` - Vestibule/entry zones
@@ -126,7 +115,7 @@ This will overwrite existing SVG files in:
 ## Future Enhancements
 
 ### Recommended Improvements
-1. Add interior views for Basecamp 20 and Outfitter 40 Plus
+1. Add interior view for Deluxe
 2. Create seasonal/environmental variants (snow, forest, desert)
 3. Add night/lit versions showing interior lighting
 4. Generate different perspective angles (3/4 view, aerial)
@@ -141,4 +130,3 @@ When replacing with real photos:
 - [ ] Drone aerial views
 - [ ] Construction/fabrication process shots
 - [ ] Maintain consistent 1200px width for web optimization
-

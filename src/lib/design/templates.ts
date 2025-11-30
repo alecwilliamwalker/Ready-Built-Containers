@@ -16,6 +16,15 @@ export type ZoneTemplateConfig = {
   priceCents: number;
 };
 
+// Cabin template type for full cabin layouts
+export type CabinTemplate = {
+  id: string;
+  name: string;
+  description: string;
+  priceCents: number;
+  zoneSelections: Record<ZoneType, TemplateTier>;
+};
+
 // Zone information
 export const ZONE_INFO: Record<ZoneType, { label: string; description: string; defaultLengthFt: number; defaultWidthFt: number; defaultYFt: number }> = {
   "kitchen-living": {
@@ -746,6 +755,23 @@ export const ZONE_TEMPLATES: ZoneTemplateConfig[] = [
   bedroomBasic,
   bedroomStandard,
   bedroomUltimate,
+];
+
+// Full cabin templates
+export const CABIN_TEMPLATES: CabinTemplate[] = [
+  {
+    id: "standard",
+    name: "Standard Design",
+    description: "Essential cabin layout with kitchen, living area, bathroom, and bedroom",
+    priceCents: 5100000, // $51,000
+    zoneSelections: {
+      "kitchen-living": "basic",
+      "bath-hallway": "basic",
+      "hallway": "basic",
+      "bedroom": "basic",
+    },
+  },
+  // Future templates can be added here
 ];
 
 // Helper to get zone templates by zone type

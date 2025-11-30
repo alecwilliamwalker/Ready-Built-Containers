@@ -11,6 +11,8 @@ import { entriesToCatalogMap } from "@/lib/design/catalog-utils";
 import type { BOMSelections } from "@/types/bom";
 import { DEFAULT_BOM_SELECTIONS } from "@/types/bom";
 
+export const dynamic = "force-dynamic";
+
 type RouteParams = {
   params: Promise<{ id: string }>;
 };

@@ -4,20 +4,17 @@
  * Pure functions for calculating all BOM costs from a design configuration.
  */
 
-import type { DesignConfig, ModuleCatalogItem } from "@/types/design";
+import type { DesignConfig, ModuleCatalogItem, FixtureConfig } from "@/types/design";
 import type {
   BOMSelections,
   BOMCalculation,
   DesignAnalysis,
   LaborBreakdownItem,
-  InsulationType,
-  InteriorWallFinish,
-  FlooringType,
-  ExteriorFinish,
-  INSULATION_PRICES,
-  INTERIOR_FINISH_PRICES,
-  FLOORING_PRICES,
-  EXTERIOR_FINISH_PRICES,
+  ElectricalLoadBreakdown,
+  ElectricalSystemInfo,
+  ElectricalPowerSource,
+  GeneratorTier,
+  SolarBatteryTier,
 } from "@/types/bom";
 import {
   CONTAINER_COST_CENTS,
@@ -29,6 +26,12 @@ import {
   ROOFING_DECK_PREP_CENTS_PER_SQFT,
   ROOFING_SOLAR_RAILS_CENTS_PER_SQFT,
   LABOR_HOURS,
+  FIXTURE_WATTAGES,
+  HEATING_WATTS_PER_SQFT,
+  BASE_LIGHTING_WATTS,
+  GENERATOR_TIERS,
+  SOLAR_BATTERY_TIERS,
+  ELECTRICAL_POWER_SOURCE_LABELS,
 } from "@/types/bom";
 import { priceDesign } from "./pricing";
 import { getDistanceFromAudubon, calculateDeliveryCost, getZipLabel } from "./zip-distance";
@@ -39,6 +42,8 @@ import {
   INTERIOR_FINISH_PRICES as INT_PRICES,
   FLOORING_PRICES as FLR_PRICES,
   EXTERIOR_FINISH_PRICES as EXT_PRICES,
+  ROOFING_PRICES as ROOF_PRICES,
+  FOUNDATION_PRICES as FOUND_PRICES,
 } from "@/types/bom";
 
 /**
@@ -145,6 +150,168 @@ export function analyzeDesign(
   };
 }
 
+// ============================================
+// Electrical Load Calculation Functions
+// ============================================
+
+/**
+ * Calculate heating load based on floor area
+ * Uses ~10W per sqft for electric space heating
+ */
+export function calculateHeatingLoad(floorSqft: number): number {
+  return Math.round(floorSqft * HEATING_WATTS_PER_SQFT);
+}
+
+/**
+ * Get wattage for a fixture by its catalog key
+ */
+function getFixtureWattage(catalogKey: string): number {
+  // Check for exact match
+  if (FIXTURE_WATTAGES[catalogKey]) {
+    return FIXTURE_WATTAGES[catalogKey];
+  }
+  // Return default wattage for unknown powered fixtures
+  return FIXTURE_WATTAGES["default"];
+}
+
+/**
+ * Calculate total fixture electrical load
+ */
+export function calculateFixtureLoad(
+  fixtures: FixtureConfig[],
+  catalog: Record<string, ModuleCatalogItem>
+): { totalWatts: number; details: { label: string; watts: number }[] } {
+  const details: { label: string; watts: number }[] = [];
+  let totalWatts = 0;
+
+  for (const fixture of fixtures) {
+    const catalogItem = catalog[fixture.catalogKey];
+    if (!catalogItem) continue;
+
+    // Check if fixture requires power
+    const utilities = catalogItem.requiresUtilities || [];
+    if (utilities.includes("power")) {
+      const watts = getFixtureWattage(fixture.catalogKey);
+      totalWatts += watts;
+      details.push({
+        label: catalogItem.label,
+        watts,
+      });
+    }
+  }
+
+  return { totalWatts, details };
+}
+
+/**
+ * Calculate complete electrical load breakdown
+ */
+export function calculateElectricalLoad(
+  analysis: DesignAnalysis,
+  fixtures: FixtureConfig[],
+  catalog: Record<string, ModuleCatalogItem>
+): ElectricalLoadBreakdown {
+  // Heating load based on floor area
+  const heatingWatts = calculateHeatingLoad(analysis.floorSqft);
+
+  // Fixture load
+  const { totalWatts: fixtureWatts, details: fixtureDetails } = calculateFixtureLoad(
+    fixtures,
+    catalog
+  );
+
+  // Base lighting load
+  const lightingWatts = BASE_LIGHTING_WATTS;
+
+  // Total load
+  const totalWatts = heatingWatts + fixtureWatts + lightingWatts;
+
+  return {
+    heatingWatts,
+    fixtureWatts,
+    lightingWatts,
+    totalWatts,
+    fixtureDetails,
+  };
+}
+
+/**
+ * Size a generator based on total wattage requirement
+ * Adds 20% headroom for peak loads
+ */
+export function sizeGenerator(totalWatts: number): GeneratorTier {
+  // Add 20% headroom for peak/startup loads
+  const requiredWatts = Math.round(totalWatts * 1.2);
+
+  // Find the appropriate tier
+  for (const tier of GENERATOR_TIERS) {
+    if (requiredWatts <= tier.maxWatts) {
+      return tier;
+    }
+  }
+
+  // Return largest tier if load exceeds all tiers
+  return GENERATOR_TIERS[GENERATOR_TIERS.length - 1];
+}
+
+/**
+ * Size a solar + battery system based on total wattage requirement
+ * Assumes 5 hours of peak sun per day and 2 days of battery backup
+ */
+export function sizeSolarBattery(totalWatts: number): SolarBatteryTier {
+  // Add 20% headroom
+  const requiredWatts = Math.round(totalWatts * 1.2);
+
+  // Find the appropriate tier
+  for (const tier of SOLAR_BATTERY_TIERS) {
+    if (requiredWatts <= tier.maxWatts) {
+      return tier;
+    }
+  }
+
+  // Return largest tier if load exceeds all tiers
+  return SOLAR_BATTERY_TIERS[SOLAR_BATTERY_TIERS.length - 1];
+}
+
+/**
+ * Calculate electrical system info based on power source selection
+ */
+export function calculateElectricalSystem(
+  powerSource: ElectricalPowerSource,
+  loadBreakdown: ElectricalLoadBreakdown
+): ElectricalSystemInfo {
+  let systemLabel: string | undefined;
+  let systemCostCents = 0;
+
+  switch (powerSource) {
+    case "generator": {
+      const tier = sizeGenerator(loadBreakdown.totalWatts);
+      systemLabel = tier.label;
+      systemCostCents = tier.priceCents;
+      break;
+    }
+    case "solar-battery": {
+      const tier = sizeSolarBattery(loadBreakdown.totalWatts);
+      systemLabel = tier.label;
+      systemCostCents = tier.priceCents;
+      break;
+    }
+    case "grid":
+    default:
+      // Grid connection - no additional system cost
+      systemLabel = undefined;
+      systemCostCents = 0;
+      break;
+  }
+
+  return {
+    powerSource,
+    loadBreakdown,
+    systemLabel,
+    systemCostCents,
+  };
+}
+
 /**
  * Calculate labor hours breakdown
  */
@@ -243,15 +410,15 @@ export function calculateLaborHours(
   });
   
   // Roofing
-  let roofingHours = analysis.roofSqft * LABOR_HOURS.roofingPerSqft;
-  if (selections.roofingDeckPrep) {
+  let roofingHours = selections.roofingType === "none" ? 0 : analysis.roofSqft * LABOR_HOURS.roofingPerSqft;
+  if (selections.roofingType !== "none" && selections.roofingDeckPrep) {
     roofingHours += analysis.roofSqft * LABOR_HOURS.roofingDeckPrepPerSqft;
   }
   breakdown.push({
     category: "roofing",
     label: "Roofing/Membrane",
     hours: Math.round(roofingHours * 10) / 10,
-    description: `${analysis.roofSqft} sqft${selections.roofingDeckPrep ? " + deck prep" : ""}`,
+    description: selections.roofingType === "none" ? "None" : `${analysis.roofSqft} sqft${selections.roofingDeckPrep ? " + deck prep" : ""}`,
   });
   
   // Flooring
@@ -263,9 +430,11 @@ export function calculateLaborHours(
   });
   
   // Exterior finish
-  const extFinishRate = selections.exteriorFinish === "paint" 
-    ? LABOR_HOURS.exteriorFinishPaintPerSqft 
-    : LABOR_HOURS.exteriorFinishSidingPerSqft;
+  const extFinishRate = selections.exteriorFinish === "none"
+    ? 0
+    : selections.exteriorFinish === "paint" 
+      ? LABOR_HOURS.exteriorFinishPaintPerSqft 
+      : LABOR_HOURS.exteriorFinishSidingPerSqft;
   breakdown.push({
     category: "exterior-finish",
     label: "Exterior Finish",
@@ -346,13 +515,29 @@ export function calculateBOM(
     details: `${analysis.floorSqft} sqft (${FLR_PRICES[selections.flooring].label})`,
   };
   
-  // 5. Electrical
-  const electricalCost = ELECTRICAL_BASE_CENTS + 
+  // 5. Electrical (with power source selection)
+  const loadBreakdown = calculateElectricalLoad(analysis, design.fixtures, catalog);
+  const systemInfo = calculateElectricalSystem(selections.electricalPowerSource, loadBreakdown);
+  
+  // Base electrical cost (wiring, panel, fixtures)
+  const baseElectricalCost = ELECTRICAL_BASE_CENTS + 
     (analysis.poweredFixtureCount * ELECTRICAL_PER_FIXTURE_CENTS);
+  
+  // Total electrical cost includes power system for off-grid options
+  const totalElectricalCost = baseElectricalCost + systemInfo.systemCostCents;
+  
+  // Build details string
+  let electricalDetails = `${ELECTRICAL_POWER_SOURCE_LABELS[selections.electricalPowerSource]}`;
+  if (systemInfo.systemLabel) {
+    electricalDetails += ` (${systemInfo.systemLabel})`;
+  }
+  electricalDetails += ` • ${(loadBreakdown.totalWatts / 1000).toFixed(1)}kW load`;
+  
   const electrical = {
     label: "Electrical",
-    costCents: electricalCost,
-    details: `Panel + ${analysis.poweredFixtureCount} powered fixtures`,
+    costCents: totalElectricalCost,
+    details: electricalDetails,
+    systemInfo,
   };
   
   // 6. Plumbing
@@ -373,25 +558,35 @@ export function calculateBOM(
   };
   
   // 8. Roofing
-  let roofingCost = Math.round(analysis.roofSqft * ROOFING_BASE_CENTS_PER_SQFT);
-  const roofingOptions: string[] = ["Membrane"];
+  let roofingCost = Math.round(analysis.roofSqft * ROOF_PRICES[selections.roofingType].centsPerSqft);
+  const roofingOptions: string[] = selections.roofingType === "none" ? ["None"] : [ROOF_PRICES[selections.roofingType].label];
   
-  if (selections.roofingDeckPrep) {
-    roofingCost += Math.round(analysis.roofSqft * ROOFING_DECK_PREP_CENTS_PER_SQFT);
-    roofingOptions.push("Deck Prep");
-  }
-  if (selections.roofingSolarRails) {
-    roofingCost += Math.round(analysis.roofSqft * ROOFING_SOLAR_RAILS_CENTS_PER_SQFT);
-    roofingOptions.push("Solar Rails");
+  if (selections.roofingType !== "none") {
+    if (selections.roofingDeckPrep) {
+      roofingCost += Math.round(analysis.roofSqft * ROOFING_DECK_PREP_CENTS_PER_SQFT);
+      roofingOptions.push("Deck Prep");
+    }
+    if (selections.roofingSolarRails) {
+      roofingCost += Math.round(analysis.roofSqft * ROOFING_SOLAR_RAILS_CENTS_PER_SQFT);
+      roofingOptions.push("Solar Rails");
+    }
   }
   
   const roofing = {
     label: "Roofing",
     costCents: roofingCost,
-    details: `${analysis.roofSqft} sqft (${roofingOptions.join(" + ")})`,
+    details: selections.roofingType === "none" ? "None" : `${analysis.roofSqft} sqft (${roofingOptions.join(" + ")})`,
   };
   
-  // 9. Labor
+  // 9. Foundation
+  const foundationCost = FOUND_PRICES[selections.foundation].baseCents;
+  const foundation = {
+    label: "Foundation",
+    costCents: foundationCost,
+    details: FOUND_PRICES[selections.foundation].label,
+  };
+  
+  // 10. Labor
   const laborBreakdown = calculateLaborHours(analysis, selections);
   const totalHours = laborBreakdown.reduce((sum, item) => sum + item.hours, 0);
   const laborCost = Math.round(totalHours * selections.laborRateCents);
@@ -404,7 +599,7 @@ export function calculateBOM(
     totalHours: Math.round(totalHours * 10) / 10,
   };
   
-  // 10. Delivery
+  // 11. Delivery
   let deliveryDistanceMiles: number | null = null;
   let deliveryCost = 0;
   let deliveryDetails = "Enter ZIP code";
@@ -440,6 +635,7 @@ export function calculateBOM(
     plumbing.costCents +
     exteriorFinish.costCents +
     roofing.costCents +
+    foundation.costCents +
     labor.costCents +
     delivery.costCents;
   
@@ -455,6 +651,7 @@ export function calculateBOM(
     plumbing,
     exteriorFinish,
     roofing,
+    foundation,
     labor,
     delivery,
     subtotalCents,

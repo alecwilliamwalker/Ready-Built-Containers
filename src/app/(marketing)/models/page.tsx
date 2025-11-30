@@ -32,7 +32,7 @@ export default async function ModelsPage() {
     <PageContainer className="space-y-12 py-16">
       <SectionTitle
         eyebrow="Model Lineup"
-        title="Three container cabin platforms"
+        title="Two container cabin platforms"
         subtitle="Each build starts with a reinforced high-cube shell, insulated framing package, and engineered delivery plan."
       />
       <ModelsGrid models={summaries} />

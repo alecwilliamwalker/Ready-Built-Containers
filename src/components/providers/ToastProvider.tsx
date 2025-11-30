@@ -4,6 +4,18 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { createPortal } from "react-dom";
 import { clsx } from "clsx";
 
+// UUID generation with fallback for older browsers (iOS Safari < 15.4)
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (crypto.getRandomValues(new Uint8Array(1))[0] & 15) >> (c === 'x' ? 0 : 3);
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 type ToastVariant = "success" | "error" | "info";
 
 export type Toast = {
@@ -35,7 +47,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const showToast = useCallback(
     ({ description, title, variant = "info", duration = 5000 }: Omit<Toast, "id">) => {
-      const id = crypto.randomUUID();
+      const id = generateUUID();
       setToasts((current) => [...current, { id, description, title, variant, duration }]);
 
       if (duration > 0) {

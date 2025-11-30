@@ -9,6 +9,19 @@ import { resizeZone } from "./zone-utils";
 
 const MAX_HISTORY = 50;
 
+// UUID generation with fallback for older browsers (iOS Safari < 15.4)
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  // Fallback using crypto.getRandomValues
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (crypto.getRandomValues(new Uint8Array(1))[0] & 15) >> (c === 'x' ? 0 : 3);
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
 
@@ -102,7 +115,7 @@ export function designEditorReducer(
     case "ADD_FIXTURE": {
       const { catalogKey, zoneId, xFt, yFt, rotationDeg } = action;
       const newFixture: FixtureConfig = {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         catalogKey,
         xFt: xFt ?? state.design.shell.lengthFt / 2,
         yFt: yFt ?? state.design.shell.widthFt / 2,
@@ -227,7 +240,7 @@ export function designEditorReducer(
     }
     case "UPDATE_DRAG": {
       if (!state.drag) return state;
-      const { pointerCurrentPx, scalePxPerFt, fixtureWidth, fixtureHeight, footprintAnchor } =
+      const { pointerCurrentPx, scalePxPerFt, fixtureWidth, fixtureHeight, footprintAnchor, skipSnap } =
         action;
       const {
         pointerStartPx,
@@ -244,14 +257,15 @@ export function designEditorReducer(
       const deltaYPx = pointerCurrentPx.y - pointerStartPx.y;
       const newXFt = startXFt + deltaXPx / scalePxPerFt;
       const newYFt = startYFt + deltaYPx / scalePxPerFt;
-      const increment = state.snapIncrement;
-      const snapped = {
-        xFt: snapToIncrement(newXFt, increment),
-        yFt: snapToIncrement(newYFt, increment),
-      };
+      
+      // Apply snapping unless skipSnap is true (mobile mode)
+      const position = skipSnap 
+        ? { xFt: newXFt, yFt: newYFt }
+        : { xFt: snapToIncrement(newXFt, state.snapIncrement), yFt: snapToIncrement(newYFt, state.snapIncrement) };
+      
       const clamped = clampToShell(
-        snapped.xFt,
-        snapped.yFt,
+        position.xFt,
+        position.yFt,
         width,
         height,
         state.design.shell.lengthFt,
@@ -297,12 +311,21 @@ export function designEditorReducer(
     }
     case "PAN_VIEWPORT": {
       const { offsetX, offsetY, scale } = state.viewport;
+      let nextOffsetX = offsetX + action.deltaPx.x;
+      let nextOffsetY = offsetY + action.deltaPx.y;
+      
+      // Apply bounds if provided (keeps design from flying off screen)
+      if (action.bounds) {
+        nextOffsetX = clamp(nextOffsetX, action.bounds.minX, action.bounds.maxX);
+        nextOffsetY = clamp(nextOffsetY, action.bounds.minY, action.bounds.maxY);
+      }
+      
       return {
         ...state,
         viewport: {
           scale,
-          offsetX: offsetX + action.deltaPx.x,
-          offsetY: offsetY + action.deltaPx.y,
+          offsetX: nextOffsetX,
+          offsetY: nextOffsetY,
         },
       };
     }
@@ -317,6 +340,13 @@ export function designEditorReducer(
         nextOffsetY =
           action.centerPx.y - factor * (action.centerPx.y - offsetY);
       }
+      
+      // Apply bounds if provided (keeps design from flying off screen after zoom)
+      if (action.bounds) {
+        nextOffsetX = clamp(nextOffsetX, action.bounds.minX, action.bounds.maxX);
+        nextOffsetY = clamp(nextOffsetY, action.bounds.minY, action.bounds.maxY);
+      }
+      
       return {
         ...state,
         viewport: { scale: nextScale, offsetX: nextOffsetX, offsetY: nextOffsetY },
@@ -539,7 +569,7 @@ export function designEditorReducer(
     case "ADD_ZONE": {
       const { name, xFt, yFt, lengthFt, widthFt } = action;
       const newZone = {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         name: name ?? `Zone ${state.design.zones.length + 1}`,
         xFt: xFt ?? 0,
         yFt: yFt ?? 0,
@@ -658,7 +688,7 @@ export function designEditorReducer(
       const effectiveLength = isHorizontal ? Math.abs(deltaY) : Math.abs(deltaX);
       
       const newFixture: FixtureConfig = {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         catalogKey: "fixture-wall",
         xFt: snapToIncrement(centerX, increment),
         yFt: snapToIncrement(centerY, increment),
@@ -866,7 +896,7 @@ export function designEditorReducer(
     case "ADD_ANNOTATION": {
       const { anchorFt, labelFt, text } = action;
       const newAnnotation = {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         anchorFt,
         labelFt,
         text: text ?? "",

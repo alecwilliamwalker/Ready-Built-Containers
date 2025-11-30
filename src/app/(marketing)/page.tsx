@@ -12,7 +12,7 @@ const faqPreview: FAQItem[] = [
   {
     question: "How much does a 40' container cabin cost?",
     answer:
-      "Basecamp 40 starts at $118k delivered within 300 miles of Audubon, IA. Most clients land between $145k-$185k after finishes, power kit, and delivery beyond the base radius.",
+      "The Standard starts at $51k delivered within 300 miles of Audubon, IA.",
   },
   {
     question: "Do I need a permit?",
@@ -112,7 +112,7 @@ export default async function HomePage() {
         <section className="space-y-8">
           <SectionTitle
             eyebrow="How It Works"
-            title="From idea to hunt-ready cabin in 120 days"
+            title="From idea to hunt-ready cabin in 90 days"
             subtitle="We manage fabrication while you prepare the pad and handle permits."
           />
           <ProcessTimeline />

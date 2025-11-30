@@ -56,18 +56,22 @@ const DEV_DEFAULTS = {
   USER_JWT_SECRET: "dev-user-secret-please-change-me-654321",
 } as const;
 
+// In development, use defaults if provided values are invalid (e.g., too short)
+const getDevValue = (envValue: string | undefined, devDefault: string, minLength?: number) => {
+  if (nodeEnv === "production") return envValue;
+  if (!envValue) return devDefault;
+  if (minLength && envValue.length < minLength) return devDefault;
+  return envValue;
+};
+
 const rawEnv: Record<string, string | undefined> = {
   ...process.env,
   NODE_ENV: nodeEnv,
   DATABASE_URL:
     process.env.DATABASE_URL ??
     (nodeEnv === "production" ? undefined : DEV_DEFAULTS.DATABASE_URL),
-  ADMIN_JWT_SECRET:
-    process.env.ADMIN_JWT_SECRET ??
-    (nodeEnv === "production" ? undefined : DEV_DEFAULTS.ADMIN_JWT_SECRET),
-  USER_JWT_SECRET:
-    process.env.USER_JWT_SECRET ??
-    (nodeEnv === "production" ? undefined : DEV_DEFAULTS.USER_JWT_SECRET),
+  ADMIN_JWT_SECRET: getDevValue(process.env.ADMIN_JWT_SECRET, DEV_DEFAULTS.ADMIN_JWT_SECRET, 32),
+  USER_JWT_SECRET: getDevValue(process.env.USER_JWT_SECRET, DEV_DEFAULTS.USER_JWT_SECRET, 32),
 };
 
 const parsed = envSchema.safeParse(rawEnv);

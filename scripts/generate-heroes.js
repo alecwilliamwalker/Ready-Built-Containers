@@ -17,75 +17,7 @@ async function rasterizeSVG(svgPath) {
   return pngBuffer;
 }
 
-async function generateBasecamp20Hero() {
-  try {
-    const outputDir = path.join('public', 'images', 'models', 'heroes');
-    await ensureDir(outputDir);
-
-    const canvas = createCanvas(1200, 675);
-    const ctx = canvas.getContext('2d');
-
-    // Dusk cliff sky
-    const skyGradient = ctx.createLinearGradient(0, 0, 0, 675);
-    skyGradient.addColorStop(0, '#1e0f1a');
-    skyGradient.addColorStop(0.4, '#3d1f2b');
-    skyGradient.addColorStop(0.7, '#6b3a2a');
-    skyGradient.addColorStop(1, '#4a2e1e');
-    ctx.fillStyle = skyGradient;
-    ctx.fillRect(0, 0, 1200, 675);
-
-    // Rocky pad
-    ctx.fillStyle = '#3a2a20';
-    ctx.fillRect(100, 450, 1000, 225);
-    for (let i = 0; i < 30; i++) {
-      ctx.fillStyle = `hsl(${20 + Math.random()*30}, 25%, ${20 + Math.random()*25}%)`;
-      ctx.beginPath();
-      ctx.ellipse(Math.random()*1100 + 100, 450 + Math.random()*225, 20 + Math.random()*40, 10 + Math.random()*20, Math.random()*Math.PI, 0, Math.PI*2);
-      ctx.fill();
-    }
-
-    // Raster SVG to PNG with sharp
-    const svgPath = path.join('public', 'images', 'models', 'basecamp-20-exterior.svg');
-    const svgPngBuffer = await rasterizeSVG(svgPath);
-    const svgImg = await loadImage(svgPngBuffer);
-    ctx.drawImage(svgImg, 380, 190, 440, 250);
-
-    // Solar glint
-    ctx.fillStyle = 'rgba(255, 165, 0, 0.6)';
-    ctx.fillRect(430, 175, 320, 18);
-
-    // Door glow
-    const doorGlow = ctx.createRadialGradient(610, 360, 0, 610, 360, 70);
-    doorGlow.addColorStop(0, 'rgba(255, 200, 100, 0.85)');
-    doorGlow.addColorStop(0.6, 'rgba(255, 165, 0, 0.4)');
-    doorGlow.addColorStop(1, 'rgba(255, 140, 0, 0)');
-    ctx.fillStyle = doorGlow;
-    ctx.fillRect(560, 310, 110, 140);
-
-    // Shadow
-    ctx.save();
-    ctx.globalAlpha = 0.5;
-    ctx.shadowColor = '#000';
-    ctx.shadowBlur = 25;
-    ctx.shadowOffsetY = 15;
-    ctx.fillStyle = '#000';
-    ctx.fillRect(390, 440, 420, 30);
-    ctx.restore();
-
-    const canvasBuffer = canvas.toBuffer('image/png');
-    const outputPath = path.join(outputDir, 'basecamp-20-hero.png');
-    const optimized = await sharp(canvasBuffer)
-      .resize(1200, 675, { fit: 'cover' })
-      .png({ quality: 90, compressionLevel: 9 })
-      .toBuffer();
-    fs.writeFileSync(outputPath, optimized);
-    console.log(`✓ Basecamp 20 hero saved: ${outputPath}`);
-  } catch (error) {
-    console.error('Basecamp 20 error:', error.message);
-  }
-}
-
-async function generateOutfitter40Hero() {
+async function generateDeluxeHero() {
   try {
     const outputDir = path.join('public', 'images', 'models', 'heroes');
     await ensureDir(outputDir);
@@ -114,7 +46,7 @@ async function generateOutfitter40Hero() {
     }
 
     // SVG raster
-    const svgPath = path.join('public', 'images', 'models', 'outfitter-40-plus-exterior.svg');
+    const svgPath = path.join('public', 'images', 'models', 'deluxe-exterior.svg');
     const svgPngBuffer = await rasterizeSVG(svgPath);
     const svgImg = await loadImage(svgPngBuffer);
     ctx.drawImage(svgImg, 350, 180, 500, 280);
@@ -155,18 +87,17 @@ async function generateOutfitter40Hero() {
     ctx.restore();
 
     const canvasBuffer = canvas.toBuffer('image/png');
-    const outputPath = path.join(outputDir, 'outfitter-40-plus-hero.png');
+    const outputPath = path.join(outputDir, 'deluxe-hero.png');
     const optimized = await sharp(canvasBuffer)
       .resize(1200, 675, { fit: 'cover' })
       .png({ quality: 90, compressionLevel: 9 })
       .toBuffer();
     fs.writeFileSync(outputPath, optimized);
-    console.log(`✓ Outfitter 40+ hero saved: ${outputPath}`);
+    console.log(`✓ Deluxe hero saved: ${outputPath}`);
   } catch (error) {
-    console.error('Outfitter error:', error.message);
+    console.error('Deluxe error:', error.message);
   }
 }
 
 // Run
-generateBasecamp20Hero();
-generateOutfitter40Hero();
+generateDeluxeHero();

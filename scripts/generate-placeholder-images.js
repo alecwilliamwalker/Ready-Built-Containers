@@ -307,19 +307,8 @@ function generateFloorplan(modelSlug, modelName, lengthFt, zones) {
 // Model configurations
 const models = [
   {
-    slug: 'basecamp-20',
-    name: 'Basecamp 20',
-    lengthFt: 20,
-    accentColor: colors.emerald,
-    zones: [
-      { name: 'Living / Kitchen', lengthFt: 12, color: colors.forest },  // 9+3
-      { name: 'Optional Bath', lengthFt: 4, color: colors.cyan },
-      { name: 'Bunks', lengthFt: 4, color: colors.sky }
-    ]
-  },
-  {
-    slug: 'basecamp-40',
-    name: 'Basecamp 40',
+    slug: 'standard',
+    name: 'Standard',
     lengthFt: 40,
     accentColor: colors.emerald,
     zones: [
@@ -329,8 +318,8 @@ const models = [
     ]
   },
   {
-    slug: 'outfitter-40-plus',
-    name: 'Outfitter 40 Plus',
+    slug: 'deluxe',
+    name: 'Deluxe',
     lengthFt: 40,
     accentColor: colors.amber,
     zones: [
@@ -351,8 +340,8 @@ models.forEach(model => {
   fs.writeFileSync(exteriorPath, exteriorSvg);
   console.log(`✓ Generated ${exteriorPath}`);
   
-  // Interior (only for Basecamp 40)
-  if (model.slug === 'basecamp-40') {
+  // Interior (only for Standard)
+  if (model.slug === 'standard') {
     const interiorSvg = generateInterior(model.slug, model.name, model.lengthFt);
     const interiorPath = path.join('public', 'images', 'models', `${model.slug}-interior.svg`);
     fs.writeFileSync(interiorPath, interiorSvg);
