@@ -32,7 +32,7 @@ type PlansGalleryProps = {
 };
 
 export function PlansGallery({ models, floorplans, initialModel }: PlansGalleryProps) {
-  const [activeModelSlug, setActiveModelSlug] = useState(initialModel || models[0]?.slug || "standard");
+  const [activeModelSlug, setActiveModelSlug] = useState(initialModel || models[0]?.slug || "hc40");
   const [activePlanId, setActivePlanId] = useState("");
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -146,10 +146,10 @@ export function PlansGallery({ models, floorplans, initialModel }: PlansGalleryP
           </thead>
           <tbody>
             {models.map((model) => {
-              const planDesc = floorplans.find(p => p.model.slug === model.slug)?.description || "";
-              const zones = planDesc.includes("Gear area") ? "Gear Area 4'/Galley 16'/Bath 6'/Bunks 14'" :
-                planDesc.includes("Vestibule") ? "Vest 3'/Living 17'/Bath 7'/Bunks 13'" :
-                  "Living 12'/Bath 4'/Bunks 4'";
+              // Zone dimensions based on model
+              const zones = model.lengthFt === 20
+                ? "Entry 3'/Living 11'/Sleep 6'"
+                : "Entry 3'/Living 17'/Bath 7'/Bunks 13'";
               return (
                 <tr
                   key={model.slug}

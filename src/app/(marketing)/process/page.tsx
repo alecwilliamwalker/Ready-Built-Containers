@@ -20,7 +20,7 @@ const STEPS: {
       title: "Choose your model",
       description: (
         <>
-          Compare Standard and Deluxe layouts, choose bunks and power, and add an off-grid kit if needed. We flag what's included and what's worth upgrading.
+          Review layouts, choose bunks and power, and add an off-grid kit if needed. We flag what's included and what's worth upgrading.
         </>
       ),
       image: "/images/process-1-models.png",

@@ -1,29 +1,29 @@
 import Image from "next/image";
 
-type PlanKey = "standard" | "deluxe" | "default";
+type PlanKey = "hc40" | "hc20" | "default";
 
 const PLAN_CONFIG: Record<PlanKey, { src: string; alt: string; caption: string }> = {
-  standard: {
-    src: "/images/floorplans/standard-plan.svg",
-    alt: "Standard schematic plan with vestibule, living kitchen, hall bath, and four-bunk room",
-    caption: "Standard – Flagship 40' layout (schematic plan).",
+  hc40: {
+    src: "/images/floorplans/hc40-plan.svg",
+    alt: "40' High Cube floor plan with vestibule, kitchen, living, hall bath, and bunk room",
+    caption: "40' High Cube – Full off-grid cabin (floor plan).",
   },
-  deluxe: {
-    src: "/images/floorplans/deluxe-plan.svg",
-    alt: "Deluxe schematic plan highlighting gear vestibule, extended galley, full bath, and six bunks",
-    caption: "Deluxe – Gear vestibule, full galley, 6-bunk bay (schematic plan).",
+  hc20: {
+    src: "/images/floorplans/hc20-plan.svg",
+    alt: "20' High Cube floor plan with vestibule, galley, and sleeping area",
+    caption: "20' High Cube – Compact off-grid basecamp (floor plan).",
   },
   default: {
-    src: "/images/floorplans/standard-plan.svg",
-    alt: "Container cabin schematic plan",
-    caption: "Standard container cabin schematic plan.",
+    src: "/images/floorplans/hc40-plan.svg",
+    alt: "High cube container cabin floor plan",
+    caption: "High cube container cabin floor plan.",
   },
 };
 
 function resolvePlan(slug?: string): PlanKey {
   if (!slug) return "default";
-  if (slug.includes("deluxe")) return "deluxe";
-  if (slug.includes("standard")) return "standard";
+  if (slug.includes("hc40")) return "hc40";
+  if (slug.includes("hc20")) return "hc20";
   return "default";
 }
 
@@ -44,9 +44,9 @@ export function ModelPlanThumb({ slug }: { slug?: string }) {
       </div>
       <p className="mt-3 text-xs font-semibold tracking-wide text-slate-200">{plan.caption}</p>
       <div className="mt-2 flex items-center justify-between text-[11px] uppercase tracking-[0.24em] text-slate-500">
-        <span>Living / Kitchen</span>
-        <span>Bath</span>
-        <span>Bunks</span>
+        <span>Entry</span>
+        <span>Living / Galley</span>
+        <span>{slug?.includes("hc40") ? "Bath / Bunks" : "Sleep"}</span>
       </div>
     </div>
   );

@@ -2,20 +2,20 @@ import { Button } from "@/components/ui/Button";
 
 const FEATURE_STRIP = [
   {
-    label: "Secure",
-    text: "Locking steel doors + inner man door",
+    label: "20' & 40' High Cube",
+    text: "ISO-standard shells",
   },
   {
-    label: "Off-grid ready",
-    text: "Solar, generator, or hybrid",
+    label: "Off-Grid Compatible",
+    text: "Solar, generator, rural water or well",
   },
   {
-    label: "Sleeps 4+",
-    text: "Engineered bunk layouts",
+    label: "Locking Vestibules",
+    text: "Steel doors protect entry",
   },
   {
-    label: "Delivered anywhere",
-    text: "Any site a truck can reach",
+    label: "Insulated Interiors",
+    text: "Multiple options available",
   },
 ];
 
@@ -36,7 +36,7 @@ export function Hero() {
         <div className="max-w-xl space-y-4">
           <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-400">Rugged steel cabins</p>
           <h1 className="text-3xl font-semibold leading-tight md:text-4xl">
-            Container cabins built to disappear into the timber.
+            Container cabins designed and built for every environment.
           </h1>
           <p className="text-sm text-slate-200/90">
             High-cube ISO shells with insulated interiors, locking vestibules, and off-grid systems—engineered for hunters, outfitters, and remote landowners.
@@ -60,22 +60,29 @@ export function Hero() {
         </div>
 
         <div className="max-w-sm space-y-3 rounded-3xl border border-slate-700/80 bg-slate-900/80 p-5 backdrop-blur-md">
-          <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-emerald-400">Flagship layout</p>
-          <h2 className="text-lg font-semibold">Walk through the Standard</h2>
+          <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-emerald-400">Two platforms</p>
+          <h2 className="text-lg font-semibold">Choose your High Cube</h2>
           <p className="text-[11px] text-slate-200">
-            <strong>Living + Kitchen:</strong> 16&apos; lounge with L-shape galley &amp; window.
+            <strong>20&apos; High Cube:</strong> Compact basecamp—galley, sleeping for 2, off-grid prewired.
             <br />
-            <strong>Center Hall:</strong> Mud zone and full bath.
-            <br />
-            <strong>Bunk Room:</strong> Four stacked bunks, lockable firearms cabinet, egress window.
+            <strong>40&apos; High Cube:</strong> Full cabin—kitchen, bath, bunk room sleeping 4, complete systems.
           </p>
-          <Button
-            href="/models/standard"
-            variant="accent"
-            className="inline-flex rounded-full bg-emerald-500/95 px-4 py-1.5 text-[10px] font-semibold text-slate-950 hover:bg-emerald-400"
-          >
-            Explore Standard
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              href="/models/hc20"
+              variant="accent"
+              className="inline-flex rounded-full bg-emerald-500/95 px-4 py-1.5 text-[10px] font-semibold text-slate-950 hover:bg-emerald-400"
+            >
+              20&apos; from $29k
+            </Button>
+            <Button
+              href="/models/hc40"
+              variant="ghost"
+              className="inline-flex rounded-full border border-slate-400/60 px-4 py-1.5 text-[10px] font-semibold text-slate-50 hover:border-emerald-400 hover:text-emerald-300"
+            >
+              40&apos; from $51k
+            </Button>
+          </div>
         </div>
       </div>
 

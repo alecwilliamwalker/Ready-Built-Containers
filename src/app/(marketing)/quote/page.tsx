@@ -21,7 +21,7 @@ export default async function QuotePage({ searchParams }: { searchParams: Promis
         <SectionTitle
           eyebrow="Quote"
           title="Detailed pricing + delivery plan"
-          subtitle="Tell us about your land, access route, and utility preferences. We map logistics, generate permit-ready documents, and share a clear budget."
+          subtitle="Tell us about your land, access route, and utility preferences. We map logistics and share a clear budget."
         />
         <div className="space-y-3 text-sm text-foreground/75">
           <p>After you submit we schedule a 15-minute follow-up call, verify access measurements, and send a written scope with line-item costs.</p>

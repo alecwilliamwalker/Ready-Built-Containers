@@ -757,12 +757,30 @@ export const ZONE_TEMPLATES: ZoneTemplateConfig[] = [
   bedroomUltimate,
 ];
 
+// Shell configurations
+export type ShellSize = "20" | "40";
+
+export const SHELL_CONFIGS: Record<ShellSize, { lengthFt: number; widthFt: number; heightFt: number; name: string }> = {
+  "20": {
+    lengthFt: 20,
+    widthFt: 8,
+    heightFt: 9.5,
+    name: "20' High Cube",
+  },
+  "40": {
+    lengthFt: 40,
+    widthFt: 8,
+    heightFt: 9.5,
+    name: "40' High Cube",
+  },
+};
+
 // Full cabin templates
 export const CABIN_TEMPLATES: CabinTemplate[] = [
   {
-    id: "standard",
-    name: "Standard Design",
-    description: "Essential cabin layout with kitchen, living area, bathroom, and bedroom",
+    id: "hc40-standard",
+    name: "40' High Cube Standard",
+    description: "Full cabin layout with kitchen, living area, bathroom, and bunk room—complete off-grid systems",
     priceCents: 5100000, // $51,000
     zoneSelections: {
       "kitchen-living": "basic",
@@ -771,7 +789,18 @@ export const CABIN_TEMPLATES: CabinTemplate[] = [
       "bedroom": "basic",
     },
   },
-  // Future templates can be added here
+  {
+    id: "hc20-basecamp",
+    name: "20' High Cube Basecamp",
+    description: "Compact basecamp with galley kitchen, sleeping area, and off-grid prewiring",
+    priceCents: 2900000, // $29,000
+    zoneSelections: {
+      "kitchen-living": "basic",
+      "bath-hallway": "", // No bathroom in 20' basecamp
+      "hallway": "",
+      "bedroom": "",
+    },
+  },
 ];
 
 // Helper to get zone templates by zone type
@@ -800,7 +829,8 @@ export function calculateTotalPrice(selections: Record<ZoneType, TemplateTier | 
 
 // Build a complete design from zone selections
 export function buildDesignFromZoneSelections(
-  selections: Record<ZoneType, TemplateTier>
+  selections: Record<ZoneType, TemplateTier | "">,
+  shellSize: ShellSize = "40"
 ): DesignConfig {
   // Zone order determines x positions - hallway runs parallel to bath-hallway
   const mainZoneOrder: ZoneType[] = ["kitchen-living", "bath-hallway", "bedroom"];
@@ -878,13 +908,15 @@ export function buildDesignFromZoneSelections(
     }
   }
 
+  const shellConfig = SHELL_CONFIGS[shellSize];
+  
   return {
     version: 1,
     shell: {
-      id: "shell-40",
-      lengthFt: 40,
-      widthFt: 8,
-      heightFt: 9.5,
+      id: `shell-${shellSize}`,
+      lengthFt: shellConfig.lengthFt,
+      widthFt: shellConfig.widthFt,
+      heightFt: shellConfig.heightFt,
     },
     zones,
     fixtures,

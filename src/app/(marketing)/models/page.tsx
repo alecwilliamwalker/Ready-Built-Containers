@@ -5,8 +5,8 @@ import { SectionTitle } from "@/components/ui/SectionTitle";
 import prisma from "@/lib/db";
 
 export const metadata: Metadata = {
-  title: "Models",
-  description: "View our lineup of engineered shipping-container hunting cabins with pricing and specs.",
+  title: "High Cube Models | 20' and 40' Off-Grid Container Cabins",
+  description: "Compare our 20' and 40' high-cube ISO container cabins. Insulated interiors, locking vestibules, and complete off-grid systems for hunters, outfitters, and remote landowners.",
 };
 
 export default async function ModelsPage() {
@@ -31,9 +31,9 @@ export default async function ModelsPage() {
   return (
     <PageContainer className="space-y-12 py-16">
       <SectionTitle
-        eyebrow="Model Lineup"
-        title="Two container cabin platforms"
-        subtitle="Each build starts with a reinforced high-cube shell, insulated framing package, and engineered delivery plan."
+        eyebrow="High Cube Lineup"
+        title="20' and 40' off-grid platforms"
+        subtitle="Both sizes feature insulated interiors, locking vestibules, and complete off-grid prewiring. Choose the shell that fits your land and needs."
       />
       <ModelsGrid models={summaries} />
     </PageContainer>

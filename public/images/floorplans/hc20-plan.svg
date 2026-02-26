@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="400" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="zone-shadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <text x="400" y="40" font-family="system-ui, -apple-system, sans-serif" 
+        font-size="20" font-weight="600" fill="#0f172a" text-anchor="middle">
+    20' High Cube Floor Plan
+  </text>
+  <text x="400" y="65" font-family="system-ui, -apple-system, sans-serif" 
+        font-size="12" font-weight="400" fill="#334155" text-anchor="middle" letter-spacing="2">
+    OFF-GRID BASECAMP • INSULATED • LOCKING VESTIBULE
+  </text>
+  
+  <!-- Vestibule / Entry -->
+  <g filter="url(#zone-shadow)">
+    <rect x="75" y="100" width="100" height="200" 
+          fill="#475569" stroke="#0f172a" stroke-width="2" rx="4" opacity="0.9"/>
+    <text x="125" y="185" 
+          font-family="system-ui" font-size="12" font-weight="600" 
+          fill="#f8fafc" text-anchor="middle">
+      Entry
+    </text>
+    <text x="125" y="205" 
+          font-family="system-ui" font-size="10" font-weight="400" 
+          fill="#e2e8f0" text-anchor="middle">
+      Vestibule
+    </text>
+  </g>
+  
+  <!-- Living / Galley -->
+  <g filter="url(#zone-shadow)">
+    <rect x="175" y="100" width="350" height="200" 
+          fill="#314c3a" stroke="#0f172a" stroke-width="2" rx="4" opacity="0.85"/>
+    <text x="350" y="180" 
+          font-family="system-ui" font-size="14" font-weight="600" 
+          fill="#f8fafc" text-anchor="middle">
+      Living / Galley
+    </text>
+    <text x="350" y="205" 
+          font-family="system-ui" font-size="12" font-weight="400" 
+          fill="#e2e8f0" text-anchor="middle">
+      12' • Compact Kitchen + Lounge
+    </text>
+  </g>
+  
+  <!-- Sleep Area -->
+  <g filter="url(#zone-shadow)">
+    <rect x="525" y="100" width="200" height="200" 
+          fill="#0ea5e9" stroke="#0f172a" stroke-width="2" rx="4" opacity="0.85"/>
+    <text x="625" y="180" 
+          font-family="system-ui" font-size="14" font-weight="600" 
+          fill="#f8fafc" text-anchor="middle">
+      Sleep Area
+    </text>
+    <text x="625" y="205" 
+          font-family="system-ui" font-size="12" font-weight="400" 
+          fill="#e2e8f0" text-anchor="middle">
+      Sleeps 2 • Gear Storage
+    </text>
+  </g>
+  
+  <!-- Overall dimension line -->
+  <line x1="75" y1="330" x2="725" y2="330" stroke="#334155" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <text x="400" y="360" font-family="system-ui" font-size="14" font-weight="600" 
+        fill="#334155" text-anchor="middle">
+    20' High Cube ISO Shell
+  </text>
+</svg>

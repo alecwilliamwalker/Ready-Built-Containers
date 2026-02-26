@@ -316,17 +316,6 @@ const models = [
       { name: 'Hall + Bath', lengthFt: 7, color: colors.cyan },
       { name: '4-Bunk Cabin', lengthFt: 13, color: colors.sky }
     ]
-  },
-  {
-    slug: 'deluxe',
-    name: 'Deluxe',
-    lengthFt: 40,
-    accentColor: colors.amber,
-    zones: [
-      { name: 'Entry / Galley', lengthFt: 20, color: colors.forest },  // 16+4 gear vestibule merged
-      { name: 'Full Bath', lengthFt: 6, color: colors.cyan },
-      { name: '6-Bunk Bay', lengthFt: 14, color: colors.sky }
-    ]
   }
 ];
 

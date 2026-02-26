@@ -137,22 +137,23 @@ function generateFloorPlan(filename, title, lengthFt, zones) {
 
 // DEFINITIONS
 
-// Standard (40')
-// [Kitchen 20'] [Bath 7' (Side Hall)] [Bunks 13' (Full Width)]
-const standardZones = [
-  { label: 'Living / Kitchen', length: 20, color: colors.forest, fullWidth: true },
-  { label: 'Bath', length: 7, color: colors.cyan, hasSideHall: true, subLabel: "7' × 5'" },
-  { label: 'Bunk Room', length: 13, color: colors.sky, fullWidth: true }
+// 40' High Cube
+// [Entry 3'] [Kitchen/Living 18'] [Bath 7' (Side Hall)] [Bunks 12' (Full Width)]
+const hc40Zones = [
+  { label: 'Entry', length: 3, color: colors.slate[600], fullWidth: true, subLabel: 'Vestibule' },
+  { label: 'Living / Kitchen', length: 17, color: colors.forest, fullWidth: true, subLabel: "Galley + Lounge" },
+  { label: 'Full Bath', length: 7, color: colors.cyan, hasSideHall: true, subLabel: "7' × 5'" },
+  { label: 'Bunk Room', length: 13, color: colors.sky, fullWidth: true, subLabel: 'Sleeps 4' }
 ];
 
-// Deluxe (40')
-// [Galley 20'] [Bath 6' (Side Hall)] [Bunks 14' (Full Width)]
-const deluxeZones = [
-  { label: 'Extended Galley', length: 20, color: colors.forest, fullWidth: true },
-  { label: 'Full Bath', length: 6, color: colors.cyan, hasSideHall: true, subLabel: "6' × 5'" },
-  { label: '6-Bunk Bay', length: 14, color: colors.sky, fullWidth: true }
+// 20' High Cube
+// [Entry 3'] [Kitchen/Living 10'] [Sleep 7']
+const hc20Zones = [
+  { label: 'Entry', length: 3, color: colors.slate[600], fullWidth: true, subLabel: 'Vestibule' },
+  { label: 'Living / Galley', length: 11, color: colors.forest, fullWidth: true, subLabel: 'Compact Kitchen' },
+  { label: 'Sleep Area', length: 6, color: colors.sky, fullWidth: true, subLabel: 'Sleeps 2' }
 ];
 
 // Generate
-generateFloorPlan('standard-plan.svg', 'Standard Floor Plan', 40, standardZones);
-generateFloorPlan('deluxe-plan.svg', 'Deluxe Floor Plan', 40, deluxeZones);
+generateFloorPlan('hc40-plan.svg', "40' High Cube Floor Plan", 40, hc40Zones);
+generateFloorPlan('hc20-plan.svg', "20' High Cube Floor Plan", 20, hc20Zones);

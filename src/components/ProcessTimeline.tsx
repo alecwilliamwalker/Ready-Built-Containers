@@ -2,22 +2,17 @@ const STEPS = [
   {
     title: "Choose your model",
     description:
-      "Start with a standard layout, then dial in bunks, storage, and power options. We review use-cases to recommend upgrades that matter and avoid upsells that don't.",
-  },
-  {
-    title: "Site + permits",
-    description:
-      "We coordinate with your local authority for documentation while you prep the pad. You provide site photos, access notes, and any permit requirements; we supply stamped drawings and structural calcs.",
+      "Choose between our 20' and 40' high-cube shells. Both come fully insulated with locking vestibules and off-grid prewiring.",
   },
   {
     title: "Build + spec confirmation",
     description:
-      "Our fabrication team cuts openings, builds interior framing, and installs insulation. We ship a final spec package covering finishes, appliances, and off-grid kits for your approval before locking in production.",
+      "Our fabrication team cuts openings, builds interior framing, and installs insulation. We ship a final spec package covering finishes and appliances for your approval before locking in production.",
   },
   {
     title: "Delivery + set",
     description:
-      "We load on tilt-deck or crane service, deliver to site, and set on pre-built foundation (piers, helical piles, or slab). Final hookups for power, water, and waste happen the same week so you can move in immediately.",
+      "We work with you to determine the best options for loading and delivery—tilt bed trailer or crane service to deliver to site and set on your foundation (piers, helical piles, or slab). Final hookups for power, water, and waste are your responsibility. Waste consultations are available.",
   },
 ];
 

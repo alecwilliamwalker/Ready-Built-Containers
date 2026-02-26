@@ -352,71 +352,6 @@ const models = [
         }
       ]
     }
-  },
-  {
-    slug: 'deluxe',
-    name: 'Deluxe',
-    lengthFt: 40,
-    exterior: {
-      windows: [
-        { x: 180, width: 140 },
-        { x: 420, width: 140 },
-        { x: 680, width: 120 }
-      ],
-      callouts: [
-        { x: 280, y: 380, labelX: 180, labelY: 320, label: 'Gear Vestibule' },
-        { x: 500, y: 320, labelX: 600, labelY: 270, label: 'Extended Galley' },
-        { x: 800, y: 320, labelX: 900, labelY: 270, label: '6-Bunk Layout' },
-        { x: 1050, y: 280, labelX: 1150, labelY: 230, label: 'Observation Deck Prep' }
-      ]
-    },
-    interior: {
-      zones: [
-        {
-          name: 'Gear Vestibule',
-          lengthFt: 4,
-          color: colors.slate[800],
-          items: [
-            { x: 0.5, width: 60, height: 100, fill: colors.slate[700], label: 'Gear Wall' },
-            { x: 2.5, width: 40, height: 80, fill: colors.slate[600], label: 'Boots' }
-          ]
-        },
-        {
-          name: 'Extended Galley',
-          lengthFt: 16,
-          color: colors.forest,
-          items: [
-            { x: 1, width: 200, height: 85, fill: colors.forest, label: 'Extended Counter' },
-            { x: 8, width: 140, height: 75, fill: colors.slate[700], label: 'Dining Table' },
-            { x: 13, width: 70, height: 70, fill: colors.slate[600], label: 'Seating' }
-          ]
-        },
-        {
-          name: 'Full Bath',
-          lengthFt: 6,
-          color: colors.cyan,
-          items: [
-            { x: 0.5, width: 70, height: 75, fill: colors.slate[100], label: 'Vanity' },
-            { x: 3, width: 60, height: 60, fill: colors.slate[100], label: 'WC' },
-            { x: 4.5, width: 50, height: 85, fill: colors.slate[100], label: 'Shower' }
-          ]
-        },
-        {
-          name: '6-Bunk Bay',
-          lengthFt: 14,
-          color: colors.sky,
-          items: [
-            { x: 1, width: 75, height: 45, fill: colors.slate[800], label: 'Bunk 1' },
-            { x: 1, width: 75, height: 45, fill: colors.slate[800], label: 'Bunk 2' },
-            { x: 5, width: 75, height: 45, fill: colors.slate[800], label: 'Bunk 3' },
-            { x: 5, width: 75, height: 45, fill: colors.slate[800], label: 'Bunk 4' },
-            { x: 9, width: 75, height: 45, fill: colors.slate[800], label: 'Bunk 5' },
-            { x: 9, width: 75, height: 45, fill: colors.slate[800], label: 'Bunk 6' },
-            { x: 12, width: 50, height: 110, fill: colors.slate[700], label: 'Firearms' }
-          ]
-        }
-      ]
-    }
   }
 ];
 
@@ -435,8 +370,8 @@ models.forEach(model => {
   fs.writeFileSync(exteriorPath, exteriorSvg);
   console.log(`✓ Generated ${exteriorPath}`);
   
-  // Interior (for both models)
-  if (model.slug === 'standard' || model.slug === 'deluxe') {
+  // Interior
+  if (model.slug === 'standard') {
     const interiorSvg = generateDetailedInterior(
       model.slug,
       model.name,

@@ -8,18 +8,55 @@ async function seedModels() {
   await prisma.model.deleteMany({
     where: {
       slug: {
-        in: ["basecamp-20", "basecamp-40", "outfitter-40-plus"]
+        in: ["basecamp-20", "basecamp-40", "outfitter-40-plus", "deluxe"]
       }
     }
   });
 
   const models = [
     {
-      slug: "standard",
-      name: "Standard",
-      tagline: "Flagship 40' cabin with full amenities",
+      slug: "hc20",
+      name: "20' High Cube",
+      tagline: "Compact off-grid basecamp",
       description:
-        "Our most-requested layout: locking container doors shield the man-door entry, leading into a warm living space with kitchen, a center hall and full bathroom, and a rear bunk room with four stacked bunks and gear storage.",
+        "The ideal basecamp for solo hunters or couples. This 20' high-cube ISO shell features a locking vestibule entry, insulated interior, compact galley, and sleeping area for two. Prewired for solar and generator with cistern-ready plumbing—drop it on your land and go off-grid immediately.",
+      lengthFt: 20,
+      sleeps: 2,
+      hasBathroom: false,
+      hasKitchen: true,
+      basePrice: 2900000,
+      images: [
+        {
+          url: "/images/models/standard/exterior-front-deck.jpg",
+          alt: "20' High Cube front exterior",
+          sortOrder: 0,
+        },
+        {
+          url: "/images/models/standard/interior-living-room.jpg",
+          alt: "20' High Cube interior living space",
+          sortOrder: 1,
+        },
+        {
+          url: "/images/models/standard/exterior-yard-context.jpg",
+          alt: "20' High Cube in remote setting",
+          sortOrder: 2,
+        },
+      ],
+      floorplans: [
+        {
+          name: "20' Basecamp Layout",
+          description: "Locking vestibule entry, compact galley, and sleeping area with gear storage.",
+          imageUrl: "/images/floorplans/hc20-plan.svg",
+          isDefault: true,
+        },
+      ],
+    },
+    {
+      slug: "hc40",
+      name: "40' High Cube",
+      tagline: "Full-featured off-grid cabin",
+      description:
+        "Our flagship 40' high-cube ISO shell with everything you need for extended off-grid stays. Locking container doors protect the insulated man-door entry, leading into a warm living space with full galley kitchen, center hallway with full bathroom, and rear bunk room sleeping four. Complete off-grid package includes solar prewiring, generator input, cistern-ready plumbing, and holding tank rough-ins.",
       lengthFt: 40,
       sleeps: 4,
       hasBathroom: true,
@@ -27,98 +64,98 @@ async function seedModels() {
       basePrice: 5100000,
       images: [
         {
-          url: "/images/models/standard/exterior-full-length.jpg",
-          alt: "Standard full length exterior side view",
+          url: "/images/models/standard/exterior-front-deck.jpg",
+          alt: "40' High Cube front exterior deck and entry",
           sortOrder: 0,
         },
         {
-          url: "/images/models/standard/exterior-front-deck.jpg",
-          alt: "Standard front exterior deck and entry",
+          url: "/images/models/standard/interior-living-room.jpg",
+          alt: "40' High Cube living room interior",
           sortOrder: 1,
         },
         {
-          url: "/images/models/standard/exterior-entry-closeup.jpg",
-          alt: "Standard entry closeup detail",
+          url: "/images/models/standard/interior-living-corner.jpg",
+          alt: "40' High Cube living corner detail",
           sortOrder: 2,
         },
         {
-          url: "/images/models/standard/exterior-rear.jpg",
-          alt: "Standard rear exterior bunk area",
+          url: "/images/models/standard/interior-hallway-kitchen.jpg",
+          alt: "40' High Cube hallway to kitchen interior",
           sortOrder: 3,
         },
         {
-          url: "/images/models/standard/exterior-yard-context.jpg",
-          alt: "Standard in yard context",
+          url: "/images/models/standard/interior-bathroom.jpg",
+          alt: "40' High Cube bathroom interior",
           sortOrder: 4,
         },
         {
-          url: "/images/models/standard/interior-living-room.jpg",
-          alt: "Standard living room interior",
+          url: "/images/models/standard/interior-shower.jpg",
+          alt: "40' High Cube shower interior",
           sortOrder: 5,
         },
         {
-          url: "/images/models/standard/interior-hallway-kitchen.jpg",
-          alt: "Standard hallway to kitchen interior",
+          url: "/images/models/standard/interior-bunk-room.jpg",
+          alt: "40' High Cube bunk room interior",
           sortOrder: 6,
         },
         {
-          url: "/images/models/standard/interior-living-corner.jpg",
-          alt: "Standard living corner detail",
+          url: "/images/models/standard/interior-bunk-storage.jpg",
+          alt: "40' High Cube bunk storage interior",
           sortOrder: 7,
         },
         {
-          url: "/images/models/standard/interior-bunk-room.jpg",
-          alt: "Standard bunk room interior",
+          url: "/images/models/standard/exterior-entry-closeup.jpg",
+          alt: "40' High Cube entry closeup detail",
           sortOrder: 8,
         },
         {
-          url: "/images/models/standard/interior-bunk-storage.jpg",
-          alt: "Standard bunk storage interior",
+          url: "/images/models/standard/exterior-rear.jpg",
+          alt: "40' High Cube rear exterior bunk area",
           sortOrder: 9,
         },
         {
-          url: "/images/models/standard/interior-bathroom.jpg",
-          alt: "Standard bathroom interior",
+          url: "/images/models/standard/exterior-yard-context.jpg",
+          alt: "40' High Cube in yard context",
           sortOrder: 10,
-        },
-        {
-          url: "/images/models/standard/interior-shower.jpg",
-          alt: "Standard shower interior",
-          sortOrder: 11,
         },
       ],
       floorplans: [
         {
-          name: "Standard Bunk Layout",
-          description: "Secure entry with living + galley front half, hall bath mid, four bunks aft.",
-          imageUrl: "/images/floorplans/standard-plan.svg",
+          name: "40' Bunk Layout",
+          description: "Secure vestibule entry, living + galley front half, hall bath mid, four bunks aft.",
+          imageUrl: "/images/floorplans/hc40-plan.svg",
           isDefault: true,
         },
       ],
     },
     {
-      slug: "deluxe",
-      name: "Deluxe",
-      tagline: "Gear-forward layout with dual entries",
+      slug: "standard",
+      name: "Standard",
+      tagline: "40' standard cabin with full amenities",
       description:
-        "Designed for outfitters that rotate hunters weekly. Adds a gear area, enlarged galley, and split bunks with dedicated firearm lockers. Reinforced framing for rooftop solar array and observation deck access.",
+        "Our standard 40' high-cube ISO shell with everything you need for extended off-grid stays. Locking container doors protect the insulated man-door entry, leading into a warm living space with full galley kitchen, center hallway with full bathroom, and rear bunk room sleeping four.",
       lengthFt: 40,
-      sleeps: 6,
+      sleeps: 4,
       hasBathroom: true,
       hasKitchen: true,
-      basePrice: 8900000,
+      basePrice: 5100000,
       images: [
         {
-          url: "/images/models/heroes/deluxe-hero.jpg",
-          alt: "Deluxe hero exterior",
+          url: "/images/models/standard/exterior-front-deck.jpg",
+          alt: "Standard front exterior deck and entry",
           sortOrder: 0,
+        },
+        {
+          url: "/images/models/standard/interior-living-room.jpg",
+          alt: "Standard living room interior",
+          sortOrder: 1,
         },
       ],
       floorplans: [
         {
-          name: "Guide Team Layout",
-          description: "Gear area, extended galley lounge, full bath, and six-pack bunk bay with dual egress.",
-          imageUrl: "/images/floorplans/deluxe-plan.svg",
+          name: "Standard Layout",
+          description: "Secure vestibule entry, living + galley front half, hall bath mid, four bunks aft.",
+          imageUrl: "/images/floorplans/hc40-plan.svg",
           isDefault: true,
         },
       ],

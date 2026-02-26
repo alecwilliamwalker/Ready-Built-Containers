@@ -33,7 +33,7 @@ Production-ready marketing, lead generation, and light sales site for Ready Buil
 ## Prisma & Database
 
 - Generated client lives at `@/lib/db`.
-- Seed script creates two standard models (`standard`, `deluxe`) along with floorplans and an admin login (`admin@readybuiltcontainers.com` / `readybuilt2025`, configurable via environment).
+- Seed script creates the standard model (`standard`) along with floorplans and an admin login (`admin@readybuiltcontainers.com` / `readybuilt2025`, configurable via environment).
 - To swap to PostgreSQL in production, update `DATABASE_URL` and adjust `provider` in `prisma/schema.prisma` before running migrations.
 
 ## Helpful Commands

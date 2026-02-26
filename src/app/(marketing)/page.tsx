@@ -10,19 +10,19 @@ import prisma from "@/lib/db";
 
 const faqPreview: FAQItem[] = [
   {
-    question: "How much does a 40' container cabin cost?",
+    question: "What sizes do you offer?",
     answer:
-      "The Standard starts at $51k delivered within 300 miles of Audubon, IA.",
+      "We build on 20' and 40' high-cube ISO shells. The 20' High Cube starts at $29k and the 40' High Cube starts at $51k, delivered within 300 miles of Audubon, IA.",
   },
   {
-    question: "Do I need a permit?",
+    question: "How off-grid ready are these cabins?",
     answer:
-      "Each county is different. You are responsible for local permits—we supply engineered drawings, structural calcs, and stamped foundation details to streamline review.",
+      "Every unit is prewired for solar panels and generator input, with dedicated circuits for battery chargers and appliances. Plumbing is roughed in for cisterns, holding tanks, or composting toilets. Choose your off-grid package: solar + battery, propane generator, or hybrid systems.",
   },
   {
     question: "Can I move the cabin later?",
     answer:
-      "Yes. Units remain lift- and haul-ready. If you keep the container doors, they latch shut for transport so all interior finishes remain protected.",
+      "Yes. All units remain lift- and haul-ready. The locking vestibule and container doors protect interior finishes during transport—relocate as your lease or property changes.",
   },
 ];
 
@@ -53,57 +53,33 @@ export default async function HomePage() {
         <section className="grid gap-10 lg:grid-cols-[2fr,3fr] lg:items-center">
           <div className="space-y-6">
             <SectionTitle
-              eyebrow="Why Steel"
-              title="Why choose a container cabin over stick-built?"
-              subtitle="Hunters need gear security, thermal performance, and the ability to relocate. Container shells deliver all three."
+              eyebrow="Why High Cube"
+              title="Built for off-grid living"
+              subtitle="High-cube ISO shells deliver the security, insulation, and portability that hunters, outfitters, and remote landowners need."
             />
             <ul className="space-y-4 text-sm text-slate-700">
               <li>
-                <strong className="text-slate-900">Lock it and leave it:</strong> Original container doors protect the insulated man-door. Bolt-on locking bars and optional alarm hardware keep firearms and optics safe between trips.
+                <strong className="text-slate-900">Locking vestibules:</strong> Original container doors protect the insulated man-door entry. Bolt-on locking bars and optional alarm hardware keep firearms and optics safe between trips.
               </li>
               <li>
-                <strong className="text-slate-900">Transportable by design:</strong> Built to ISO standards, every unit can relocate as your lease or property portfolio evolves. No special permits for 40' high-cube moves.
+                <strong className="text-slate-900">Transportable by design:</strong> Built to ISO standards, both 20&apos; and 40&apos; high-cube units can relocate as your lease or property changes. Standard trucking—no special permits required.
               </li>
               <li>
-                <strong className="text-slate-900">Engineered for harsh climates:</strong> Closed-cell foam, heated utility chase, and dehumidification keep condensation off your rifles and bedding.
+                <strong className="text-slate-900">Insulated for any climate:</strong> Insulated throughout to keep your bedding comfortable year-round.
               </li>
             </ul>
-          </div>
-          <div className="grid gap-4 rounded-3xl border border-slate-800/60 bg-[#f4eee2] p-6 text-slate-900 shadow-[0_35px_90px_-50px_rgba(15,23,42,0.6)]">
-            <h3 className="text-xl font-semibold">Off-grid ready from day one</h3>
-            <p className="text-sm text-slate-800/80">
-              We prewire for solar and generator input, run dedicated circuits for battery chargers and freezer, and rough in plumbing for holding tanks or composting toilets. Choose your preferred package: solar + battery banks, propane generator, or hybrid.
-            </p>
-            <div className="grid gap-3 text-sm text-slate-900 md:grid-cols-2">
-              <div className="rounded-2xl bg-white/70 px-4 py-3 shadow-inner">
-                <p className="font-semibold">Power</p>
-                <p>Prewired inverter panel, 30A shore power, Honda EU or solar integration.</p>
-              </div>
-              <div className="rounded-2xl bg-white/70 px-4 py-3 shadow-inner">
-                <p className="font-semibold">Water</p>
-                <p>PEX manifold plumbing with quick-connect pump for cistern or gravity feed.</p>
-              </div>
-              <div className="rounded-2xl bg-white/70 px-4 py-3 shadow-inner">
-                <p className="font-semibold">Heat</p>
-                <p>Diesel or propane heaters with backup electric panel heaters for shoulder seasons.</p>
-              </div>
-              <div className="rounded-2xl bg-white/70 px-4 py-3 shadow-inner">
-                <p className="font-semibold">Monitoring</p>
-                <p>Optional Starlink-ready mast, cellular booster, and low-temp alarm integrations.</p>
-              </div>
-            </div>
           </div>
         </section>
 
         <section id="models" className="space-y-10">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <SectionTitle
-              eyebrow="Model Overview"
-              title="Standard layouts engineered for the field"
-              subtitle="Pick the floor plan that fits your hunting camp, then customize bunks, storage, and systems."
+              eyebrow="High Cube Lineup"
+              title="20' and 40' off-grid platforms"
+              subtitle="Choose the shell size that fits your needs—both come with insulated interiors, locking vestibules, and off-grid prewiring."
             />
             <Link href="/models" className="text-sm font-semibold text-emerald-400 hover:text-emerald-300">
-              Explore all models →
+              Compare models →
             </Link>
           </div>
           <ModelsGrid models={modelSummaries} />
@@ -112,10 +88,13 @@ export default async function HomePage() {
         <section className="space-y-8">
           <SectionTitle
             eyebrow="How It Works"
-            title="From idea to hunt-ready cabin in 90 days"
-            subtitle="We manage fabrication while you prepare the pad and handle permits."
+            title="From order to off-grid ready in 90 days"
+            subtitle="We handle fabrication and off-grid systems while you prepare your site."
           />
           <ProcessTimeline />
+          <p className="mt-8 text-center text-lg font-semibold text-foreground">
+            Elevate your property now with one of our ready built containers!
+          </p>
         </section>
 
         <section className="grid gap-12 rounded-3xl border border-slate-800/60 bg-slate-950/80 p-8 shadow-[0_30px_90px_-55px_rgba(15,23,42,0.9)] lg:grid-cols-[2fr,3fr]" id="lead">

@@ -1,14 +1,14 @@
 # Image Assets Documentation
 
 ## Overview
-This document catalogs all placeholder images generated for the Ready Built Containers cabin models.
+This document catalogs all placeholder images generated for the Ready Built Containers high-cube container cabin models.
 
 ## Generated Placeholder Images
 
-### Standard
+### 40' High Cube (hc40)
 - **Exterior**: `/public/images/models/standard-exterior.svg`
   - 1200×600px SVG
-  - Features: Full 40' container with vestibule, 3 windows, emerald accent stripe
+  - Features: Full 40' high-cube ISO container with locking vestibule, 3 windows, emerald accent stripe
   - Color scheme: Slate gray body, emerald accents
   
 - **Interior**: `/public/images/models/standard-interior.svg`
@@ -16,27 +16,22 @@ This document catalogs all placeholder images generated for the Ready Built Cont
   - Features: Interior perspective showing kitchen counter, table, bunk beds
   - Color scheme: Light walls, dark wood floors, forest green accents
   
-- **Floorplan**: `/public/images/floorplans/standard-plan.svg`
+- **Floorplan**: `/public/images/floorplans/hc40-plan.svg`
   - 1200×400px SVG
-  - Zones: Vestibule (3'), Living/Kitchen (17'), Hall+Bath (7'), 4-Bunk Cabin (13')
+  - Zones: Entry/Vestibule (3'), Living/Kitchen (17'), Hall+Bath (7'), Bunk Room (13')
   - Color-coded zones with dimension labels
 
-### Deluxe
-- **Exterior**: `/public/images/models/deluxe-exterior.svg`
-  - 1200×600px SVG
-  - Features: 40' container with gear vestibule, 3 windows, amber accent stripe
-  - Color scheme: Slate gray body, amber accents (distinguishes from Standard)
-  
-- **Floorplan**: `/public/images/floorplans/deluxe-plan.svg`
-  - 1200×400px SVG
-  - Zones: Gear Vestibule (4'), Extended Galley (16'), Full Bath (6'), 6-Bunk Bay (14')
-  - Color-coded zones with dimension labels
+### 20' High Cube (hc20)
+- **Floorplan**: `/public/images/floorplans/hc20-plan.svg`
+  - 800×400px SVG
+  - Zones: Entry/Vestibule (3'), Living/Galley (11'), Sleep Area (6')
+  - Compact off-grid basecamp layout
 
 ### Process Page Images
 
 **Step 1 - Choose your model**: `/public/images/process-1-models.svg`
 - 800×400px SVG
-- Features: Two floor plan cards showing Standard and Deluxe
+- Features: Floor plan card showing Standard layout
 - Color scheme: White cards with color-coded zone previews
 
 **Step 2 - Site & permits**: `/public/images/process-2-permits.svg`
@@ -59,7 +54,6 @@ This document catalogs all placeholder images generated for the Ready Built Cont
 ### Brand Colors
 - **Forest**: `#314c3a` - Primary brand color, used for living areas
 - **Emerald**: `#10b981` - Accent color for Standard model
-- **Amber**: `#f59e0b` - Accent color for Deluxe model
 - **Cyan**: `#06b6d4` - Bathroom zones
 - **Sky**: `#0ea5e9` - Bunk areas
 - **Slate 800**: `#1e293b` - Vestibule/entry zones
@@ -115,8 +109,7 @@ This will overwrite existing SVG files in:
 ## Future Enhancements
 
 ### Recommended Improvements
-1. Add interior view for Deluxe
-2. Create seasonal/environmental variants (snow, forest, desert)
+1. Create seasonal/environmental variants (snow, forest, desert)
 3. Add night/lit versions showing interior lighting
 4. Generate different perspective angles (3/4 view, aerial)
 5. Add detail shots (door hardware, window details, solar panels)

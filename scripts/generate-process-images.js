@@ -53,9 +53,9 @@ function generateModelsImage() {
   <!-- Background -->
   <rect width="${width}" height="${height}" fill="url(#bg-models)"/>
   
-  <!-- Two floor plan cards -->
+  <!-- Floor plan card -->
   <!-- Standard -->
-  <g transform="translate(150, 80)">
+  <g transform="translate(300, 80)">
     <rect width="200" height="240" fill="white" stroke="${colors.emerald}" stroke-width="3" rx="8"/>
     <text x="100" y="30" font-family="system-ui" font-size="14" font-weight="600" fill="${colors.forest}" text-anchor="middle">Standard</text>
     
@@ -68,21 +68,6 @@ function generateModelsImage() {
     
     <text x="100" y="215" font-family="system-ui" font-size="11" fill="${colors.forest}" text-anchor="middle">40' Flagship</text>
     <circle cx="100" cy="230" r="3" fill="${colors.emerald}"/>
-  </g>
-  
-  <!-- Deluxe -->
-  <g transform="translate(450, 80)">
-    <rect width="200" height="240" fill="white" stroke="${colors.slate[300]}" stroke-width="2" rx="8"/>
-    <text x="100" y="30" font-family="system-ui" font-size="14" font-weight="600" fill="${colors.slate[900]}" text-anchor="middle">Deluxe</text>
-    
-    <!-- Mini floor plan -->
-    <rect x="20" y="50" width="160" height="140" fill="${colors.slate[100]}" rx="4"/>
-    <rect x="25" y="55" width="20" height="130" fill="${colors.slate[800]}" opacity="0.3" rx="2"/>
-    <rect x="50" y="55" width="55" height="130" fill="${colors.forest}" opacity="0.3" rx="2"/>
-    <rect x="110" y="55" width="25" height="130" fill="${colors.cyan}" opacity="0.3" rx="2"/>
-    <rect x="140" y="55" width="35" height="130" fill="${colors.sky}" opacity="0.3" rx="2"/>
-    
-    <text x="100" y="215" font-family="system-ui" font-size="11" fill="${colors.slate[600]}" text-anchor="middle">40' Deluxe</text>
   </g>
 </svg>`;
 }

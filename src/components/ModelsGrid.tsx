@@ -8,9 +8,9 @@ export function ModelsGrid({ models }: { models: ModelSummary[] }) {
       <SectionTitle
         eyebrow="Model Lineup"
         title="Standard container cabin packages"
-        subtitle="Each model starts with a reinforced 40' high-cube shell, fabricated steel vestibule, insulated interior, and systems rough-in. Customize finishes, bunks, and off-grid kit to match your hunt camp."
+        subtitle="Choose between our 20' standard or 40' high-cube shell, each with fabricated steel vestibule, insulated interior, and systems rough-in. Customize finishes and bunks to match your hunt camp."
       />
-      <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-8">
         {models.map((model) => (
           <ModelCard key={model.slug} model={model} />
         ))}
