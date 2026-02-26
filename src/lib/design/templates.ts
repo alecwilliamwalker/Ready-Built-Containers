@@ -22,7 +22,7 @@ export type CabinTemplate = {
   name: string;
   description: string;
   priceCents: number;
-  zoneSelections: Record<ZoneType, TemplateTier>;
+  zoneSelections: Record<ZoneType, TemplateTier | "">;
 };
 
 // Zone information
