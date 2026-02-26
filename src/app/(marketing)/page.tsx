@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Hero } from "@/components/Hero";
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -6,7 +7,20 @@ import { ProcessTimeline } from "@/components/ProcessTimeline";
 import { FAQAccordion, type FAQItem } from "@/components/FAQAccordion";
 import { LeadCaptureForm } from "@/components/LeadCaptureForm";
 import { SectionTitle } from "@/components/ui/SectionTitle";
+import { JsonLd } from "@/components/JsonLd";
 import prisma from "@/lib/db";
+
+export const metadata: Metadata = {
+  title: {
+    absolute:
+      "Container Hunting Cabins | Off-Grid 20 & 40 High Cube — Ready Built Containers",
+  },
+  description:
+    "Engineered shipping-container hunting cabins built in Audubon, Iowa. 20' High Cube from $29k, 40' from $51k — insulated, locking vestibules, off-grid ready. Delivered across the Midwest.",
+  alternates: {
+    canonical: "/",
+  },
+};
 
 const faqPreview: FAQItem[] = [
   {
@@ -47,6 +61,37 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-24">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          name: "Ready Built Containers",
+          description:
+            "Engineered shipping-container hunting cabins with secure doors, off-grid options, and turnkey delivery across the Midwest.",
+          url: "https://www.readybuiltcontainers.com",
+          telephone: "+1-712-563-2024",
+          email: "build@readybuiltcontainers.com",
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: "409 Broadway St",
+            addressLocality: "Audubon",
+            addressRegion: "IA",
+            postalCode: "50025",
+            addressCountry: "US",
+          },
+          areaServed: {
+            "@type": "GeoCircle",
+            geoMidpoint: {
+              "@type": "GeoCoordinates",
+              latitude: 41.7183,
+              longitude: -94.9322,
+            },
+            geoRadius: "500 mi",
+          },
+          image: "https://www.readybuiltcontainers.com/images/hero-main.jpg",
+          priceRange: "$29,000–$80,000",
+        }}
+      />
       <Hero />
 
       <PageContainer className="space-y-24">

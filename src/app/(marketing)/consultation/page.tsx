@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   title: "Schedule a Consultation",
   description:
     "Book time with Ready Built Containers to review your cabin project, permitting questions, and delivery logistics across the Midwest.",
+  alternates: {
+    canonical: "/consultation",
+  },
 };
 
 export default async function ConsultationPage({ searchParams }: { searchParams: Promise<{ model?: string }> }) {

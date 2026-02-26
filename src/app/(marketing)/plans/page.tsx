@@ -7,6 +7,9 @@ import prisma from "@/lib/db";
 export const metadata: Metadata = {
   title: "Plan Views",
   description: "Compare floorplans for each Ready Built Containers model and evaluate layout options.",
+  alternates: {
+    canonical: "/plans",
+  },
 };
 
 export const dynamic = "force-dynamic";

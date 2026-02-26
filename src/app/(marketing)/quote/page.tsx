@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: "Request a Quote",
   description:
     "Share your property details to receive a detailed Ready Built Containers quote and delivery plan tailored to your site.",
+  alternates: {
+    canonical: "/quote",
+  },
 };
 
 export default async function QuotePage({ searchParams }: { searchParams: Promise<{ model?: string }> }) {

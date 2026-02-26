@@ -4,6 +4,9 @@ import { SectionTitle } from "@/components/ui/SectionTitle";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
+  alternates: {
+    canonical: "/terms",
+  },
 };
 
 export default function TermsPage() {

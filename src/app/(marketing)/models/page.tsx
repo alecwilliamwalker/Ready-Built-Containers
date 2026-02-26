@@ -7,6 +7,9 @@ import prisma from "@/lib/db";
 export const metadata: Metadata = {
   title: "High Cube Models | 20' and 40' Off-Grid Container Cabins",
   description: "Compare our 20' and 40' high-cube ISO container cabins. Insulated interiors, locking vestibules, and complete off-grid systems for hunters, outfitters, and remote landowners.",
+  alternates: {
+    canonical: "/models",
+  },
 };
 
 export default async function ModelsPage() {

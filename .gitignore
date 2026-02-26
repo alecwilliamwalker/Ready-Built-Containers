@@ -29,6 +29,7 @@
 *.pem
 playwright-output.txt
 .claude/
+Passwords.txt
 
 # debug
 npm-debug.log*

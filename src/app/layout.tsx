@@ -41,12 +41,26 @@ export const metadata: Metadata = {
       "Rugged, secure shipping-container cabins engineered for hunters, outfitters, and rural landowners across the Midwest.",
     type: "website",
     url: "https://www.readybuiltcontainers.com",
+    images: [
+      {
+        url: "/images/hero-main.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Ready Built Containers — off-grid shipping container hunting cabins",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Ready Built Containers",
     description:
       "Rugged, secure shipping-container cabins engineered for hunters, outfitters, and rural landowners across the Midwest.",
+    images: [
+      {
+        url: "/images/hero-main.jpg",
+        alt: "Ready Built Containers — off-grid shipping container hunting cabins",
+      },
+    ],
   },
 };
 

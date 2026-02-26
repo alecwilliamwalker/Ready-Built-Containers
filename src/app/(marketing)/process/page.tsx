@@ -5,6 +5,9 @@ import type { ReactNode } from "react";
 export const metadata: Metadata = {
   title: "Process",
   description: "Understand Ready Built Containers' build process from design through delivery and set.",
+  alternates: {
+    canonical: "/process",
+  },
 };
 
 const STEPS: {

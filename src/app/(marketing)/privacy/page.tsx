@@ -4,6 +4,9 @@ import { SectionTitle } from "@/components/ui/SectionTitle";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
+  alternates: {
+    canonical: "/privacy",
+  },
 };
 
 export default function PrivacyPage() {

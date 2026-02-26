@@ -2,10 +2,14 @@ import { Metadata } from "next";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { FAQAccordion, type FAQItem } from "@/components/FAQAccordion";
+import { JsonLd } from "@/components/JsonLd";
 
 export const metadata: Metadata = {
   title: "FAQ",
   description: "Answers to common questions about Ready Built Containers, delivery, permits, and customization.",
+  alternates: {
+    canonical: "/faq",
+  },
 };
 
 const faqs: FAQItem[] = [
@@ -49,6 +53,20 @@ const faqs: FAQItem[] = [
 export default function FAQPage() {
   return (
     <PageContainer className="space-y-12 py-16">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqs.map((faq) => ({
+            "@type": "Question",
+            name: faq.question,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: faq.answer,
+            },
+          })),
+        }}
+      />
       <SectionTitle
         eyebrow="FAQ"
         title="Answers for landowners, outfitters, and hunting guides"
