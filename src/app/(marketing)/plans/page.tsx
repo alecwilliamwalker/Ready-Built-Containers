@@ -12,25 +12,26 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 type PlansPageProps = {
-  searchParams: { model?: string };
+  searchParams: Promise<{ model?: string }>;
 };
 
 export default async function PlansPage({ searchParams }: PlansPageProps) {
   const [models, floorplans] = await Promise.all([
-    prisma.model.findMany({ 
-      where: { isActive: true }, 
-      select: { 
-        slug: true, 
-        name: true, 
-        lengthFt: true, 
-        sleeps: true, 
-        basePrice: true 
-      } 
+    prisma.model.findMany({
+      where: { isActive: true },
+      select: {
+        slug: true,
+        name: true,
+        lengthFt: true,
+        sleeps: true,
+        basePrice: true
+      }
     }),
     prisma.floorplan.findMany({ include: { model: { select: { slug: true, name: true } } }, orderBy: { name: "asc" } }),
   ]);
 
-  const activeModel = searchParams.model ?? "all";
+  const resolvedParams = await searchParams;
+  const activeModel = resolvedParams?.model ?? "all";
 
   return (
     <PageContainer className="space-y-12 py-16">

@@ -11,9 +11,10 @@ export const metadata: Metadata = {
     "Book time with Ready Built Containers to review your cabin project, permitting questions, and delivery logistics across the Midwest.",
 };
 
-export default async function ConsultationPage({ searchParams }: { searchParams?: { model?: string } }) {
+export default async function ConsultationPage({ searchParams }: { searchParams: Promise<{ model?: string }> }) {
   const models = await prisma.model.findMany({ where: { isActive: true }, select: { slug: true, name: true } });
-  const defaultModelSlug = searchParams?.model ?? "";
+  const resolvedParams = await searchParams;
+  const defaultModelSlug = resolvedParams?.model ?? "";
   const calendlyUrl = env.NEXT_PUBLIC_CALENDLY_URL;
 
   return (
