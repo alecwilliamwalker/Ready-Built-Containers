@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 type ThankYouPageProps = {
-  searchParams?: { type?: string };
+  searchParams: Promise<{ type?: string }>;
 };
 
 const messages: Record<string, { title: string; description: string }> = {
@@ -32,8 +32,9 @@ const messages: Record<string, { title: string; description: string }> = {
   },
 };
 
-export default function ThankYouPage({ searchParams }: ThankYouPageProps) {
-  const type = searchParams?.type ?? "lead";
+export default async function ThankYouPage({ searchParams }: ThankYouPageProps) {
+  const resolvedParams = await searchParams;
+  const type = resolvedParams?.type ?? "lead";
   const message = messages[type] ?? messages.lead;
 
   return (

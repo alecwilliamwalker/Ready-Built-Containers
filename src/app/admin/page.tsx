@@ -49,7 +49,7 @@ function adminUrl(params: Record<string, string | undefined>) {
   return `/admin${query ? `?${query}` : ""}`;
 }
 
-export default async function AdminPage({ searchParams }: { searchParams?: AdminPageSearchParams }) {
+export default async function AdminPage({ searchParams }: { searchParams: Promise<AdminPageSearchParams> }) {
   const session = await getAdminSession();
 
   if (!session) {
@@ -66,13 +66,14 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
     );
   }
 
-  const requestedView = searchParams?.view;
+  const resolvedParams = await searchParams;
+  const requestedView = resolvedParams?.view;
   const view = VIEWS.some((item) => item.key === requestedView) ? (requestedView as ViewKey) : "leads";
-  const leadSourceFilter = searchParams?.leadSource ?? "all";
-  const quoteModelFilter = searchParams?.quoteModel ?? "all";
-  const consultModelFilter = searchParams?.consultModel ?? "all";
-  const reservationStatusFilter = searchParams?.reservationStatus ?? "all";
-  const designStatusFilter = searchParams?.designStatus ?? "all";
+  const leadSourceFilter = resolvedParams?.leadSource ?? "all";
+  const quoteModelFilter = resolvedParams?.quoteModel ?? "all";
+  const consultModelFilter = resolvedParams?.consultModel ?? "all";
+  const reservationStatusFilter = resolvedParams?.reservationStatus ?? "all";
+  const designStatusFilter = resolvedParams?.designStatus ?? "all";
 
   const [leadCount, quoteCount, consultationCount, reservationCount, designSubmissionCount, models] = await Promise.all([
     prisma.lead.count(),

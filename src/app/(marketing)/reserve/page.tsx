@@ -10,9 +10,10 @@ export const metadata: Metadata = {
     "Place a refundable deposit to lock the next available Ready Built Containers production slot for your cabin.",
 };
 
-export default async function ReservePage({ searchParams }: { searchParams?: { model?: string } }) {
+export default async function ReservePage({ searchParams }: { searchParams: Promise<{ model?: string }> }) {
   const models = await prisma.model.findMany({ where: { isActive: true }, select: { slug: true, name: true } });
-  const defaultModelSlug = searchParams?.model ?? "";
+  const resolvedParams = await searchParams;
+  const defaultModelSlug = resolvedParams?.model ?? "";
 
   return (
     <PageContainer className="grid gap-12 py-16 lg:grid-cols-[2fr,3fr]">

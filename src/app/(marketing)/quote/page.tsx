@@ -10,9 +10,10 @@ export const metadata: Metadata = {
     "Share your property details to receive a detailed Ready Built Containers quote and delivery plan tailored to your site.",
 };
 
-export default async function QuotePage({ searchParams }: { searchParams?: { model?: string } }) {
+export default async function QuotePage({ searchParams }: { searchParams: Promise<{ model?: string }> }) {
   const models = await prisma.model.findMany({ where: { isActive: true }, select: { slug: true, name: true } });
-  const defaultModelSlug = searchParams?.model ?? "";
+  const resolvedParams = await searchParams;
+  const defaultModelSlug = resolvedParams?.model ?? "";
 
   return (
     <PageContainer className="grid gap-12 py-16 lg:grid-cols-[2fr,3fr]">
