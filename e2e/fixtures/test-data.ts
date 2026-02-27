@@ -14,8 +14,10 @@ export function uniqueEmail(prefix = "e2e") {
 }
 
 export const MODELS = {
-  standard: { slug: "standard", name: "Standard", basePriceCents: 5_100_000 },
-  deluxe: { slug: "deluxe", name: "Deluxe", basePriceCents: 8_900_000 },
+  hc20: { slug: "hc20", name: "20' High Cube", basePriceCents: 2_900_000 },
+  hc40: { slug: "hc40", name: "40' High Cube", basePriceCents: 5_100_000 },
+  // standard model removed from active lineup
+  // standard: { slug: "standard", name: "Standard", basePriceCents: 5_100_000 },
 } as const;
 
 export const VALID_LEAD = {
@@ -32,7 +34,7 @@ export const VALID_QUOTE = {
   name: "John Smith",
   email: "john@example.com",
   phone: "555-987-6543",
-  modelSlug: "standard",
+  modelSlug: "hc40",
   landState: "MT",
   landZip: "59601",
   timeline: "3-6mo",
@@ -42,7 +44,7 @@ export const VALID_CONSULTATION = {
   name: "Bob Builder",
   email: "bob@example.com",
   phone: "555-111-2222",
-  preferredModel: "deluxe",
+  preferredModel: "hc40",
   timeZone: "Central",
   notes: "Automated test consultation",
 };
@@ -51,7 +53,7 @@ export const VALID_RESERVATION = {
   name: "Alice Reserve",
   email: "alice@example.com",
   phone: "555-333-4444",
-  modelSlug: "standard",
+  modelSlug: "hc40",
   confirmTerms: true,
 };
 

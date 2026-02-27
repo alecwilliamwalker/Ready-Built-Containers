@@ -8,9 +8,15 @@ async function seedModels() {
   await prisma.model.deleteMany({
     where: {
       slug: {
-        in: ["basecamp-20", "basecamp-40", "outfitter-40-plus", "deluxe"]
+        in: ["basecamp-20", "basecamp-40", "outfitter-40-plus", "deluxe", "standard"]
       }
     }
+  });
+
+  // Deactivate Standard model if it exists (belt-and-suspenders with deleteMany above)
+  await prisma.model.updateMany({
+    where: { slug: "standard" },
+    data: { isActive: false },
   });
 
   const models = [
@@ -128,38 +134,39 @@ async function seedModels() {
         },
       ],
     },
-    {
-      slug: "standard",
-      name: "Standard",
-      tagline: "40' standard cabin with full amenities",
-      description:
-        "Our standard 40' high-cube ISO shell with everything you need for extended off-grid stays. Locking container doors protect the insulated man-door entry, leading into a warm living space with full galley kitchen, center hallway with full bathroom, and rear bunk room sleeping four.",
-      lengthFt: 40,
-      sleeps: 4,
-      hasBathroom: true,
-      hasKitchen: true,
-      basePrice: 5100000,
-      images: [
-        {
-          url: "/images/models/standard/exterior-front-deck.jpg",
-          alt: "Standard front exterior deck and entry",
-          sortOrder: 0,
-        },
-        {
-          url: "/images/models/standard/interior-living-room.jpg",
-          alt: "Standard living room interior",
-          sortOrder: 1,
-        },
-      ],
-      floorplans: [
-        {
-          name: "Standard Layout",
-          description: "Secure vestibule entry, living + galley front half, hall bath mid, four bunks aft.",
-          imageUrl: "/images/floorplans/hc40-plan.svg",
-          isDefault: true,
-        },
-      ],
-    },
+    // NOTE: Standard model removed from active lineup — site now only offers hc20 and hc40.
+    // {
+    //   slug: "standard",
+    //   name: "Standard",
+    //   tagline: "40' standard cabin with full amenities",
+    //   description:
+    //     "Our standard 40' high-cube ISO shell with everything you need for extended off-grid stays. Locking container doors protect the insulated man-door entry, leading into a warm living space with full galley kitchen, center hallway with full bathroom, and rear bunk room sleeping four.",
+    //   lengthFt: 40,
+    //   sleeps: 4,
+    //   hasBathroom: true,
+    //   hasKitchen: true,
+    //   basePrice: 5100000,
+    //   images: [
+    //     {
+    //       url: "/images/models/standard/exterior-front-deck.jpg",
+    //       alt: "Standard front exterior deck and entry",
+    //       sortOrder: 0,
+    //     },
+    //     {
+    //       url: "/images/models/standard/interior-living-room.jpg",
+    //       alt: "Standard living room interior",
+    //       sortOrder: 1,
+    //     },
+    //   ],
+    //   floorplans: [
+    //     {
+    //       name: "Standard Layout",
+    //       description: "Secure vestibule entry, living + galley front half, hall bath mid, four bunks aft.",
+    //       imageUrl: "/images/floorplans/hc40-plan.svg",
+    //       isDefault: true,
+    //     },
+    //   ],
+    // },
   ];
 
   for (const model of models) {

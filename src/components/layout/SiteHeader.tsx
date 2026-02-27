@@ -7,7 +7,7 @@ import clsx from "clsx";
 
 const navItems = [
   { href: "/models", label: "Models" },
-  { href: "/design", label: "Build your own" },
+  // { href: "/design", label: "Build your own" }, // Hidden: Design Studio feature temporarily disabled
   { href: "/plans", label: "Plans" },
   { href: "/faq", label: "FAQ" },
   { href: "/quote", label: "Quote" },

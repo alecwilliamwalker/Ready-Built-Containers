@@ -16,7 +16,7 @@ const faqs: FAQItem[] = [
   {
     question: "How much does a cabin really cost?",
     answer:
-      "The Standard starts at $51k delivered within 300 miles of Audubon, IA. We publish a detailed price sheet during your quote.",
+      "The 40' High Cube starts at $51k delivered within 300 miles of Audubon, IA. The 20' High Cube starts at $29k. We publish a detailed price sheet during your quote.",
   },
   {
     question: "Do I handle permits or do you?",

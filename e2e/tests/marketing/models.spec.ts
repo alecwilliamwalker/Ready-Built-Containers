@@ -9,12 +9,13 @@ test.describe("Models page", () => {
     await expect(page.getByRole("heading").first()).toBeVisible();
   });
 
-  test("should display Standard and Deluxe model cards", async ({ page }) => {
+  test("should display High Cube model cards", async ({ page }) => {
+    // Only hc20 and hc40 should be shown (Standard model removed)
     await expect(
-      page.getByRole("heading", { name: "Standard", exact: true }),
+      page.getByRole("heading", { name: "20' High Cube", exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "Deluxe", exact: true }),
+      page.getByRole("heading", { name: "40' High Cube", exact: true }),
     ).toBeVisible();
   });
 
@@ -24,7 +25,9 @@ test.describe("Models page", () => {
   });
 
   test("should link each card to its detail page", async ({ page }) => {
-    const standardLink = page.locator('a[href="/models/standard"]');
-    await expect(standardLink).toBeVisible();
+    const hc20Link = page.locator('a[href="/models/hc20"]');
+    await expect(hc20Link).toBeVisible();
+    const hc40Link = page.locator('a[href="/models/hc40"]');
+    await expect(hc40Link).toBeVisible();
   });
 });

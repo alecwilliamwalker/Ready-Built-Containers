@@ -305,18 +305,19 @@ function generateFloorplan(modelSlug, modelName, lengthFt, zones) {
 }
 
 // Model configurations
+// NOTE: Standard model removed from active lineup — site now only offers hc20 and hc40.
 const models = [
-  {
-    slug: 'standard',
-    name: 'Standard',
-    lengthFt: 40,
-    accentColor: colors.emerald,
-    zones: [
-      { name: 'Living / Kitchen', lengthFt: 20, color: colors.forest },  // 17+3
-      { name: 'Hall + Bath', lengthFt: 7, color: colors.cyan },
-      { name: '4-Bunk Cabin', lengthFt: 13, color: colors.sky }
-    ]
-  }
+  // {
+  //   slug: 'standard',
+  //   name: 'Standard',
+  //   lengthFt: 40,
+  //   accentColor: colors.emerald,
+  //   zones: [
+  //     { name: 'Living / Kitchen', lengthFt: 20, color: colors.forest },  // 17+3
+  //     { name: 'Hall + Bath', lengthFt: 7, color: colors.cyan },
+  //     { name: '4-Bunk Cabin', lengthFt: 13, color: colors.sky }
+  //   ]
+  // }
 ];
 
 // Generate all images
@@ -329,13 +330,13 @@ models.forEach(model => {
   fs.writeFileSync(exteriorPath, exteriorSvg);
   console.log(`✓ Generated ${exteriorPath}`);
   
-  // Interior (only for Standard)
-  if (model.slug === 'standard') {
-    const interiorSvg = generateInterior(model.slug, model.name, model.lengthFt);
-    const interiorPath = path.join('public', 'images', 'models', `${model.slug}-interior.svg`);
-    fs.writeFileSync(interiorPath, interiorSvg);
-    console.log(`✓ Generated ${interiorPath}`);
-  }
+  // Interior generation (Standard model removed — no interior SVGs needed)
+  // if (model.slug === 'standard') {
+  //   const interiorSvg = generateInterior(model.slug, model.name, model.lengthFt);
+  //   const interiorPath = path.join('public', 'images', 'models', `${model.slug}-interior.svg`);
+  //   fs.writeFileSync(interiorPath, interiorSvg);
+  //   console.log(`✓ Generated ${interiorPath}`);
+  // }
   
   // Floorplan
   const floorplanSvg = generateFloorplan(model.slug, model.name, model.lengthFt, model.zones);

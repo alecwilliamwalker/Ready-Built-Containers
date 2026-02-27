@@ -14,9 +14,10 @@ test.describe("Homepage", () => {
 
   test("should render model cards", async ({ page }) => {
     // Scope to the #models section to avoid matching hero/nav text
+    // Only hc20 and hc40 should be shown (Standard model removed)
     const modelsSection = page.locator("#models");
-    await expect(modelsSection.getByText("Standard").first()).toBeVisible();
-    await expect(modelsSection.getByText("Deluxe").first()).toBeVisible();
+    await expect(modelsSection.getByText("20' High Cube").first()).toBeVisible();
+    await expect(modelsSection.getByText("40' High Cube").first()).toBeVisible();
   });
 
   test("should link to /models from models section", async ({ page }) => {

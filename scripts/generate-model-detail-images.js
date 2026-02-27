@@ -290,69 +290,70 @@ function generateDetailedInterior(modelSlug, modelName, lengthFt, zones) {
 }
 
 // Model configurations
+// NOTE: Standard model removed from active lineup — site now only offers hc20 and hc40.
 const models = [
-  {
-    slug: 'standard',
-    name: 'Standard',
-    lengthFt: 40,
-    exterior: {
-      windows: [
-        { x: 200, width: 140 },
-        { x: 450, width: 120 },
-        { x: 700, width: 140 }
-      ],
-      callouts: [
-        { x: 300, y: 380, labelX: 200, labelY: 320, label: 'Secure Entry' },
-        { x: 550, y: 320, labelX: 650, labelY: 270, label: 'Living Windows' },
-        { x: 850, y: 320, labelX: 950, labelY: 270, label: 'Bunk Egress' },
-        { x: 1050, y: 450, labelX: 1150, labelY: 500, label: 'Solar Ready Roof' }
-      ]
-    },
-    interior: {
-      zones: [
-        {
-          name: 'Vestibule',
-          lengthFt: 3,
-          color: colors.slate[800],
-          items: [
-            { x: 0.5, width: 40, height: 90, fill: colors.slate[700], label: 'Coats' }
-          ]
-        },
-        {
-          name: 'Living / Kitchen',
-          lengthFt: 17,
-          color: colors.forest,
-          items: [
-            { x: 1, width: 180, height: 80, fill: colors.forest, label: 'L-Shape Galley' },
-            { x: 8, width: 120, height: 70, fill: colors.slate[700], label: 'Dining' },
-            { x: 13, width: 80, height: 80, fill: colors.slate[600], label: 'Sofa' }
-          ]
-        },
-        {
-          name: 'Hall + Bath',
-          lengthFt: 7,
-          color: colors.cyan,
-          items: [
-            { x: 0.5, width: 60, height: 70, fill: colors.slate[100], label: 'Vanity' },
-            { x: 3.5, width: 70, height: 80, fill: colors.slate[100], label: 'Shower' },
-            { x: 5.5, width: 50, height: 60, fill: colors.slate[100], label: 'WC' }
-          ]
-        },
-        {
-          name: '4-Bunk Cabin',
-          lengthFt: 13,
-          color: colors.sky,
-          items: [
-            { x: 1, width: 80, height: 50, fill: colors.slate[800], label: 'Bunk 1' },
-            { x: 1, width: 80, height: 50, fill: colors.slate[800], label: 'Bunk 2' },
-            { x: 6, width: 80, height: 50, fill: colors.slate[800], label: 'Bunk 3' },
-            { x: 6, width: 80, height: 50, fill: colors.slate[800], label: 'Bunk 4' },
-            { x: 10, width: 60, height: 100, fill: colors.slate[700], label: 'Lockers' }
-          ]
-        }
-      ]
-    }
-  }
+  // {
+  //   slug: 'standard',
+  //   name: 'Standard',
+  //   lengthFt: 40,
+  //   exterior: {
+  //     windows: [
+  //       { x: 200, width: 140 },
+  //       { x: 450, width: 120 },
+  //       { x: 700, width: 140 }
+  //     ],
+  //     callouts: [
+  //       { x: 300, y: 380, labelX: 200, labelY: 320, label: 'Secure Entry' },
+  //       { x: 550, y: 320, labelX: 650, labelY: 270, label: 'Living Windows' },
+  //       { x: 850, y: 320, labelX: 950, labelY: 270, label: 'Bunk Egress' },
+  //       { x: 1050, y: 450, labelX: 1150, labelY: 500, label: 'Solar Ready Roof' }
+  //     ]
+  //   },
+  //   interior: {
+  //     zones: [
+  //       {
+  //         name: 'Vestibule',
+  //         lengthFt: 3,
+  //         color: colors.slate[800],
+  //         items: [
+  //           { x: 0.5, width: 40, height: 90, fill: colors.slate[700], label: 'Coats' }
+  //         ]
+  //       },
+  //       {
+  //         name: 'Living / Kitchen',
+  //         lengthFt: 17,
+  //         color: colors.forest,
+  //         items: [
+  //           { x: 1, width: 180, height: 80, fill: colors.forest, label: 'L-Shape Galley' },
+  //           { x: 8, width: 120, height: 70, fill: colors.slate[700], label: 'Dining' },
+  //           { x: 13, width: 80, height: 80, fill: colors.slate[600], label: 'Sofa' }
+  //         ]
+  //       },
+  //       {
+  //         name: 'Hall + Bath',
+  //         lengthFt: 7,
+  //         color: colors.cyan,
+  //         items: [
+  //           { x: 0.5, width: 60, height: 70, fill: colors.slate[100], label: 'Vanity' },
+  //           { x: 3.5, width: 70, height: 80, fill: colors.slate[100], label: 'Shower' },
+  //           { x: 5.5, width: 50, height: 60, fill: colors.slate[100], label: 'WC' }
+  //         ]
+  //       },
+  //       {
+  //         name: '4-Bunk Cabin',
+  //         lengthFt: 13,
+  //         color: colors.sky,
+  //         items: [
+  //           { x: 1, width: 80, height: 50, fill: colors.slate[800], label: 'Bunk 1' },
+  //           { x: 1, width: 80, height: 50, fill: colors.slate[800], label: 'Bunk 2' },
+  //           { x: 6, width: 80, height: 50, fill: colors.slate[800], label: 'Bunk 3' },
+  //           { x: 6, width: 80, height: 50, fill: colors.slate[800], label: 'Bunk 4' },
+  //           { x: 10, width: 60, height: 100, fill: colors.slate[700], label: 'Lockers' }
+  //         ]
+  //       }
+  //     ]
+  //   }
+  // }
 ];
 
 // Generate all images
@@ -370,18 +371,18 @@ models.forEach(model => {
   fs.writeFileSync(exteriorPath, exteriorSvg);
   console.log(`✓ Generated ${exteriorPath}`);
   
-  // Interior
-  if (model.slug === 'standard') {
-    const interiorSvg = generateDetailedInterior(
-      model.slug,
-      model.name,
-      model.lengthFt,
-      model.interior.zones
-    );
-    const interiorPath = path.join('public', 'images', 'models', `${model.slug}-interior.svg`);
-    fs.writeFileSync(interiorPath, interiorSvg);
-    console.log(`✓ Generated ${interiorPath}`);
-  }
+  // Interior generation (Standard model removed — no interior SVGs needed)
+  // if (model.slug === 'standard') {
+  //   const interiorSvg = generateDetailedInterior(
+  //     model.slug,
+  //     model.name,
+  //     model.lengthFt,
+  //     model.interior.zones
+  //   );
+  //   const interiorPath = path.join('public', 'images', 'models', `${model.slug}-interior.svg`);
+  //   fs.writeFileSync(interiorPath, interiorSvg);
+  //   console.log(`✓ Generated ${interiorPath}`);
+  // }
   
   console.log('');
 });

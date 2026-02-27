@@ -53,20 +53,33 @@ function generateModelsImage() {
   <!-- Background -->
   <rect width="${width}" height="${height}" fill="url(#bg-models)"/>
   
-  <!-- Floor plan card -->
-  <!-- Standard -->
-  <g transform="translate(300, 80)">
+  <!-- Floor plan cards — 20' and 40' High Cube -->
+  <g transform="translate(150, 80)">
     <rect width="200" height="240" fill="white" stroke="${colors.emerald}" stroke-width="3" rx="8"/>
-    <text x="100" y="30" font-family="system-ui" font-size="14" font-weight="600" fill="${colors.forest}" text-anchor="middle">Standard</text>
-    
+    <text x="100" y="30" font-family="system-ui" font-size="14" font-weight="600" fill="${colors.forest}" text-anchor="middle">20' High Cube</text>
+
+    <!-- Mini floor plan -->
+    <rect x="20" y="50" width="160" height="140" fill="${colors.slate[100]}" rx="4"/>
+    <rect x="25" y="55" width="25" height="130" fill="${colors.slate[800]}" opacity="0.3" rx="2"/>
+    <rect x="55" y="55" width="75" height="130" fill="${colors.forest}" opacity="0.3" rx="2"/>
+    <rect x="135" y="55" width="40" height="130" fill="${colors.sky}" opacity="0.3" rx="2"/>
+
+    <text x="100" y="215" font-family="system-ui" font-size="11" fill="${colors.forest}" text-anchor="middle">Compact Basecamp</text>
+    <circle cx="100" cy="230" r="3" fill="${colors.emerald}"/>
+  </g>
+
+  <g transform="translate(450, 80)">
+    <rect width="200" height="240" fill="white" stroke="${colors.emerald}" stroke-width="3" rx="8"/>
+    <text x="100" y="30" font-family="system-ui" font-size="14" font-weight="600" fill="${colors.forest}" text-anchor="middle">40' High Cube</text>
+
     <!-- Mini floor plan -->
     <rect x="20" y="50" width="160" height="140" fill="${colors.slate[100]}" rx="4"/>
     <rect x="25" y="55" width="15" height="130" fill="${colors.slate[800]}" opacity="0.3" rx="2"/>
     <rect x="45" y="55" width="60" height="130" fill="${colors.forest}" opacity="0.3" rx="2"/>
     <rect x="110" y="55" width="30" height="130" fill="${colors.cyan}" opacity="0.3" rx="2"/>
     <rect x="145" y="55" width="30" height="130" fill="${colors.sky}" opacity="0.3" rx="2"/>
-    
-    <text x="100" y="215" font-family="system-ui" font-size="11" fill="${colors.forest}" text-anchor="middle">40' Flagship</text>
+
+    <text x="100" y="215" font-family="system-ui" font-size="11" fill="${colors.forest}" text-anchor="middle">Full Cabin</text>
     <circle cx="100" cy="230" r="3" fill="${colors.emerald}"/>
   </g>
 </svg>`;

@@ -30,8 +30,11 @@ test.describe("Consultation form", () => {
     page,
   }) => {
     const selectHtml = await page.locator("select").first().innerHTML();
-    expect(selectHtml).toContain("Standard");
-    expect(selectHtml).toContain("Deluxe");
+    // Only hc20 and hc40 should be listed (Standard model removed)
+    expect(selectHtml).toContain("High Cube");
+    // Verify both models are present via their option values
+    expect(selectHtml).toContain("hc20");
+    expect(selectHtml).toContain("hc40");
   });
 
   test("should accept a preferred date input", async ({ page }) => {

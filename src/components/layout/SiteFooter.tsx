@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 const footerLinks = [
   { href: "/models", label: "Models" },
-  { href: "/design", label: "Build Your Own" },
+  // { href: "/design", label: "Build Your Own" }, // Hidden: Design Studio feature temporarily disabled
   { href: "/plans", label: "Plan Views" },
   { href: "/faq", label: "FAQ" },
   { href: "/consultation", label: "Schedule Consult" },

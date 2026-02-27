@@ -9,8 +9,9 @@ test.describe("Plans page", () => {
   test("should display plan content", async ({ page }) => {
     await page.goto("/plans");
     // Page should display model comparison data (table or gallery)
+    // Only hc20 and hc40 should be shown (Standard model removed)
     await expect(
-      page.getByText(/standard|deluxe/i).first(),
+      page.getByText(/high cube/i).first(),
     ).toBeVisible();
   });
 });

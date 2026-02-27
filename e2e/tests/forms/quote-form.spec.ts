@@ -12,16 +12,19 @@ test.describe("Quote form", () => {
   test("should pre-fill model slug from ?model= query param", async ({
     page,
   }) => {
-    await page.goto("/quote?model=standard");
+    await page.goto("/quote?model=hc40");
     const select = page.locator("select").first();
-    await expect(select).toHaveValue("standard");
+    await expect(select).toHaveValue("hc40");
   });
 
   test("should display model options in select", async ({ page }) => {
     await page.goto("/quote");
     const selectHtml = await page.locator("select").first().innerHTML();
-    expect(selectHtml).toContain("Standard");
-    expect(selectHtml).toContain("Deluxe");
+    // Only hc20 and hc40 should be listed (Standard model removed)
+    expect(selectHtml).toContain("High Cube");
+    // Verify both models are present via their option values
+    expect(selectHtml).toContain("hc20");
+    expect(selectHtml).toContain("hc40");
   });
 
   test("should submit successfully with valid data", async ({ page }) => {
