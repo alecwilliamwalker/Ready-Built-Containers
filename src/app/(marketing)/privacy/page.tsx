@@ -42,7 +42,7 @@ export default function PrivacyPage() {
 
         <section className="space-y-3">
           <h2 className="text-base font-semibold text-foreground">Your choices</h2>
-          <p>You can unsubscribe from marketing emails using the link in any message. To access, correct, or delete personal data, email <a href="mailto:privacy@readybuiltcontainers.com" className="underline">privacy@readybuiltcontainers.com</a> and we will respond within 5 business days.</p>
+          <p>You can unsubscribe from marketing emails using the link in any message. To access, correct, or delete personal data, email <a href="mailto:readybuiltcontainers@gmail.com" className="underline">readybuiltcontainers@gmail.com</a> and we will respond within 5 business days.</p>
         </section>
       </div>
     </PageContainer>

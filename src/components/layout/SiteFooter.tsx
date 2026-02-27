@@ -20,8 +20,8 @@ export function SiteFooter({ className }: { className?: string }) {
             Engineered shipping-container cabins designed for hunters, outfitters, and rural landowners across the Midwest. Secure locking doors, insulated shells, and configurable off-grid systems deliver a secure dwelling you can deploy anywhere a truck can reach.
           </p>
           <div className="flex flex-wrap gap-6 text-sm text-foreground/70">
-            <a href="mailto:build@readybuiltcontainers.com" className="underline-offset-4 hover:underline">
-              build@readybuiltcontainers.com
+            <a href="mailto:readybuiltcontainers@gmail.com" className="underline-offset-4 hover:underline">
+              readybuiltcontainers@gmail.com
             </a>
             <span>Based in Audubon, Iowa</span>
           </div>

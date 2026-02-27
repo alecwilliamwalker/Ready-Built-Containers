@@ -17,11 +17,11 @@ test.describe("Footer", () => {
   test("should display email contact link", async ({ page }) => {
     const emailLink = page
       .locator("footer")
-      .getByRole("link", { name: /readybuiltcontainers\.com/i });
+      .getByRole("link", { name: /readybuiltcontainers@gmail\.com/i });
     await expect(emailLink).toBeVisible();
     await expect(emailLink).toHaveAttribute(
       "href",
-      "mailto:build@readybuiltcontainers.com",
+      "mailto:readybuiltcontainers@gmail.com",
     );
   });
 

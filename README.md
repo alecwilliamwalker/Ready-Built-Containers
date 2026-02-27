@@ -33,7 +33,7 @@ Production-ready marketing, lead generation, and light sales site for Ready Buil
 ## Prisma & Database
 
 - Generated client lives at `@/lib/db`.
-- Seed script creates the standard model (`standard`) along with floorplans and an admin login (`admin@readybuiltcontainers.com` / `readybuilt2025`, configurable via environment).
+- Seed script creates the standard model (`standard`) along with floorplans and an admin login (`readybuiltcontainers@gmail.com` / `readybuilt2025`, configurable via environment).
 - To swap to PostgreSQL in production, update `DATABASE_URL` and adjust `provider` in `prisma/schema.prisma` before running migrations.
 
 ## Helpful Commands
@@ -59,4 +59,4 @@ See `.env.example` for the full list, including optional Calendly embed, Stripe 
 
 - Update `prisma/seed.ts` with new model specs, images, and floorplans. Use `npx prisma db seed` (or rerun `npx prisma migrate dev`) to repopulate local data.
 - Place hero and gallery assets under `public/images/models/` and plan diagrams under `public/images/floorplans/`. Reference them in Prisma seed and components with `/images/...` paths.
-- For ad-hoc admin additions, log into `/admin` (default credentials `admin@readybuiltcontainers.com` / `readybuilt2025`) and review new inquiries immediately after seeding.
+- For ad-hoc admin additions, log into `/admin` (default credentials `readybuiltcontainers@gmail.com` / `readybuilt2025`) and review new inquiries immediately after seeding.

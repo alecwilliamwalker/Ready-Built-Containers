@@ -61,7 +61,7 @@ export function AdminLoginForm() {
         <Input
           id="admin-email"
           type="email"
-          placeholder="admin@readybuiltcontainers.com"
+          placeholder="readybuiltcontainers@gmail.com"
           autoComplete="email"
           {...register("email")}
           aria-invalid={Boolean(errors.email)}

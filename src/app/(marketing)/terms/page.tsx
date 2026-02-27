@@ -41,7 +41,7 @@ export default function TermsPage() {
         <section className="space-y-3">
           <h2 className="text-base font-semibold text-foreground">Warranty & jurisdiction</h2>
           <p>
-            Ready Built Containers warrants structural steel and container modifications for 5 years and workmanship for 2 years. Liability is limited to the cost of services provided. Iowa law governs disputes, and we aim to mediate before formal action. Contact <a href="mailto:contracts@readybuiltcontainers.com" className="underline">contracts@readybuiltcontainers.com</a> with questions.
+            Ready Built Containers warrants structural steel and container modifications for 5 years and workmanship for 2 years. Liability is limited to the cost of services provided. Iowa law governs disputes, and we aim to mediate before formal action. Contact <a href="mailto:readybuiltcontainers@gmail.com" className="underline">readybuiltcontainers@gmail.com</a> with questions.
           </p>
         </section>
 

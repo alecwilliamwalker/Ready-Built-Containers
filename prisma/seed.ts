@@ -215,7 +215,7 @@ async function seedModels() {
 }
 
 async function seedAdmin() {
-  const email = process.env.SEED_ADMIN_EMAIL ?? "admin@readybuiltcontainers.com";
+  const email = process.env.SEED_ADMIN_EMAIL ?? "readybuiltcontainers@gmail.com";
   const password = process.env.SEED_ADMIN_PASSWORD ?? "readybuilt2025";
   const hashed = await bcrypt.hash(password, 12);
 

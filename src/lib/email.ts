@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 import { env } from "@/lib/env";
 
-const fromAddress = env.EMAIL_FROM_ADDRESS ?? "sales@readybuiltcontainers.com";
+const fromAddress = env.EMAIL_FROM_ADDRESS ?? "readybuiltcontainers@gmail.com";
 const fromName = env.EMAIL_FROM_NAME ?? "Ready Built Containers";
 
 const resendClient = env.EMAIL_API_KEY ? new Resend(env.EMAIL_API_KEY) : null;

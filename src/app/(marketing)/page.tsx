@@ -70,7 +70,7 @@ export default async function HomePage() {
             "Engineered shipping-container hunting cabins with secure doors, off-grid options, and turnkey delivery across the Midwest.",
           url: "https://www.readybuiltcontainers.com",
           telephone: "+1-712-563-2024",
-          email: "build@readybuiltcontainers.com",
+          email: "readybuiltcontainers@gmail.com",
           address: {
             "@type": "PostalAddress",
             streetAddress: "409 Broadway St",

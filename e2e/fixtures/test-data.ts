@@ -1,5 +1,5 @@
 export const ADMIN_CREDENTIALS = {
-  email: "admin@readybuiltcontainers.com",
+  email: "readybuiltcontainers@gmail.com",
   password: "readybuilt2025",
 };
 

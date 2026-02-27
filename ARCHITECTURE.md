@@ -42,7 +42,7 @@ Ready Built Containers is a Next.js 16 (App Router) application that powers the 
   - `Lead`, `QuoteRequest`, `ConsultationRequest` – marketing funnel submissions.
   - `Reservation` – Stripe checkout records with status/amount tracking.
   - `AdminUser` – admin credentials.
-Local development uses SQLite (`file:./prisma/dev.db`). Production can switch to PostgreSQL by adjusting `DATABASE_URL` and the provider before running migrations. `prisma/seed.ts` populates demo data and a default admin user (`admin@readybuiltcontainers.com / readybuilt2025`, overridable via env vars).
+Local development uses SQLite (`file:./prisma/dev.db`). Production can switch to PostgreSQL by adjusting `DATABASE_URL` and the provider before running migrations. `prisma/seed.ts` populates demo data and a default admin user (`readybuiltcontainers@gmail.com / readybuilt2025`, overridable via env vars).
 
 ## Data Flow
 
