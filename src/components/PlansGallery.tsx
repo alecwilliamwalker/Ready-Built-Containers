@@ -32,7 +32,9 @@ type PlansGalleryProps = {
 };
 
 export function PlansGallery({ models, floorplans, initialModel }: PlansGalleryProps) {
-  const [activeModelSlug, setActiveModelSlug] = useState(initialModel || models[0]?.slug || "hc40");
+  // Default to "hc40" — "all" is no longer a valid option
+  const safeInitial = initialModel && initialModel !== "all" ? initialModel : "hc40";
+  const [activeModelSlug, setActiveModelSlug] = useState(safeInitial || models[0]?.slug || "hc40");
   const [activePlanId, setActivePlanId] = useState("");
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -67,6 +69,7 @@ export function PlansGallery({ models, floorplans, initialModel }: PlansGalleryP
     <div className="space-y-12">
       {/* Model Selector Tabs */}
       <div className="flex flex-wrap gap-2 -m-1">
+        {/* "All Plans" button removed — only individual model tabs shown
         <button
           onClick={() => handleModelSelect("all")}
           className={cn(
@@ -78,6 +81,7 @@ export function PlansGallery({ models, floorplans, initialModel }: PlansGalleryP
         >
           All Plans
         </button>
+        */}
         {models.map((model) => (
           <button
             key={model.slug}

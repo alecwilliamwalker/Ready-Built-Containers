@@ -21,7 +21,8 @@ type PlansPageProps = {
 export default async function PlansPage({ searchParams }: PlansPageProps) {
   const [models, floorplans] = await Promise.all([
     prisma.model.findMany({
-      where: { isActive: true },
+      // Only show active, non-Standard models (hc40, hc20)
+      where: { isActive: true, slug: { not: "standard" } },
       select: {
         slug: true,
         name: true,
@@ -30,11 +31,17 @@ export default async function PlansPage({ searchParams }: PlansPageProps) {
         basePrice: true
       }
     }),
-    prisma.floorplan.findMany({ include: { model: { select: { slug: true, name: true } } }, orderBy: { name: "asc" } }),
+    // Only fetch floorplans for active, non-Standard models
+    prisma.floorplan.findMany({
+      where: { model: { isActive: true, slug: { not: "standard" } } },
+      include: { model: { select: { slug: true, name: true } } },
+      orderBy: { name: "asc" },
+    }),
   ]);
 
   const resolvedParams = await searchParams;
-  const activeModel = resolvedParams?.model ?? "all";
+  // Default to 40' High Cube instead of "all" (All Plans option removed)
+  const activeModel = resolvedParams?.model ?? "hc40";
 
   return (
     <PageContainer className="space-y-12 py-16">
