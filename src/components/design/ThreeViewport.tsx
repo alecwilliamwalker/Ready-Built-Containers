@@ -102,7 +102,6 @@ export function ThreeViewport({
   // Logging helper
   const addLog = useCallback((msg: string) => {
     if (!DEBUG_MODE) return;
-    console.log(msg);
     setLogs(prev => [...prev.slice(-50), msg]);
   }, []);
 

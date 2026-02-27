@@ -70,7 +70,7 @@ const STEPS: {
 
 export default function ProcessPage() {
   return (
-    <main className="pt-24">
+    <div className="pt-24">
       <section className="relative overflow-hidden bg-slate-950 text-slate-50">
         <div className="absolute inset-0 opacity-40">
           <Image
@@ -142,7 +142,7 @@ export default function ProcessPage() {
           </a>
         </div>
       </section>
-    </main>
+    </div>
   );
 }
 

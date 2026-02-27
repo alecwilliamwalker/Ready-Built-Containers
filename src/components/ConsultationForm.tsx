@@ -86,18 +86,18 @@ export function ConsultationForm({
     <form onSubmit={handleSubmit(onSubmit)} className={className}>
       <div className="grid gap-5">
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Name" error={errors.name?.message}>
-            <Input placeholder="Your name" {...register("name")} aria-invalid={Boolean(errors.name)} />
+          <Field label="Name" htmlFor="consult-name" error={errors.name?.message}>
+            <Input id="consult-name" placeholder="Your name" {...register("name")} aria-invalid={Boolean(errors.name)} />
           </Field>
-          <Field label="Email" error={errors.email?.message}>
-            <Input type="email" placeholder="you@email.com" {...register("email")} aria-invalid={Boolean(errors.email)} />
+          <Field label="Email" htmlFor="consult-email" error={errors.email?.message}>
+            <Input id="consult-email" type="email" placeholder="you@email.com" {...register("email")} aria-invalid={Boolean(errors.email)} />
           </Field>
         </div>
-        <Field label="Phone" hint="Optional, but helps if we need to coordinate delivery access">
-          <Input placeholder="###-###-####" {...register("phone")} />
+        <Field label="Phone" htmlFor="consult-phone" hint="Optional, but helps if we need to coordinate delivery access">
+          <Input id="consult-phone" placeholder="###-###-####" {...register("phone")} />
         </Field>
-        <Field label="Preferred model">
-          <Select {...register("preferredModel")}>
+        <Field label="Preferred model" htmlFor="consult-model">
+          <Select id="consult-model" {...register("preferredModel")}>
             <option value="">Select a model</option>
             {models.map((model) => (
               <option key={model.slug} value={model.slug}>
@@ -107,15 +107,15 @@ export function ConsultationForm({
           </Select>
         </Field>
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Preferred date">
-            <Input type="date" {...register("preferredDate")} />
+          <Field label="Preferred date" htmlFor="consult-date">
+            <Input id="consult-date" type="date" {...register("preferredDate")} />
           </Field>
-          <Field label="Time zone">
-            <Input placeholder="Mountain, Central, etc." {...register("timeZone")} />
+          <Field label="Time zone" htmlFor="consult-tz">
+            <Input id="consult-tz" placeholder="Mountain, Central, etc." {...register("timeZone")} />
           </Field>
         </div>
-        <Field label="Notes">
-          <Textarea rows={4} placeholder="What would you like to focus on during the call?" {...register("notes")} />
+        <Field label="Notes" htmlFor="consult-notes">
+          <Textarea id="consult-notes" rows={4} placeholder="What would you like to focus on during the call?" {...register("notes")} />
         </Field>
       </div>
       <Button type="submit" disabled={isSubmitting} className="mt-6 w-full md:w-auto">
@@ -127,21 +127,23 @@ export function ConsultationForm({
 
 function Field({
   label,
+  htmlFor,
   hint,
   error,
   children,
 }: {
   label: string;
+  htmlFor?: string;
   hint?: string;
   error?: string;
   children: React.ReactNode;
 }) {
   return (
-    <label className="block text-sm">
-      <span className="mb-1 block font-medium text-foreground">{label}</span>
+    <div className="block text-sm">
+      <label className="mb-1 block font-medium text-foreground" htmlFor={htmlFor}>{label}</label>
       {children}
       {hint && <p className="mt-1 text-xs text-foreground/60">{hint}</p>}
       {error && <p className="mt-1 text-xs font-medium text-red-600">{error}</p>}
-    </label>
+    </div>
   );
 }

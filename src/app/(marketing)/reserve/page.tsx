@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: "Reserve",
   description:
     "Place a refundable deposit to lock the next available Ready Built Containers production slot for your cabin.",
+  alternates: {
+    canonical: "/reserve",
+  },
 };
 
 export default async function ReservePage({ searchParams }: { searchParams: Promise<{ model?: string }> }) {

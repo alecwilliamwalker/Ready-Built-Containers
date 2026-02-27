@@ -111,18 +111,18 @@ export function QuoteForm({
     <form onSubmit={handleSubmit(onSubmit)} className={className}>
       <div className="grid gap-5">
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Name" error={errors.name?.message}>
-            <Input placeholder="Your name" {...register("name")} aria-invalid={Boolean(errors.name)} />
+          <Field label="Name" htmlFor="quote-name" error={errors.name?.message}>
+            <Input id="quote-name" placeholder="Your name" {...register("name")} aria-invalid={Boolean(errors.name)} />
           </Field>
-          <Field label="Email" error={errors.email?.message}>
-            <Input type="email" placeholder="you@email.com" {...register("email")} aria-invalid={Boolean(errors.email)} />
+          <Field label="Email" htmlFor="quote-email" error={errors.email?.message}>
+            <Input id="quote-email" type="email" placeholder="you@email.com" {...register("email")} aria-invalid={Boolean(errors.email)} />
           </Field>
         </div>
-        <Field label="Phone" hint="Helpful when delivery access questions come up" error={errors.phone?.message}>
-          <Input placeholder="###-###-####" {...register("phone")} />
+        <Field label="Phone" htmlFor="quote-phone" hint="Helpful when delivery access questions come up" error={errors.phone?.message}>
+          <Input id="quote-phone" placeholder="###-###-####" {...register("phone")} />
         </Field>
-        <Field label="Which model are you considering?">
-          <Select {...register("modelSlug")}> 
+        <Field label="Which model are you considering?" htmlFor="quote-model">
+          <Select id="quote-model" {...register("modelSlug")}> 
             <option value="">Select a model</option>
             {models.map((model) => (
               <option key={model.slug} value={model.slug}>
@@ -132,19 +132,19 @@ export function QuoteForm({
           </Select>
         </Field>
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Land state">
-            <Input placeholder="MT" maxLength={2} {...register("landState")} />
+          <Field label="Land state" htmlFor="quote-land-state">
+            <Input id="quote-land-state" placeholder="MT" maxLength={2} {...register("landState")} />
           </Field>
-          <Field label="Land ZIP">
-            <Input placeholder="59601" maxLength={10} {...register("landZip")} />
+          <Field label="Land ZIP" htmlFor="quote-land-zip">
+            <Input id="quote-land-zip" placeholder="59601" maxLength={10} {...register("landZip")} />
           </Field>
         </div>
-        <Field label="Tell us about the build site" hint="Access road, slope, trees to clear, existing pads, etc.">
-          <Textarea rows={4} {...register("landDescription")} />
+        <Field label="Tell us about the build site" htmlFor="quote-land-desc" hint="Access road, slope, trees to clear, existing pads, etc.">
+          <Textarea id="quote-land-desc" rows={4} {...register("landDescription")} />
         </Field>
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Power preference">
-            <Select {...register("powerPreference")}>
+          <Field label="Power preference" htmlFor="quote-power">
+            <Select id="quote-power" {...register("powerPreference")}>
               <option value="">Select power plan</option>
               {POWER_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -159,8 +159,8 @@ export function QuoteForm({
               ))}
             </Select>
           </Field>
-          <Field label="Water" hint="Existing well, hauling, cistern, etc.">
-            <Select {...register("waterPreference")}>
+          <Field label="Water" htmlFor="quote-water" hint="Existing well, hauling, cistern, etc.">
+            <Select id="quote-water" {...register("waterPreference")}>
               <option value="">Select water plan</option>
               {WATER_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -170,8 +170,8 @@ export function QuoteForm({
             </Select>
           </Field>
         </div>
-        <Field label="Waste / septic">
-          <Select {...register("septicSituation")}>
+        <Field label="Waste / septic" htmlFor="quote-septic">
+          <Select id="quote-septic" {...register("septicSituation")}>
             <option value="">Select septic plan</option>
             {SEPTIC_OPTIONS.map((option) => (
               <option key={option} value={option}>
@@ -187,8 +187,8 @@ export function QuoteForm({
           </Select>
         </Field>
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Timeline">
-            <Select {...register("timeline")}>
+          <Field label="Timeline" htmlFor="quote-timeline">
+            <Select id="quote-timeline" {...register("timeline")}>
               <option value="">Select timeline</option>
               {TIMELINE_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -197,8 +197,8 @@ export function QuoteForm({
               ))}
             </Select>
           </Field>
-          <Field label="Budget range">
-            <Select {...register("budgetRange")}>
+          <Field label="Budget range" htmlFor="quote-budget">
+            <Select id="quote-budget" {...register("budgetRange")}>
               <option value="">Select a range</option>
               <option value="<100k">Under $100k</option>
               <option value="100-150k">$100k – $150k</option>
@@ -207,8 +207,8 @@ export function QuoteForm({
             </Select>
           </Field>
         </div>
-        <Field label="Anything else we should know?">
-          <Textarea rows={4} {...register("message")} />
+        <Field label="Anything else we should know?" htmlFor="quote-message">
+          <Textarea id="quote-message" rows={4} {...register("message")} />
         </Field>
       </div>
       <Button type="submit" disabled={isSubmitting} className="mt-6 w-full md:w-auto">
@@ -220,21 +220,23 @@ export function QuoteForm({
 
 function Field({
   label,
+  htmlFor,
   hint,
   error,
   children,
 }: {
   label: string;
+  htmlFor?: string;
   hint?: string;
   error?: string;
   children: React.ReactNode;
 }) {
   return (
-    <label className="block text-sm">
-      <span className="mb-1 block font-medium text-foreground">{label}</span>
+    <div className="block text-sm">
+      <label className="mb-1 block font-medium text-foreground" htmlFor={htmlFor}>{label}</label>
       {children}
       {hint && <p className="mt-1 text-xs text-foreground/60">{hint}</p>}
       {error && <p className="mt-1 text-xs font-medium text-red-600">{error}</p>}
-    </label>
+    </div>
   );
 }

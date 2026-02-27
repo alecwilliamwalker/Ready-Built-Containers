@@ -715,11 +715,7 @@ export function DesignStudio({
     const shellMsg = shellFixtures.length > 0 ? `, ${shellFixtures.length} shell fixtures` : "";
     showToast({ variant: "success", title: "Template exported!", description: `${design.zones.length} zones, ${design.fixtures.length} fixtures${shellMsg}` });
 
-    // Also log to console for easy viewing
-    console.log("=== EXPORTED TEMPLATE ===");
-    console.log(json);
-    console.log("=========================");
-  };
+};
 
   // Handle Submit for Proposal
   const handleSubmitProposal = async () => {

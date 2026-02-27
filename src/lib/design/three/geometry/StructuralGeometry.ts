@@ -25,9 +25,6 @@ export function createSteelEntryGeometry(
 ): THREE.Group {
   const group = new THREE.Group();
 
-  // Debug logging to verify dimensions
-  console.log(`[Entry] Creating with widthFt=${widthFt}, lengthFt=${lengthFt}, heightFt=${heightFt}`);
-
   // widthFt = 8ft (wall span), lengthFt = 0.67ft (wall thickness)
   // Geometry is built with span along Z, then rotated 90° at the end
   // to match the convention used by other fixtures (widthFt → X, lengthFt → Z)
@@ -58,7 +55,6 @@ export function createSteelEntryGeometry(
   const leftEdgeZ = -wallSpan / 2;
   const doorLeftZ = doorCenterZ - doorWidth / 2;
   const leftSectionSpan = doorLeftZ - leftEdgeZ;
-  console.log(`[Entry] Section 1 (left): span=${leftSectionSpan.toFixed(2)}, valid=${leftSectionSpan > 0.01}`);
   if (leftSectionSpan > 0.01) {
     const leftGeom = new THREE.BoxGeometry(wallThickness, wallHeight, leftSectionSpan);
     const leftWall = new THREE.Mesh(leftGeom, cedarMat);
@@ -70,7 +66,6 @@ export function createSteelEntryGeometry(
 
   // 2. Above door section
   const aboveDoorHeight = wallHeight - doorHeight;
-  console.log(`[Entry] Section 2 (above door): height=${aboveDoorHeight.toFixed(2)}, valid=${aboveDoorHeight > 0.01}`);
   if (aboveDoorHeight > 0.01) {
     const aboveDoorGeom = new THREE.BoxGeometry(wallThickness, aboveDoorHeight, doorWidth);
     const aboveDoor = new THREE.Mesh(aboveDoorGeom, cedarMat);
@@ -84,7 +79,6 @@ export function createSteelEntryGeometry(
   const doorRightZ = doorCenterZ + doorWidth / 2;
   const windowLeftZ = windowCenterZ - windowWidth / 2;
   const middleSectionSpan = windowLeftZ - doorRightZ;
-  console.log(`[Entry] Section 3 (middle): span=${middleSectionSpan.toFixed(2)}, valid=${middleSectionSpan > 0.01}`);
   if (middleSectionSpan > 0.01) {
     const middleGeom = new THREE.BoxGeometry(wallThickness, wallHeight, middleSectionSpan);
     const middleWall = new THREE.Mesh(middleGeom, cedarMat);
@@ -95,7 +89,6 @@ export function createSteelEntryGeometry(
   }
 
   // 4. Below window section
-  console.log(`[Entry] Section 4 (below window): height=${windowBottomY.toFixed(2)}, valid=${windowBottomY > 0.01}`);
   if (windowBottomY > 0.01) {
     const belowWindowGeom = new THREE.BoxGeometry(wallThickness, windowBottomY, windowWidth);
     const belowWindow = new THREE.Mesh(belowWindowGeom, cedarMat);
@@ -108,7 +101,6 @@ export function createSteelEntryGeometry(
   // 5. Above window section
   const windowTopY = windowBottomY + windowHeight;
   const aboveWindowHeight = wallHeight - windowTopY;
-  console.log(`[Entry] Section 5 (above window): height=${aboveWindowHeight.toFixed(2)}, valid=${aboveWindowHeight > 0.01}`);
   if (aboveWindowHeight > 0.01) {
     const aboveWindowGeom = new THREE.BoxGeometry(wallThickness, aboveWindowHeight, windowWidth);
     const aboveWindow = new THREE.Mesh(aboveWindowGeom, cedarMat);
@@ -122,7 +114,6 @@ export function createSteelEntryGeometry(
   const windowRightZ = windowCenterZ + windowWidth / 2;
   const rightEdgeZ = wallSpan / 2;
   const rightSectionSpan = rightEdgeZ - windowRightZ;
-  console.log(`[Entry] Section 6 (right): span=${rightSectionSpan.toFixed(2)}, valid=${rightSectionSpan > 0.01}`);
   if (rightSectionSpan > 0.01) {
     const rightGeom = new THREE.BoxGeometry(wallThickness, wallHeight, rightSectionSpan);
     const rightWall = new THREE.Mesh(rightGeom, cedarMat);

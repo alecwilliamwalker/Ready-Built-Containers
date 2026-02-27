@@ -89,22 +89,27 @@ function formatFixturesForTemplate(zoneName: string) {
 }
 
 // Generate formatted output for each zone
-console.log("=== UPDATE THESE IN templates.ts ===\n");
+// To use: run this file with ts-node and check stdout
+const output = [
+  "=== UPDATE THESE IN templates.ts ===\n",
+  "// kitchenLivingBasic.fixtures:",
+  formatFixturesForTemplate("kitchen-living"),
+  "\n",
+  "// bathHallwayBasic.fixtures:",
+  formatFixturesForTemplate("bath-hallway"),
+  "\n",
+  "// hallwayBasic.fixtures:",
+  formatFixturesForTemplate("hallway"),
+  "\n",
+  "// bedroomBasic.fixtures:",
+  formatFixturesForTemplate("bedroom"),
+  "\n",
+].join("\n");
 
-console.log("// kitchenLivingBasic.fixtures:");
-console.log(formatFixturesForTemplate("kitchen-living"));
-console.log("\n");
-
-console.log("// bathHallwayBasic.fixtures:");
-console.log(formatFixturesForTemplate("bath-hallway"));
-console.log("\n");
-
-console.log("// hallwayBasic.fixtures:");
-console.log(formatFixturesForTemplate("hallway"));
-console.log("\n");
-
-console.log("// bedroomBasic.fixtures:");
-console.log(formatFixturesForTemplate("bedroom"));
-console.log("\n");
+// Only log when executed directly as a script (not imported)
+if (typeof process !== "undefined" && process.argv[1]?.includes("update-templates-helper")) {
+  // eslint-disable-next-line no-console
+  console.log(output);
+}
 
 export { };

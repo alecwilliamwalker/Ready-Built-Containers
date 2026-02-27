@@ -56,10 +56,8 @@ export function MobileFixtureCarousel({
   const handleSelect = (item: ModuleCatalogItem) => {
     // Toggle selection - if already selected, deselect
     if (pendingPlacement?.key === item.key) {
-      console.log("[CAROUSEL] Deselecting fixture:", item.key);
       onSetPendingPlacement?.(null);
     } else {
-      console.log("[CAROUSEL] Selecting fixture:", item.key);
       onSetPendingPlacement?.(item);
     }
   };
