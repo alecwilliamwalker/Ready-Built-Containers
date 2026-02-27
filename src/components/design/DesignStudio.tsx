@@ -714,8 +714,7 @@ export function DesignStudio({
 
     const shellMsg = shellFixtures.length > 0 ? `, ${shellFixtures.length} shell fixtures` : "";
     showToast({ variant: "success", title: "Template exported!", description: `${design.zones.length} zones, ${design.fixtures.length} fixtures${shellMsg}` });
-
-};
+  };
 
   // Handle Submit for Proposal
   const handleSubmitProposal = async () => {
